@@ -50,23 +50,31 @@ body {
 nav {
   position: fixed; top: 0; left: 0; right: 0;
   display: flex; justify-content: space-between; align-items: center;
-  padding: 1.8rem 5rem;
+  padding: .4rem 5rem;
   z-index: 200;
   transition: background .4s, padding .4s;
   overflow: hidden;
 }
 nav.scrolled {
-  background: rgba(244,244,242,.93);
-  backdrop-filter: blur(12px);
-  padding: 1.2rem 5rem;
+  background: rgba(244,244,242,.98);
+  padding: .4rem 5rem;
   border-bottom: 1px solid var(--light);
 }
 .nav-logo {
   display: flex; align-items: center; gap: .8rem;
   text-decoration: none; color: var(--black);
 }
+
+#nav-logo-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  transition: opacity .3s;
+  margin: -30px 0;
+}
+
 .nav-logo-text {
-  font-family: var(--serif); font-size: 1rem;
+  font-family: var(--serif); font-size: 1.4rem;
   font-weight: 400; letter-spacing: .04em;
 }
 .nav-links { display: flex; gap: 2.5rem; list-style: none; }
