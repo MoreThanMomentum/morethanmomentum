@@ -1,9 +1,598 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>My Agency</title>
-  </head>
-  <body>
-    <h1>Welcome to My Agency</h1>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>More Than Momentum — AI-Powered Social Media Growth</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0c0c0c; --white: #f4f4f2; --gray: #888;
+      --mid: #555; --light: #e6e6e4;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --sans: 'DM Sans', sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--white); color: var(--black); font-family: var(--sans); font-weight: 300; line-height: 1.6; cursor: none; overflow-x: hidden; }
+
+    .cursor { position: fixed; width: 8px; height: 8px; background: var(--black); border-radius: 50%; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width .25s, height .25s; }
+    .cursor-ring { position: fixed; width: 32px; height: 32px; border: 1px solid var(--black); border-radius: 50%; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); opacity: .4; transition: width .3s, height .3s, opacity .3s; }
+    .cursor.big { width: 18px; height: 18px; }
+    .cursor-ring.big { width: 56px; height: 56px; opacity: .15; }
+
+    nav { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 1.8rem 5rem; z-index: 200; transition: background .4s, padding .4s; }
+    nav.scrolled { background: rgba(244,244,242,.93); backdrop-filter: blur(12px); padding: 1.2rem 5rem; border-bottom: 1px solid var(--light); }
+    .nav-logo { display: flex; align-items: center; gap: .8rem; text-decoration: none; color: var(--black); }
+    .nav-logo-text { font-family: var(--serif); font-size: 1rem; font-weight: 400; letter-spacing: .04em; }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a { font-size: .75rem; letter-spacing: .13em; text-transform: uppercase; text-decoration: none; color: var(--black); font-weight: 400; transition: opacity .2s; }
+    .nav-links a:hover { opacity: .35; }
+    .nav-cta { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; text-decoration: none; color: var(--white); background: var(--black); padding: .65rem 1.4rem; font-weight: 400; transition: background .25s; }
+    .nav-cta:hover { background: #333; }
+
+    .hero { min-height: 100vh; background: var(--black); display: flex; flex-direction: column; justify-content: flex-end; padding: 0 5rem 5rem; position: relative; overflow: hidden; }
+    .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px); background-size: 80px 80px; pointer-events: none; }
+    .hero-bg-logo { position: absolute; right: -5rem; top: 50%; transform: translateY(-50%); opacity: .04; width: 58vw; pointer-events: none; }
+    .hero-badge { display: inline-flex; align-items: center; gap: .6rem; border: 1px solid rgba(255,255,255,.15); padding: .45rem 1rem; margin-bottom: 2.5rem; width: fit-content; opacity: 0; animation: fadeUp .7s .2s forwards; }
+    .hero-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #fff; opacity: .6; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:.6;transform:scale(1);}50%{opacity:1;transform:scale(1.3);} }
+    .hero-badge-text { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+    .hero-title { font-family: var(--serif); font-size: clamp(3.8rem,9vw,9.5rem); font-weight: 300; line-height: .92; letter-spacing: -.025em; color: var(--white); opacity: 0; animation: fadeUp .9s .35s forwards; }
+    .hero-title em { font-style: italic; color: rgba(255,255,255,.5); }
+    .hero-bottom { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 3.5rem; opacity: 0; animation: fadeUp .9s .6s forwards; }
+    .hero-desc { max-width: 380px; font-size: .92rem; color: rgba(255,255,255,.45); line-height: 1.9; }
+    .hero-actions { display: flex; gap: 1.5rem; align-items: center; }
+    .btn-primary { display: inline-flex; align-items: center; gap: .8rem; background: var(--white); color: var(--black); text-decoration: none; font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; padding: 1rem 2rem; font-weight: 500; transition: gap .3s; }
+    .btn-primary::after { content: '→'; }
+    .btn-primary:hover { gap: 1.3rem; }
+    .btn-ghost { font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.4); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.2); padding-bottom: .2rem; transition: color .25s, border-color .25s; }
+    .btn-ghost:hover { color: var(--white); border-color: var(--white); }
+
+    .ticker { overflow: hidden; border-top: 1px solid var(--light); border-bottom: 1px solid var(--light); padding: .9rem 0; }
+    .ticker-track { display: flex; gap: 2.5rem; animation: ticker 28s linear infinite; width: max-content; white-space: nowrap; }
+    .ticker-item { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color: var(--mid); }
+    .ticker-sep { color: var(--light); }
+    @keyframes ticker { from{transform:translateX(0);}to{transform:translateX(-50%);} }
+
+    .section-tag { display: inline-flex; align-items: center; gap: .8rem; font-size: .7rem; letter-spacing: .18em; text-transform: uppercase; color: var(--gray); margin-bottom: 2.5rem; }
+    .section-tag::before { content:''; width: 1.8rem; height: 1px; background: var(--gray); }
+
+    .about { display: grid; grid-template-columns: 5fr 7fr; border-bottom: 1px solid var(--light); }
+    .about-left { padding: 7rem 5rem; border-right: 1px solid #1a1a1a; background: var(--black); color: var(--white); display: flex; flex-direction: column; justify-content: space-between; }
+    .about-left .section-tag { color: #444; }
+    .about-left .section-tag::before { background: #444; }
+    .about-heading { font-family: var(--serif); font-size: clamp(2.4rem,3.5vw,3.8rem); font-weight: 300; line-height: 1.08; letter-spacing: -.01em; color: var(--white); }
+    .about-heading em { font-style: italic; color: rgba(255,255,255,.4); }
+    .about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; padding-top: 3rem; margin-top: 3rem; border-top: 1px solid #1e1e1e; }
+    .stat-num { font-family: var(--serif); font-size: 2.8rem; font-weight: 300; letter-spacing: -.02em; color: var(--white); }
+    .stat-label { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: #555; margin-top: .3rem; }
+    .about-right { padding: 7rem 5rem; }
+    .about-body { font-size: .95rem; color: var(--mid); line-height: 1.95; margin-bottom: 1.6rem; }
+    .about-body strong { color: var(--black); font-weight: 500; }
+    .about-pillars { margin-top: 3rem; display: flex; flex-direction: column; gap: 1rem; }
+    .pillar { display: flex; align-items: flex-start; gap: 1.2rem; padding: 1.2rem; border: 1px solid var(--light); transition: border-color .3s; }
+    .pillar:hover { border-color: var(--black); }
+    .pillar-icon { width: 36px; height: 36px; flex-shrink: 0; background: var(--black); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: .65rem; color: var(--white); font-family: var(--sans); }
+    .pillar-text strong { display: block; font-size: .82rem; letter-spacing: .06em; text-transform: uppercase; font-weight: 500; margin-bottom: .2rem; }
+    .pillar-text span { font-size: .85rem; color: var(--gray); }
+
+    .services { padding: 7rem 5rem; border-bottom: 1px solid var(--light); }
+    .services-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem; }
+    .services-heading { font-family: var(--serif); font-size: clamp(2.4rem,3.5vw,3.8rem); font-weight: 300; letter-spacing: -.01em; }
+    .services-heading em { font-style: italic; }
+    .services-note { max-width: 260px; font-size: .85rem; color: var(--gray); line-height: 1.7; text-align: right; }
+    .services-grid { display: grid; grid-template-columns: repeat(3,1fr); }
+    .svc { padding: 2.5rem 2.5rem 3rem; border-top: 1px solid var(--light); border-right: 1px solid var(--light); position: relative; overflow: hidden; transition: background .3s; }
+    .svc:nth-child(3n) { border-right: none; }
+    .svc::before { content:''; position: absolute; bottom:0; left:0; height:2px; width:0; background:var(--black); transition: width .45s ease; }
+    .svc:hover::before { width: 100%; }
+    .svc:hover { background: rgba(0,0,0,.02); }
+    .svc-num { font-family: var(--serif); font-size: .8rem; font-style: italic; color: var(--gray); margin-bottom: 1.5rem; }
+    .svc-icon { font-size: 1.3rem; margin-bottom: .8rem; display: block; }
+    .svc-name { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; margin-bottom: .8rem; line-height: 1.2; }
+    .svc-desc { font-size: .85rem; color: var(--gray); line-height: 1.85; }
+    .svc-tag { display: inline-flex; margin-top: 1.2rem; font-size: .64rem; letter-spacing: .13em; text-transform: uppercase; color: var(--black); border: 1px solid var(--light); padding: .28rem .65rem; }
+
+    .pricing { padding: 7rem 5rem; background: var(--black); color: var(--white); border-bottom: 1px solid #111; }
+    .pricing .section-tag { color: #444; }
+    .pricing .section-tag::before { background: #444; }
+    .pricing-heading { font-family: var(--serif); font-size: clamp(2.4rem,3.5vw,3.8rem); font-weight: 300; color: var(--white); letter-spacing: -.01em; margin-bottom: 4rem; }
+    .pricing-heading em { font-style: italic; color: rgba(255,255,255,.35); }
+    .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: #1a1a1a; }
+    .plan { background: var(--black); padding: 3rem; position: relative; transition: background .3s; }
+    .plan:hover { background: #0f0f0f; }
+    .plan.featured { background: var(--white); color: var(--black); }
+    .plan.featured:hover { background: #f0f0ee; }
+    .plan-label { font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: #555; margin-bottom: 1.5rem; }
+    .plan.featured .plan-label { color: var(--gray); }
+    .plan-name { font-family: var(--serif); font-size: 2.2rem; font-weight: 300; margin-bottom: 2rem; letter-spacing: -.01em; }
+    .plan.featured .plan-name { color: var(--black); }
+    .plan-divider { height: 1px; background: #1e1e1e; margin-bottom: 2rem; }
+    .plan.featured .plan-divider { background: var(--light); }
+    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem; }
+    .plan-features li { display: flex; align-items: flex-start; gap: .8rem; font-size: .85rem; color: #666; line-height: 1.5; }
+    .plan.featured .plan-features li { color: var(--mid); }
+    .plan-features li::before { content: '→'; color: #333; font-size: .75rem; margin-top: .05rem; flex-shrink: 0; }
+    .plan.featured .plan-features li::before { color: var(--black); }
+    .plan-cta { display: inline-flex; align-items: center; gap: .7rem; text-decoration: none; font-size: .72rem; letter-spacing: .13em; text-transform: uppercase; color: #555; border-bottom: 1px solid #333; padding-bottom: .25rem; transition: color .25s, border-color .25s, gap .25s; }
+    .plan-cta::after { content: '→'; }
+    .plan-cta:hover { gap: 1.1rem; color: var(--white); border-color: var(--white); }
+    .plan.featured .plan-cta { color: var(--black); border-color: var(--black); }
+    .plan.featured .plan-cta:hover { color: #333; }
+    .plan-badge { position: absolute; top: 1.5rem; right: 1.5rem; font-size: .62rem; letter-spacing: .13em; text-transform: uppercase; background: var(--black); color: var(--white); padding: .25rem .6rem; }
+
+    .portfolio { padding: 7rem 5rem; border-bottom: 1px solid var(--light); }
+    .portfolio-top { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 4rem; }
+    .portfolio-heading { font-family: var(--serif); font-size: clamp(2.4rem,3.5vw,3.8rem); font-weight: 300; letter-spacing: -.01em; }
+    .portfolio-heading em { font-style: italic; }
+    .portfolio-note { font-size: .82rem; color: var(--gray); max-width: 240px; text-align: right; }
+    .video-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
+    .video-row-2 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+    .video-slot { aspect-ratio: 9/16; background: var(--black); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; cursor: none; }
+    .video-slot video { width:100%; height:100%; object-fit:cover; transition: transform .6s cubic-bezier(.25,.46,.45,.94); }
+    .video-slot:hover video { transform: scale(1.04); }
+    .video-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
+    .video-placeholder-num { font-family: var(--serif); font-size: 4rem; font-weight: 300; color: rgba(255,255,255,.07); font-style: italic; }
+    .video-placeholder-label { font-size: .65rem; letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.18); }
+    .video-overlay { position: absolute; inset: 0; background: linear-gradient(to top,rgba(0,0,0,.7) 0%,transparent 55%); display: flex; align-items: flex-end; padding: 1.5rem; opacity: 0; transition: opacity .35s; }
+    .video-slot:hover .video-overlay { opacity: 1; }
+    .video-client { font-size: .65rem; letter-spacing: .14em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+    .video-title { font-family: var(--serif); font-size: 1.1rem; color: var(--white); margin-top: .2rem; }
+
+    .process { padding: 7rem 5rem; border-bottom: 1px solid var(--light); background: #f9f9f7; }
+    .process-inner { display: grid; grid-template-columns: 1fr 2fr; gap: 6rem; align-items: start; }
+    .process-left { position: sticky; top: 8rem; }
+    .process-heading { font-family: var(--serif); font-size: clamp(2.2rem,3vw,3.2rem); font-weight: 300; letter-spacing: -.01em; line-height: 1.1; }
+    .process-heading em { font-style: italic; }
+    .process-sub { font-size: .9rem; color: var(--gray); line-height: 1.8; margin-top: 1.5rem; }
+    .step { display: grid; grid-template-columns: 3rem 1fr; gap: 2rem; padding: 2.5rem 0; border-bottom: 1px solid var(--light); }
+    .step:last-child { border-bottom: none; }
+    .step-num { font-family: var(--serif); font-size: 1rem; font-style: italic; color: var(--gray); padding-top: .2rem; }
+    .step-name { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; margin-bottom: .7rem; }
+    .step-desc { font-size: .88rem; color: var(--gray); line-height: 1.85; }
+
+    .contact { display: grid; grid-template-columns: 1fr 1fr; }
+    .contact-left { padding: 7rem 5rem; background: var(--black); color: var(--white); display: flex; flex-direction: column; justify-content: space-between; }
+    .contact-left .section-tag { color: #444; }
+    .contact-left .section-tag::before { background: #444; }
+    .contact-heading { font-family: var(--serif); font-size: clamp(2.2rem,3.2vw,3.6rem); font-weight: 300; line-height: 1.05; letter-spacing: -.02em; color: var(--white); }
+    .contact-heading em { font-style: italic; color: rgba(255,255,255,.35); }
+    .contact-details { margin-top: 4rem; display: flex; flex-direction: column; gap: 2rem; }
+    .contact-detail-label { font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; color: #444; margin-bottom: .3rem; }
+    .contact-detail-value { font-size: .92rem; color: #888; }
+    .contact-socials { display: flex; gap: 1rem; margin-top: 3rem; flex-wrap: wrap; }
+    .social-link { font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; color: #444; text-decoration: none; border: 1px solid #222; padding: .5rem 1rem; transition: color .25s, border-color .25s; }
+    .social-link:hover { color: var(--white); border-color: #555; }
+    .contact-right { padding: 7rem 5rem; }
+    .contact-form { display: flex; flex-direction: column; gap: 2.2rem; margin-top: 1rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    .form-group { display: flex; flex-direction: column; gap: .5rem; }
+    .form-label { font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; color: var(--gray); }
+    .form-input, .form-select, .form-textarea { border: none; border-bottom: 1px solid var(--light); padding: .8rem 0; font-family: var(--sans); font-size: .9rem; font-weight: 300; background: transparent; color: var(--black); outline: none; transition: border-color .3s; width: 100%; }
+    .form-input:focus,.form-select:focus,.form-textarea:focus { border-color: var(--black); }
+    .form-select { appearance: none; cursor: none; }
+    .form-textarea { resize: none; height: 100px; }
+    .form-submit { display: inline-flex; align-items: center; gap: 1rem; background: var(--black); color: var(--white); border: none; padding: 1.1rem 2.4rem; font-family: var(--sans); font-size: .75rem; letter-spacing: .13em; text-transform: uppercase; cursor: none; transition: background .25s, gap .3s; align-self: flex-start; font-weight: 400; }
+    .form-submit:hover { background: #222; gap: 1.5rem; }
+    .form-submit::after { content: '→'; }
+
+    footer { padding: 2.5rem 5rem; border-top: 1px solid var(--light); display: flex; justify-content: space-between; align-items: center; }
+    .footer-logo-text { font-family: var(--serif); font-size: .9rem; font-style: italic; color: var(--gray); }
+    .footer-copy { font-size: .7rem; letter-spacing: .07em; color: var(--gray); }
+    .footer-links { display: flex; gap: 2rem; list-style: none; }
+    .footer-links a { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--gray); text-decoration: none; transition: color .2s; }
+    .footer-links a:hover { color: var(--black); }
+
+    @keyframes fadeUp { from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);} }
+    .reveal { opacity: 0; transform: translateY(35px); transition: opacity .75s ease, transform .75s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+
+    @media(max-width:1024px){
+      nav,nav.scrolled{padding:1.5rem 2.5rem;}
+      .hero{padding:0 2.5rem 4rem;}
+      .about{grid-template-columns:1fr;}
+      .about-left{border-right:none;border-bottom:1px solid #1a1a1a;padding:5rem 2.5rem;}
+      .about-right{padding:5rem 2.5rem;}
+      .services,.pricing,.portfolio,.process{padding:5rem 2.5rem;}
+      .services-grid{grid-template-columns:1fr 1fr;}
+      .svc:nth-child(3n){border-right:1px solid var(--light);}
+      .svc:nth-child(2n){border-right:none;}
+      .pricing-grid{grid-template-columns:1fr;gap:1px;}
+      .video-grid,.video-row-2{grid-template-columns:1fr 1fr;}
+      .process-inner{grid-template-columns:1fr;gap:3rem;}
+      .process-left{position:static;}
+      .contact{grid-template-columns:1fr;}
+      .contact-left,.contact-right{padding:5rem 2.5rem;}
+      footer{padding:2rem 2.5rem;flex-wrap:wrap;gap:1.2rem;}
+    }
+    @media(max-width:640px){
+      .hero-bottom,.services-top,.portfolio-top{flex-direction:column;align-items:flex-start;gap:1.5rem;}
+      .services-note,.portfolio-note{text-align:left;}
+      .services-grid{grid-template-columns:1fr;}
+      .svc{border-right:none!important;}
+      .video-grid,.video-row-2{grid-template-columns:1fr;}
+      .form-row{grid-template-columns:1fr;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="nav-logo">
+    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+      <circle cx="20" cy="5" r="3.5" fill="currentColor"/>
+      <path d="M12 9l5 5-3 7 5-3 3.5 5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M1 14h7M2 11h5.5M2 17h5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".35"/>
+    </svg>
+    <span class="nav-logo-text">More Than Momentum</span>
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#work">Work</a></li>
+  </ul>
+  <a href="#contact" class="nav-cta">Get Started</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <svg class="hero-bg-logo" viewBox="0 0 500 500" fill="none">
+    <circle cx="340" cy="80" r="55" fill="white"/>
+    <path d="M195 155l85 82-52 138 92-58 72 92" stroke="white" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M10 240h115M18 195h98M22 285h88M2 262h68" stroke="white" stroke-width="15" stroke-linecap="round" opacity=".45"/>
+  </svg>
+  <div>
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      <span class="hero-badge-text">AI-Powered Social Media Agency</span>
+    </div>
+    <h1 class="hero-title">
+      Growth that's<br/><em>more than</em><br/>a moment.
+    </h1>
+    <div class="hero-bottom">
+      <p class="hero-desc">We combine AI-driven strategy with real creative execution — helping businesses build powerful online presences that convert attention into lasting momentum.</p>
+      <div class="hero-actions">
+        <a href="#services" class="btn-primary">See What We Do</a>
+        <a href="#work" class="btn-ghost">View Our Work</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">AI Marketing Plans</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">Content Creation</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">Video Production</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">AI Agents & Automation</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">Social Media Management</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">Brand Strategy</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">AI Website Design</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">Growth Consulting</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">AI Marketing Plans</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">Content Creation</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">Video Production</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">AI Agents & Automation</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">Social Media Management</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">Brand Strategy</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">AI Website Design</span><span class="ticker-sep"> · </span>
+    <span class="ticker-item">Growth Consulting</span><span class="ticker-sep"> · </span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section class="about" id="about">
+  <div class="about-left">
+    <div>
+      <div class="section-tag reveal">Who We Are</div>
+      <h2 class="about-heading reveal">Built for<br/>the <em>new age</em><br/>of business.</h2>
+    </div>
+    <div class="about-stats reveal">
+      <div><div class="stat-num">AI</div><div class="stat-label">Native Strategy</div></div>
+      <div><div class="stat-num">2×</div><div class="stat-label">Faster Execution</div></div>
+      <div><div class="stat-num">Full</div><div class="stat-label">Service Studio</div></div>
+      <div><div class="stat-num">∞</div><div class="stat-label">Scalable Growth</div></div>
+    </div>
+  </div>
+  <div class="about-right">
+    <div class="section-tag reveal">What We Do</div>
+    <p class="about-body reveal">More Than Momentum is an <strong>AI-powered social media growth agency</strong> built for the way business works today. We don't just run your social media — we rebuild how your brand shows up online, from the ground up.</p>
+    <p class="about-body reveal">Whether you're an <strong>established business ready to evolve</strong> or a <strong>smaller brand looking for a major boost</strong>, we bring the AI tools, strategy, and hands-on execution to get you there — faster and smarter than traditional agencies.</p>
+    <p class="about-body reveal">We film. We edit. We build AI agents. We create marketing plans that move the needle. <strong>This is what modern growth looks like.</strong></p>
+    <div class="about-pillars reveal">
+      <div class="pillar">
+        <div class="pillar-icon">AI</div>
+        <div class="pillar-text"><strong>AI-First Approach</strong><span>We use cutting-edge AI tools to build smarter strategies, automate workflows, and save your business time and money.</span></div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">▶</div>
+        <div class="pillar-text"><strong>Full Creative Studio</strong><span>From filming and editing to graphic design and copywriting — we handle the content so you don't have to.</span></div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-icon">↑</div>
+        <div class="pillar-text"><strong>Built to Scale</strong><span>Our systems grow with you. Start lean, scale fast — without sacrificing quality or consistency.</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="services" id="services">
+  <div class="services-top">
+    <div>
+      <div class="section-tag reveal">What We Offer</div>
+      <h2 class="services-heading reveal">Our <em>services</em></h2>
+    </div>
+    <p class="services-note reveal">Everything your brand needs to grow in the new digital landscape.</p>
+  </div>
+  <div class="services-grid">
+    <div class="svc reveal">
+      <div class="svc-num">01</div>
+      <span class="svc-icon">🤖</span>
+      <div class="svc-name">AI Marketing Plans</div>
+      <p class="svc-desc">Custom AI-generated marketing strategies built around your brand goals — with content calendars, posting schedules, and growth roadmaps that actually deliver.</p>
+      <span class="svc-tag">AI-Powered</span>
+    </div>
+    <div class="svc reveal reveal-delay-1">
+      <div class="svc-num">02</div>
+      <span class="svc-icon">⚙️</span>
+      <div class="svc-name">AI Agents & Automation</div>
+      <p class="svc-desc">We build and deploy AI agents that handle DMs, scheduling, reporting and more — freeing your team to focus on what actually matters.</p>
+      <span class="svc-tag">Automation</span>
+    </div>
+    <div class="svc reveal reveal-delay-2">
+      <div class="svc-num">03</div>
+      <span class="svc-icon">🎬</span>
+      <div class="svc-name">Video Production</div>
+      <p class="svc-desc">We film and edit high-quality content for Reels, TikToks, YouTube Shorts and more — scroll-stopping visuals that build your brand identity.</p>
+      <span class="svc-tag">Creative</span>
+    </div>
+    <div class="svc reveal">
+      <div class="svc-num">04</div>
+      <span class="svc-icon">📱</span>
+      <div class="svc-name">Social Media Management</div>
+      <p class="svc-desc">Full-service management of your platforms — content, community engagement, and consistent posting that builds real, lasting momentum.</p>
+      <span class="svc-tag">Management</span>
+    </div>
+    <div class="svc reveal reveal-delay-1">
+      <div class="svc-num">05</div>
+      <span class="svc-icon">🌐</span>
+      <div class="svc-name">AI Website Design</div>
+      <p class="svc-desc">Modern, fast, conversion-focused websites built with AI tools — giving your business a powerful online home without the bloated agency price tag.</p>
+      <span class="svc-tag">Web</span>
+    </div>
+    <div class="svc reveal reveal-delay-2">
+      <div class="svc-num">06</div>
+      <span class="svc-icon">📈</span>
+      <div class="svc-name">Growth Consulting</div>
+      <p class="svc-desc">Hands-on strategy sessions where we audit your presence, identify gaps, and build a clear path to measurable, scalable growth in the new age.</p>
+      <span class="svc-tag">Strategy</span>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="pricing">
+  <div class="section-tag reveal">Investment</div>
+  <h2 class="pricing-heading reveal">Simple, <em>transparent</em> packages.</h2>
+  <div class="pricing-grid">
+    <div class="plan reveal">
+      <div class="plan-label">For growing brands</div>
+      <div class="plan-name">Starter</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>AI-built content calendar & strategy</li>
+        <li>Social media management (2 platforms)</li>
+        <li>8 posts per month with captions</li>
+        <li>Monthly performance report</li>
+        <li>Email support</li>
+      </ul>
+      <a href="#contact" class="plan-cta">Get Started</a>
+    </div>
+    <div class="plan featured reveal reveal-delay-1">
+      <div class="plan-badge">Most Popular</div>
+      <div class="plan-label">For scaling businesses</div>
+      <div class="plan-name">Growth</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>Everything in Starter</li>
+        <li>Video filming & editing (4 videos/mo)</li>
+        <li>AI automation & scheduling setup</li>
+        <li>Social management (4 platforms)</li>
+        <li>16 posts per month</li>
+        <li>Bi-weekly strategy calls</li>
+        <li>Priority support</li>
+      </ul>
+      <a href="#contact" class="plan-cta">Get Started</a>
+    </div>
+    <div class="plan reveal reveal-delay-2">
+      <div class="plan-label">For established businesses</div>
+      <div class="plan-name">Scale</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-features">
+        <li>Everything in Growth</li>
+        <li>Custom AI agents built for your brand</li>
+        <li>AI website design or redesign</li>
+        <li>Unlimited platforms & posts</li>
+        <li>Full creative studio access</li>
+        <li>Weekly strategy & reporting calls</li>
+        <li>Dedicated account manager</li>
+      </ul>
+      <a href="#contact" class="plan-cta">Get Started</a>
+    </div>
+  </div>
+</section>
+
+<!-- PORTFOLIO -->
+<section class="portfolio" id="work">
+  <div class="portfolio-top">
+    <div>
+      <div class="section-tag reveal">Our Work</div>
+      <h2 class="portfolio-heading reveal">Content that <em>moves.</em></h2>
+    </div>
+    <p class="portfolio-note reveal">More work dropping soon — we're just getting started.</p>
+  </div>
+  <div class="video-grid">
+    <div class="video-slot reveal">
+      <!-- TO ADD VIDEO: replace the placeholder div with: <video src="videos/video1.mp4" autoplay muted loop playsinline></video> -->
+      <div class="video-placeholder">
+        <div class="video-placeholder-num">01</div>
+        <div class="video-placeholder-label">Your video here</div>
+      </div>
+      <div class="video-overlay"><div><div class="video-client">Client · Category</div><div class="video-title">Project Title</div></div></div>
+    </div>
+    <div class="video-slot reveal reveal-delay-1">
+      <div class="video-placeholder">
+        <div class="video-placeholder-num">02</div>
+        <div class="video-placeholder-label">Your video here</div>
+      </div>
+      <div class="video-overlay"><div><div class="video-client">Client · Category</div><div class="video-title">Project Title</div></div></div>
+    </div>
+    <div class="video-slot reveal reveal-delay-2">
+      <div class="video-placeholder">
+        <div class="video-placeholder-num">03</div>
+        <div class="video-placeholder-label">Your video here</div>
+      </div>
+      <div class="video-overlay"><div><div class="video-client">Client · Category</div><div class="video-title">Project Title</div></div></div>
+    </div>
+  </div>
+  <div class="video-row-2">
+    <div class="video-slot reveal">
+      <div class="video-placeholder">
+        <div class="video-placeholder-num">04</div>
+        <div class="video-placeholder-label">Your video here</div>
+      </div>
+      <div class="video-overlay"><div><div class="video-client">Client · Category</div><div class="video-title">Project Title</div></div></div>
+    </div>
+    <div class="video-slot reveal reveal-delay-1">
+      <div class="video-placeholder">
+        <div class="video-placeholder-num">05</div>
+        <div class="video-placeholder-label">Your video here</div>
+      </div>
+      <div class="video-overlay"><div><div class="video-client">Client · Category</div><div class="video-title">Project Title</div></div></div>
+    </div>
+    <div class="video-slot reveal reveal-delay-2">
+      <div class="video-placeholder">
+        <div class="video-placeholder-num">06</div>
+        <div class="video-placeholder-label">Your video here</div>
+      </div>
+      <div class="video-overlay"><div><div class="video-client">Client · Category</div><div class="video-title">Project Title</div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="process">
+  <div class="process-inner">
+    <div class="process-left">
+      <div class="section-tag reveal">How It Works</div>
+      <h2 class="process-heading reveal">From zero to <em>momentum</em> — fast.</h2>
+      <p class="process-sub reveal">Our AI-powered process gets your brand moving in weeks, not months.</p>
+    </div>
+    <div>
+      <div class="step reveal"><div class="step-num">01</div><div><div class="step-name">Discovery & Audit</div><p class="step-desc">We start by understanding your brand, goals, and current presence — auditing what's working, what isn't, and where the biggest opportunities are hiding.</p></div></div>
+      <div class="step reveal"><div class="step-num">02</div><div><div class="step-name">AI Strategy Build</div><p class="step-desc">Using our AI tools, we build a custom marketing plan — content calendar, posting schedule, platform strategy, and growth roadmap tailored to your brand.</p></div></div>
+      <div class="step reveal"><div class="step-num">03</div><div><div class="step-name">Creative Execution</div><p class="step-desc">We film, edit, design, and write — producing a consistent stream of high-quality content that speaks to your audience and builds your brand identity.</p></div></div>
+      <div class="step reveal"><div class="step-num">04</div><div><div class="step-name">Launch & Automate</div><p class="step-desc">We deploy AI agents and automation tools to handle scheduling, engagement, and reporting — keeping momentum going without constant manual input.</p></div></div>
+      <div class="step reveal"><div class="step-num">05</div><div><div class="step-name">Grow & Scale</div><p class="step-desc">We track what's working, double down on it, and continuously optimize. As you grow, our systems scale with you — no bottlenecks, no drop in quality.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact" id="contact">
+  <div class="contact-left">
+    <div>
+      <div class="section-tag">Let's Talk</div>
+      <h2 class="contact-heading">Ready to build<br/><em>more than</em><br/>momentum?</h2>
+    </div>
+    <div>
+      <div class="contact-details">
+        <div><div class="contact-detail-label">Email</div><div class="contact-detail-value">hello@morethanmomentum.com</div></div>
+        <div><div class="contact-detail-label">Response Time</div><div class="contact-detail-value">Within 24 hours</div></div>
+      </div>
+      <div class="contact-socials">
+        <a href="#" class="social-link">Instagram</a>
+        <a href="#" class="social-link">TikTok</a>
+        <a href="#" class="social-link">LinkedIn</a>
+      </div>
+    </div>
+  </div>
+  <div class="contact-right">
+    <div class="section-tag reveal">Send a Message</div>
+    <form class="contact-form" onsubmit="handleSubmit(event)">
+      <div class="form-row">
+        <div class="form-group reveal"><label class="form-label">Your Name</label><input type="text" class="form-input" placeholder="Jane Smith"/></div>
+        <div class="form-group reveal reveal-delay-1"><label class="form-label">Email Address</label><input type="email" class="form-input" placeholder="jane@yourbrand.com"/></div>
+      </div>
+      <div class="form-group reveal"><label class="form-label">Business Name</label><input type="text" class="form-input" placeholder="Your Brand Co."/></div>
+      <div class="form-group reveal">
+        <label class="form-label">I'm interested in</label>
+        <select class="form-select">
+          <option value="">Select a service...</option>
+          <option>AI Marketing Plan</option>
+          <option>Social Media Management</option>
+          <option>Video Production</option>
+          <option>AI Agents & Automation</option>
+          <option>AI Website Design</option>
+          <option>Growth Consulting</option>
+          <option>Full Scale Package</option>
+        </select>
+      </div>
+      <div class="form-group reveal"><label class="form-label">Tell us about your brand</label><textarea class="form-textarea" placeholder="What are you working on? What's your goal?"></textarea></div>
+      <button type="submit" class="form-submit reveal">Send Message</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo-text">More Than Momentum</span>
+  <ul class="footer-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#work">Work</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <div class="footer-copy">© 2025 More Than Momentum. All rights reserved.</div>
+</footer>
+
+<script>
+  // Cursor
+  const cur=document.getElementById('cursor'),ring=document.getElementById('cursorRing');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+  (function anim(){cur.style.left=mx+'px';cur.style.top=my+'px';rx+=(mx-rx)*.1;ry+=(my-ry)*.1;ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(anim);})();
+  document.querySelectorAll('a,button,.video-slot,.svc,.plan').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{cur.classList.add('big');ring.classList.add('big');});
+    el.addEventListener('mouseleave',()=>{cur.classList.remove('big');ring.classList.remove('big');});
+  });
+
+  // Nav scroll
+  window.addEventListener('scroll',()=>document.getElementById('nav').classList.toggle('scrolled',scrollY>60));
+
+  // Reveal
+  const obs=new IntersectionObserver(entries=>entries.forEach((e,i)=>{if(e.isIntersecting)setTimeout(()=>e.target.classList.add('visible'),i*70);}),{threshold:.08});
+  document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+  // Form
+  function handleSubmit(e){
+    e.preventDefault();
+    const btn=e.target.querySelector('.form-submit');
+    btn.textContent='Message Sent ✓';btn.style.background='#2a2a2a';
+    setTimeout(()=>{btn.textContent='Send Message';btn.style.background='';},3000);
+  }
+</script>
+</body>
 </html>
