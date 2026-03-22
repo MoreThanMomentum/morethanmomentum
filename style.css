@@ -30,18 +30,20 @@ body {
 /* --- CURSOR --- */
 .cursor {
   position: fixed; width: 8px; height: 8px;
-  background: var(--black); border-radius: 50%;
+  background: white; border-radius: 50%;
   pointer-events: none; z-index: 9999;
   transform: translate(-50%,-50%);
   transition: width .25s, height .25s;
+  mix-blend-mode: difference;
 }
 .cursor-ring {
   position: fixed; width: 32px; height: 32px;
-  border: 1px solid var(--black); border-radius: 50%;
+  border: 1px solid white; border-radius: 50%;
   pointer-events: none; z-index: 9998;
   transform: translate(-50%,-50%);
-  opacity: .4;
+  opacity: .8;
   transition: width .3s, height .3s, opacity .3s;
+  mix-blend-mode: difference;
 }
 .cursor.big { width: 18px; height: 18px; }
 .cursor-ring.big { width: 56px; height: 56px; opacity: .15; }
