@@ -85,23 +85,23 @@ function updateNav() {
   const isScrolled = scrollY > 60;
   document.getElementById('nav').classList.toggle('scrolled', isScrolled);
 
-  const logoImg = document.getElementById('nav-logo-img');
- if (logoImg) {
+const logoImg = document.getElementById('nav-logo-img');
+  if (logoImg) {
     logoImg.src = isScrolled ? 'images/blackguylogo.png' : 'images/whiteguylogo.png';
     logoImg.style.opacity = '1';
-    logoImg.style.filter = isScrolled ? 'none' : 'brightness(0) saturate(100%) invert(25%) sepia(80%) saturate(1200%) hue-rotate(205deg) brightness(110%)';
+    logoImg.style.filter = isScrolled ? 'none' : 'none';
   }
 
   const navCta = document.querySelector('.nav-cta');
   if (navCta) {
     navCta.style.background = isScrolled ? '#0c0c0c' : '#2D6BE4';
   }
-  document.querySelectorAll('.nav-links a').forEach(link => {
-    link.style.color = isScrolled ? '#0c0c0c' : '#2D6BE4';
+document.querySelectorAll('.nav-links a').forEach(link => {
+    link.style.color = isScrolled ? '#0c0c0c' : '#ffffff';
   });
   const navLogoText = document.querySelector('.nav-logo-text');
   if (navLogoText) {
-    navLogoText.style.color = isScrolled ? '#0c0c0c' : '#2D6BE4';
+    navLogoText.style.color = isScrolled ? '#0c0c0c' : '#ffffff';
   }
 }
 

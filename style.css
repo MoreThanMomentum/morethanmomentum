@@ -85,7 +85,7 @@ nav.scrolled {
 .nav-links { display: flex; gap: 2.5rem; list-style: none; }
 .nav-links a {
   font-size: .75rem; letter-spacing: .13em; text-transform: uppercase;
-  text-decoration: none; color: var(--accent); font-weight: 400;
+  text-decoration: none; color: var(--white); font-weight: 400;
   transition: opacity .2s, color .3s;
 }
 .nav-links a:hover { opacity: .35; }
