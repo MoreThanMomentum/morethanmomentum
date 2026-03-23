@@ -81,22 +81,33 @@ document.querySelectorAll('a, button, .nav-cta, .plan-cta, .btn-primary, .btn-gh
 
 
 /* --- NAV SCROLL --- */
-window.addEventListener('scroll', () => {
+function updateNav() {
   const isScrolled = scrollY > 60;
   document.getElementById('nav').classList.toggle('scrolled', isScrolled);
 
   const logoImg = document.getElementById('nav-logo-img');
-  if (logoImg) {
+ if (logoImg) {
     logoImg.src = isScrolled ? 'images/blackguylogo.png' : 'images/whiteguylogo.png';
     logoImg.style.opacity = '1';
+    logoImg.style.filter = isScrolled ? 'none' : 'invert(100%) brightness(0%) saturate(100%) invert(29%) sepia(98%) saturate(500%) hue-rotate(210deg) brightness(110%)';
   }
 
   const navCta = document.querySelector('.nav-cta');
   if (navCta) {
     navCta.style.background = isScrolled ? '#0c0c0c' : '#2D6BE4';
   }
-});
+  document.querySelectorAll('.nav-links a').forEach(link => {
+    link.style.color = isScrolled ? '#0c0c0c' : '#2D6BE4';
+  });
+  const navLogoText = document.querySelector('.nav-logo-text');
+  if (navLogoText) {
+    navLogoText.style.color = isScrolled ? '#0c0c0c' : '#2D6BE4';
+  }
+}
 
+// Run on scroll AND on first load
+window.addEventListener('scroll', updateNav);
+window.addEventListener('load', updateNav);
 
 /* --- SCROLL REVEAL --- */
 const revealObserver = new IntersectionObserver(entries => {
