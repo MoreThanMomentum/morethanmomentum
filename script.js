@@ -3,15 +3,38 @@
    ============================================================ */
 
 /* --- CURSOR --- */
-const cursor = document.getElementById('cursor');
-const ring   = document.getElementById('cursorRing');
-let mx = 0, my = 0, rx = 0, ry = 0;
+const cursor        = document.getElementById('cursor');
+const ring          = document.getElementById('cursorRing');
+const cursorImg     = document.getElementById('cursor-img');
+const cursorRingImg = document.getElementById('cursor-ring-img');
+
+let mx = 0, my = 0;
+let rx = 0, ry = 0;
+let lastX = 0;
+let moveTimeout = null;
 
 document.addEventListener('mousemove', e => {
   mx = e.clientX;
   my = e.clientY;
 
-  // Detect background brightness under cursor and switch color
+  // Flip direction based on mouse movement
+  if (mx > lastX) {
+    if (cursorImg) cursorImg.style.transform = 'scaleX(1)';
+    if (cursorRingImg) cursorRingImg.style.transform = 'scaleX(1)';
+  } else if (mx < lastX) {
+    if (cursorImg) cursorImg.style.transform = 'scaleX(-1)';
+    if (cursorRingImg) cursorRingImg.style.transform = 'scaleX(-1)';
+  }
+  lastX = mx;
+
+  // Show shadow trail when moving, hide when stopped
+  ring.classList.add('moving');
+  clearTimeout(moveTimeout);
+  moveTimeout = setTimeout(() => {
+    ring.classList.remove('moving');
+  }, 150);
+
+  // Detect background brightness and swap logo color
   const el = document.elementFromPoint(mx, my);
   let node = el;
   let isDark = false;
@@ -29,31 +52,30 @@ document.addEventListener('mousemove', e => {
     node = node.parentElement;
   }
 
-  const color = isDark ? '#ffffff' : '#0c0c0c';
-  cursor.style.background   = color;
-  ring.style.borderColor    = color;
+  // Swap between white and black logo based on background
+  const logoSrc = isDark ? 'images/whiteguylogo.png' : 'images/blackguylogo.png';
+  if (cursorImg) cursorImg.src = logoSrc;
+  if (cursorRingImg) cursorRingImg.src = logoSrc;
 });
 
 // Smooth cursor follow animation
 (function animCursor() {
   cursor.style.left = mx + 'px';
   cursor.style.top  = my + 'px';
-  rx += (mx - rx) * 0.1;
-  ry += (my - ry) * 0.1;
-  ring.style.left = rx + 'px';
+  rx += (mx - rx) * 0.08;
+  ry += (my - ry) * 0.08;
+  ring.style.left = (rx - 20) + 'px';
   ring.style.top  = ry + 'px';
   requestAnimationFrame(animCursor);
 })();
 
 // Cursor grow on interactive elements
-document.querySelectorAll('a, button, .video-slot, .svc, .plan').forEach(el => {
+document.querySelectorAll('a, button, .nav-cta, .plan-cta, .btn-primary, .btn-ghost, .social-link, select').forEach(el => {
   el.addEventListener('mouseenter', () => {
-    cursor.classList.add('big');
-    ring.classList.add('big');
+    cursor.style.opacity = '0';
   });
   el.addEventListener('mouseleave', () => {
-    cursor.classList.remove('big');
-    ring.classList.remove('big');
+    cursor.style.opacity = '1';
   });
 });
 
@@ -62,16 +84,13 @@ document.querySelectorAll('a, button, .video-slot, .svc, .plan').forEach(el => {
 window.addEventListener('scroll', () => {
   const isScrolled = scrollY > 60;
   document.getElementById('nav').classList.toggle('scrolled', isScrolled);
+
   const logoImg = document.getElementById('nav-logo-img');
   if (logoImg) {
-    if (isScrolled) {
-      logoImg.src = 'images/blackguylogo.png';
-      logoImg.style.opacity = '1';
-    } else {
-      logoImg.src = 'images/whiteguylogo.png';
-      logoImg.style.opacity = '1';
-    }
+    logoImg.src = isScrolled ? 'images/blackguylogo.png' : 'images/whiteguylogo.png';
+    logoImg.style.opacity = '1';
   }
+
   const navCta = document.querySelector('.nav-cta');
   if (navCta) {
     navCta.style.background = isScrolled ? '#0c0c0c' : '#2D6BE4';

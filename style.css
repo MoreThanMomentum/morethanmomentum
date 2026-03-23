@@ -24,28 +24,29 @@ body {
   font-family: var(--sans);
   font-weight: 300;
   line-height: 1.6;
-  cursor: none;
+  cursor: none !important;
   overflow-x: hidden;
 }
 
 /* --- CURSOR --- */
+
+* { cursor: none !important; }
+a, button, .nav-cta, .plan-cta, .btn-primary, .btn-ghost, .social-link, select { cursor: pointer !important; }
 .cursor {
-  position: fixed; width: 8px; height: 8px;
-  background: var(--black); border-radius: 50%;
+  position: fixed;
+  width: 110px; height: 110px;
   pointer-events: none; z-index: 9999;
-  transform: translate(-50%,-50%);
-  transition: width .25s, height .25s, background .2s;
+  transform: translate(-50%, -50%);
+  transition: width .2s, height .2s;
 }
-.cursor-ring {
-  position: fixed; width: 32px; height: 32px;
-  border: 1px solid var(--black); border-radius: 50%;
-  pointer-events: none; z-index: 9998;
-  transform: translate(-50%,-50%);
-  opacity: .4;
-  transition: width .3s, height .3s, opacity .3s, border-color .2s;
+.cursor.big { width: 130px; height: 130px; }
+.cursor img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  transition: transform .15s ease;
 }
-.cursor.big { width: 18px; height: 18px; }
-.cursor-ring.big { width: 56px; height: 56px; opacity: .15; }
+
+.cursor-ring { display: none; }
 
 /* --- NAV --- */
 nav {
@@ -248,7 +249,7 @@ nav.scrolled {
 }
 .svc:hover::before { width: 100%; }
 .svc:hover { background: rgba(0,0,0,.02); }
-.svc-num { font-family: var(--serif); font-size: .8rem; font-style: italic; color: var(--gray); margin-bottom: 1.5rem; }
+
 .svc-icon { font-size: 1.3rem; margin-bottom: .8rem; display: block; }
 .svc-name { font-family: var(--serif); font-size: 1.5rem; font-weight: 400; margin-bottom: .8rem; line-height: 1.2; }
 .svc-desc { font-size: .85rem; color: var(--gray); line-height: 1.85; }
