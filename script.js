@@ -63,10 +63,19 @@ window.addEventListener('scroll', () => {
   const isScrolled = scrollY > 60;
   document.getElementById('nav').classList.toggle('scrolled', isScrolled);
   const logoImg = document.getElementById('nav-logo-img');
-if (logoImg) {
-  logoImg.src = isScrolled ? 'images/blackguylogo.png' : 'images/whiteguylogo.png';
-  logoImg.style.opacity = isScrolled ? '1' : '0';
-}
+  if (logoImg) {
+    if (isScrolled) {
+      logoImg.src = 'images/blackguylogo.png';
+      logoImg.style.opacity = '1';
+    } else {
+      logoImg.src = 'images/whiteguylogo.png';
+      logoImg.style.opacity = '1';
+    }
+  }
+  const navCta = document.querySelector('.nav-cta');
+  if (navCta) {
+    navCta.style.background = isScrolled ? '#0c0c0c' : '#2D6BE4';
+  }
 });
 
 
