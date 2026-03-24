@@ -95,6 +95,10 @@ const logoImg = document.getElementById('nav-logo-img');
   const navCta = document.querySelector('.nav-cta');
   if (navCta) {
     navCta.style.background = isScrolled ? '#0c0c0c' : '#2D6BE4';
+    const scanLight = navCta.querySelector('.scan-light');
+    if (scanLight) {
+      scanLight.style.display = isScrolled ? 'none' : 'block';
+    }
   }
 document.querySelectorAll('.nav-links a').forEach(link => {
     link.style.color = isScrolled ? '#0c0c0c' : '#ffffff';

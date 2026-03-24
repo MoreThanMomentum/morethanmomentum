@@ -305,6 +305,7 @@ nav.scrolled {
   padding: 7rem 5rem; border-right: 1px solid #1a1a1a;
   background: var(--black); color: var(--white);
   display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; overflow: hidden;
 }
 .about-left .section-tag { color: var(--accent-light); }
 .about-left .section-tag::before { background: var(--accent-light); }
@@ -367,7 +368,7 @@ nav.scrolled {
 }
 
 /* --- PRICING --- */
-.pricing { padding: 7rem 5rem; background: var(--black); color: var(--white); border-bottom: 1px solid #111; }
+.pricing { padding: 7rem 5rem; background: var(--black); color: var(--white); border-bottom: 1px solid #111; position: relative; overflow: hidden; }
 .pricing .section-tag { color: var(--accent-light); }
 .pricing .section-tag::before { background: var(--accent-light); }
 .pricing-heading {
@@ -452,6 +453,7 @@ nav.scrolled {
 .contact-left {
   padding: 7rem 5rem; background: var(--black); color: var(--white);
   display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; overflow: hidden;
 }
 .contact-left .section-tag { color: var(--accent-light); }
 .contact-left .section-tag::before { background: var(--accent-light); }
