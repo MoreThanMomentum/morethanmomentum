@@ -244,38 +244,91 @@ nav.scrolled {
 .pricing > *:not(.particle-canvas) { position: relative; z-index: 2; }
 .contact-left > *:not(.particle-canvas) { position: relative; z-index: 2; }
 
-/* --- VIDEO CAROUSEL --- */
+/* --- 3D VIDEO CAROUSEL --- */
 .video-carousel {
-  overflow: hidden;
+  position: relative;
   width: 100%;
+  padding: 1rem 0 2rem;
+  overflow: hidden;
 }
+
+
 
 .video-track {
-  display: flex;
-  width: 133.34%;
-  transform: translateX(-25%);
-}
-
-.video-track .video-slot {
-  width: 25%;
-  flex-shrink: 0;
-  padding: 0 .75rem;
-  box-sizing: border-box;
-  aspect-ratio: 9/16;
-  background: var(--black);
   position: relative;
-  overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: none;
+  height: 560px;
+  width: 100%;
+  perspective: 1200px;
+  perspective-origin: 50% 40%;
+  transform-style: preserve-3d;
 }
 
-.video-track .video-slot video {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform .6s cubic-bezier(.25,.46,.45,.94);
+/* 3D video slot */
+.video-slot-3d {
+  position: absolute;
+  width: 300px;
+  height: 533px;
+  left: calc(50% - 150px);
+  top: calc(50% - 266.5px);
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: none;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  background: #111;
+  transition: transform 0.85s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              opacity 0.85s ease;
 }
-.video-track .video-slot:hover video { transform: scale(1.04); }
+
+/* Blue border glow on hover */
+.video-slot-3d::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  border: 2px solid transparent;
+  transition: border-color 0.3s, box-shadow 0.3s;
+  pointer-events: none;
+  z-index: 5;
+}
+.video-slot-3d:hover::after {
+  border-color: rgba(45, 107, 228, 0.7);
+  box-shadow: inset 0 0 20px rgba(45, 107, 228, 0.15);
+}
+
+.video-slot-3d video {
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+.video-slot-3d .video-placeholder {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 1rem; width: 100%; height: 100%;
+}
+
+.video-slot-3d .video-placeholder-num {
+  font-family: var(--serif); font-size: 4rem;
+  font-weight: 300; color: rgba(255,255,255,.07); font-style: italic;
+}
+.video-slot-3d .video-placeholder-label {
+  font-size: .65rem; letter-spacing: .15em;
+  text-transform: uppercase; color: rgba(255,255,255,.18);
+}
+.video-slot-3d .video-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 55%);
+  display: flex; align-items: flex-end; padding: 1.5rem;
+  opacity: 0; transition: opacity .35s; z-index: 4;
+}
+.video-slot-3d:hover .video-overlay { opacity: 1; }
+.video-slot-3d .video-client {
+  font-size: .65rem; letter-spacing: .14em;
+  text-transform: uppercase; color: rgba(255,255,255,.5);
+}
+.video-slot-3d .video-title {
+  font-family: var(--serif); font-size: 1.1rem;
+  color: var(--white); margin-top: .2rem;
+}
 .ticker {
   overflow: hidden;
   border-top: 1px solid var(--light);

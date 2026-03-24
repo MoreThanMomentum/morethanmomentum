@@ -216,12 +216,14 @@ window.addEventListener('load', () => {
 });
 
 
-/* --- VIDEO CAROUSEL --- */
+/* --- 3D VIDEO CAROUSEL --- */
 function initVideoCarousel() {
   const track = document.getElementById('videoTrack');
   if (!track) return;
+  track.innerHTML = '';
+  track.style.width = '';
+  track.style.transform = '';
 
-  // Video data — update client/title when you have real videos
   const videos = [
     { num: '01', client: 'Client · Category', title: 'Project Title', src: '' },
     { num: '02', client: 'Client · Category', title: 'Project Title', src: '' },
@@ -231,9 +233,29 @@ function initVideoCarousel() {
     { num: '06', client: 'Client · Category', title: 'Project Title', src: '' },
   ];
 
-  function createSlot(v) {
+  // 3D transform states
+  const STATES = {
+    entering: { tx: '-680px', tz: '-280px', ry: '65deg',  scale: 0.62, opacity: 0,   zi: 1 },
+    left:     { tx: '-310px', tz: '-160px', ry: '42deg',  scale: 0.86, opacity: 0.7,  zi: 3 },
+    center:   { tx: '0px',   tz: '0px',    ry: '0deg',   scale: 1,    opacity: 1,    zi: 5 },
+    right:    { tx: '310px', tz: '-160px', ry: '-42deg', scale: 0.86, opacity: 0.7,  zi: 3 },
+    exiting:  { tx: '680px', tz: '-280px', ry: '-65deg', scale: 0.62, opacity: 0,   zi: 1 },
+  };
+
+  function applyState(el, stateName, animate) {
+    const s = STATES[stateName];
+    el.style.transition = animate
+      ? 'transform 0.88s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.88s ease'
+      : 'none';
+    el.style.transform = `translateX(${s.tx}) translateZ(${s.tz}) rotateY(${s.ry}) scale(${s.scale})`;
+    el.style.opacity = s.opacity;
+    el.style.zIndex  = s.zi;
+    el.dataset.state = stateName;
+  }
+
+  function createSlot(v, stateName) {
     const div = document.createElement('div');
-    div.className = 'video-slot';
+    div.className = 'video-slot-3d';
     div.innerHTML = v.src
       ? `<video src="${v.src}" autoplay muted loop playsinline></video>
          <div class="video-overlay"><div><div class="video-client">${v.client}</div><div class="video-title">${v.title}</div></div></div>`
@@ -242,23 +264,25 @@ function initVideoCarousel() {
            <div class="video-placeholder-label">Your video here</div>
          </div>
          <div class="video-overlay"><div><div class="video-client">${v.client}</div><div class="video-title">${v.title}</div></div></div>`;
+    applyState(div, stateName, false);
     return div;
   }
 
-  // Track: [incoming (off-left)] [slot0] [slot1] [slot2]
-  // Track width: 133.34%, each slot 25% of track = 33.33% of container
-  // Initial translateX: -25% hides the incoming slot off to the left
+  // Initialise with 3 visible slots: left, center, right
+  let nextIndex = 0;
+  function nextVideo() {
+    const v = videos[nextIndex % videos.length];
+    nextIndex++;
+    return v;
+  }
 
-  let nextFromLeft = 5; // index of video that will come in from the left next
-
-  // Build initial 4 slots
-  const incoming = createSlot(videos[nextFromLeft]);
-  track.appendChild(createSlot(videos[0]));
-  track.appendChild(createSlot(videos[1]));
-  track.appendChild(createSlot(videos[2]));
-  track.insertBefore(incoming, track.firstChild);
-
-  nextFromLeft = (nextFromLeft - 1 + videos.length) % videos.length; // → 4
+  // Start: left=v0, center=v1, right=v2, next incoming=v3
+  const leftSlot   = createSlot(nextVideo(), 'left');
+  const centerSlot = createSlot(nextVideo(), 'center');
+  const rightSlot  = createSlot(nextVideo(), 'right');
+  track.appendChild(leftSlot);
+  track.appendChild(centerSlot);
+  track.appendChild(rightSlot);
 
   let animating = false;
 
@@ -266,24 +290,25 @@ function initVideoCarousel() {
     if (animating) return;
     animating = true;
 
-    // Slide track to the right: translateX goes from -25% to 0%
-    track.style.transition = 'transform 0.9s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-    track.style.transform  = 'translateX(0%)';
+    // Create new entering slot (instantly at entering position, off-left)
+    const entering = createSlot(nextVideo(), 'entering');
+    track.insertBefore(entering, track.firstChild);
 
+    // Force reflow so the no-transition positioning registers
+    entering.offsetHeight;
+
+    // Now animate all 4 slots through their next states
+    const stateOrder = ['left', 'center', 'right', 'exiting'];
+    Array.from(track.children).forEach((slot, i) => {
+      applyState(slot, stateOrder[i], true);
+    });
+
+    // After animation ends, remove the exiting slot
     setTimeout(() => {
-      // Remove the last slot (slid off right edge)
-      if (track.lastChild) track.removeChild(track.lastChild);
-
-      // Add new incoming slot at the beginning
-      const newSlot = createSlot(videos[nextFromLeft]);
-      track.insertBefore(newSlot, track.firstChild);
-
-      // Snap back without transition
-      track.style.transition = 'none';
-      track.style.transform  = 'translateX(-25%)';
-
-      // Advance next index
-      nextFromLeft = (nextFromLeft - 1 + videos.length) % videos.length;
+      const exiting = track.querySelector('[data-state="exiting"]');
+      if (exiting && exiting.parentNode === track) {
+        track.removeChild(exiting);
+      }
       animating = false;
     }, 920);
 
