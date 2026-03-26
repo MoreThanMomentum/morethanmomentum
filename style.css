@@ -631,12 +631,12 @@ nav.scrolled .nav-hamburger span { background: var(--black); }
 }
 .contact-heading em { font-style: italic; color: var(--accent-light); }
 .contact-details { margin-top: 4rem; display: flex; flex-direction: column; gap: 2rem; }
-.contact-detail-label { font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; color: #444; margin-bottom: .3rem; }
-.contact-detail-value { font-size: .92rem; color: #888; }
+.contact-detail-label { font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; color: #f9f9f7; margin-bottom: .3rem; }
+.contact-detail-value { font-size: .92rem; color: #f9f9f7; }
 .contact-socials { display: flex; gap: 1rem; margin-top: 3rem; flex-wrap: wrap; }
 .social-link {
   font-size: .7rem; letter-spacing: .12em; text-transform: uppercase;
-  color: #444; text-decoration: none; border: 1px solid #222;
+  color: #f9f9f7; text-decoration: none; border: 1px solid #f9f9f7;
   padding: .5rem 1rem; transition: color .25s, border-color .25s;
 }
 .social-link:hover { color: var(--accent-light); border-color: var(--accent-light); }
