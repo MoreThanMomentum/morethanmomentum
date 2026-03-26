@@ -479,7 +479,7 @@ nav.scrolled .nav-hamburger span { background: var(--black); }
   padding-top: 3rem; margin-top: 3rem; border-top: 1px solid #1e1e1e;
 }
 .stat-num { font-family: var(--serif); font-size: 2.8rem; font-weight: 300; letter-spacing: -.02em; color: var(--white); }
-.stat-label { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: #555; margin-top: .3rem; }
+.stat-label { font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,.5); margin-top: .3rem; }
 .about-right { padding: 7rem 5rem; }
 .about-body { font-size: .95rem; color: var(--mid); line-height: 1.95; margin-bottom: 1.6rem; }
 .about-body strong { color: var(--black); font-weight: 500; }
@@ -537,7 +537,7 @@ nav.scrolled .nav-hamburger span { background: var(--black); }
 }
 .pricing-heading em { font-style: italic; color: var(--accent-light); }
 .pricing-subhead {
-  font-size: .88rem; color: #555; max-width: 480px;
+  font-size: .88rem; color: rgba(255,255,255,.5); max-width: 480px;
   line-height: 1.8; margin-bottom: 4rem;
 }
 .pricing-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1px; background: #1a1a1a; }
@@ -545,26 +545,26 @@ nav.scrolled .nav-hamburger span { background: var(--black); }
 .plan:hover { background: #0f0f0f; }
 .plan.featured { background: var(--white); color: var(--black); }
 .plan.featured:hover { background: #f0f0ee; }
-.plan-label { font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: #555; margin-bottom: 1.5rem; }
+.plan-label { font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: 1.5rem; }
 .plan.featured .plan-label { color: var(--gray); }
 .plan-name { font-family: var(--serif); font-size: 2.2rem; font-weight: 300; margin-bottom: .6rem; letter-spacing: -.01em; }
 .plan.featured .plan-name { color: var(--black); }
 .plan-pricing-note {
-  font-size: .72rem; letter-spacing: .06em; color: #444;
+  font-size: .72rem; letter-spacing: .06em; color: rgba(255,255,255,.5);
   margin-bottom: 1.8rem; font-style: italic;
 }
 .plan.featured .plan-pricing-note { color: var(--gray); }
 .plan-divider { height: 1px; background: #1e1e1e; margin-bottom: 2rem; }
 .plan.featured .plan-divider { background: var(--light); }
 .plan-features { list-style: none; display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem; }
-.plan-features li { display: flex; align-items: flex-start; gap: .8rem; font-size: .85rem; color: #666; line-height: 1.5; }
+.plan-features li { display: flex; align-items: flex-start; gap: .8rem; font-size: .85rem; color: rgba(255,255,255,.5); line-height: 1.5; }
 .plan.featured .plan-features li { color: var(--mid); }
 .plan-features li::before { content: '→'; color: #333; font-size: .75rem; margin-top: .05rem; flex-shrink: 0; }
 .plan.featured .plan-features li::before { color: var(--black); }
 .plan-cta {
   display: inline-flex; align-items: center; gap: .7rem;
   text-decoration: none; font-size: .72rem; letter-spacing: .13em; text-transform: uppercase;
-  color: #555; border-bottom: 1px solid #333; padding-bottom: .25rem;
+  color: #f9f9f7; border-bottom: 1px solid #f9f9f7; padding-bottom: .25rem;
   transition: color .25s, border-color .25s, gap .25s;
 }
 .plan-cta::after { content: '→'; }
@@ -631,7 +631,7 @@ nav.scrolled .nav-hamburger span { background: var(--black); }
 }
 .contact-heading em { font-style: italic; color: var(--accent-light); }
 .contact-details { margin-top: 4rem; display: flex; flex-direction: column; gap: 2rem; }
-.contact-detail-label { font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; color: #f9f9f7; margin-bottom: .3rem; }
+.contact-detail-label { font-size: .68rem; letter-spacing: .15em; text-transform: uppercase; color: rgba(255,255,255,.5); margin-bottom: .3rem; }
 .contact-detail-value { font-size: .92rem; color: #f9f9f7; }
 .contact-socials { display: flex; gap: 1rem; margin-top: 3rem; flex-wrap: wrap; }
 .social-link {
