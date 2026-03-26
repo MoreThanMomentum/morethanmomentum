@@ -69,7 +69,7 @@ document.addEventListener('mousemove', e => {
   requestAnimationFrame(animCursor);
 })();
 
-// Cursor grow on interactive elements
+// Cursor hide on interactive elements
 document.querySelectorAll('a, button, .nav-cta, .plan-cta, .btn-primary, .btn-ghost, .social-link, select').forEach(el => {
   el.addEventListener('mouseenter', () => {
     cursor.style.opacity = '0';
@@ -85,7 +85,7 @@ function updateNav() {
   const isScrolled = scrollY > 60;
   document.getElementById('nav').classList.toggle('scrolled', isScrolled);
 
-const logoImg = document.getElementById('nav-logo-img');
+  const logoImg = document.getElementById('nav-logo-img');
   if (logoImg) {
     logoImg.src = isScrolled ? 'images/blackguylogo.png' : 'images/whiteguylogo.png';
     logoImg.style.opacity = '1';
@@ -100,18 +100,54 @@ const logoImg = document.getElementById('nav-logo-img');
       scanLight.style.display = isScrolled ? 'none' : 'block';
     }
   }
-document.querySelectorAll('.nav-links a').forEach(link => {
+
+  document.querySelectorAll('.nav-links a').forEach(link => {
     link.style.color = isScrolled ? '#0c0c0c' : '#ffffff';
   });
+
   const navLogoText = document.querySelector('.nav-logo-text');
   if (navLogoText) {
     navLogoText.style.color = isScrolled ? '#0c0c0c' : '#ffffff';
   }
+
+  // Hamburger bar color is handled by CSS (nav.scrolled .nav-hamburger span)
 }
 
-// Run on scroll AND on first load
 window.addEventListener('scroll', updateNav);
 window.addEventListener('load', updateNav);
+
+
+/* --- HAMBURGER MENU --- */
+const hamburger      = document.getElementById('navHamburger');
+const mobileNav      = document.getElementById('navMobile');
+const mobileClose    = document.getElementById('navMobileClose');
+const mobileBackdrop = document.getElementById('navMobileBackdrop');
+
+function openMobileNav() {
+  if (!hamburger || !mobileNav) return;
+  hamburger.classList.add('open');
+  mobileNav.classList.add('open');
+  if (mobileBackdrop) mobileBackdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileNav() {
+  if (!hamburger || !mobileNav) return;
+  hamburger.classList.remove('open');
+  mobileNav.classList.remove('open');
+  if (mobileBackdrop) mobileBackdrop.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+if (hamburger) hamburger.addEventListener('click', openMobileNav);
+if (mobileClose) mobileClose.addEventListener('click', closeMobileNav);
+if (mobileBackdrop) mobileBackdrop.addEventListener('click', closeMobileNav);
+
+// Close when a mobile nav link is tapped
+document.querySelectorAll('.nav-mobile-link, .nav-mobile-cta').forEach(link => {
+  link.addEventListener('click', closeMobileNav);
+});
+
 
 /* --- SCROLL REVEAL --- */
 const revealObserver = new IntersectionObserver(entries => {
@@ -125,16 +161,62 @@ const revealObserver = new IntersectionObserver(entries => {
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
 
-/* --- CONTACT FORM --- */
-function handleSubmit(e) {
-  e.preventDefault();
-  const btn = e.target.querySelector('.form-submit');
-  btn.textContent = 'Message Sent ✓';
-  btn.style.background = '#2a2a2a';
-  setTimeout(() => {
-    btn.textContent = 'Send Message';
-    btn.style.background = '';
-  }, 3000);
+/* --- CONTACT FORM (Formspree) ---
+ *
+ * HOW TO SET UP:
+ * 1. Go to https://formspree.io and create a free account
+ * 2. Click "New Form" — set the destination email to morethanmomentum@gmail.com
+ * 3. Formspree will give you a unique form ID (e.g. xyzabc12)
+ * 4. Replace YOUR_FORM_ID below with that ID — done.
+ *
+ * Example: 'https://formspree.io/f/xyzabc12'
+ */
+const FORMSPREE_ENDPOINT = 'https://formspree.io/f/mgopveve';
+
+const contactForm = document.getElementById('contactForm');
+if (contactForm) {
+  contactForm.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('.form-submit');
+
+    // Prevent double-submit
+    if (btn.disabled) return;
+
+    btn.textContent = 'Sending…';
+    btn.disabled = true;
+
+    try {
+      const response = await fetch(FORMSPREE_ENDPOINT, {
+        method: 'POST',
+        body: new FormData(this),
+        headers: { 'Accept': 'application/json' }
+      });
+
+      if (response.ok) {
+        btn.textContent = 'Message Sent ✓';
+        btn.style.background = '#1a3a1a';
+        this.reset();
+        setTimeout(() => {
+          btn.textContent = 'Send Message';
+          btn.style.background = '';
+          btn.disabled = false;
+        }, 4500);
+      } else {
+        const data = await response.json();
+        const errMsg = data?.errors?.[0]?.message || 'Submission failed';
+        throw new Error(errMsg);
+      }
+    } catch (err) {
+      console.error('Form error:', err);
+      btn.textContent = 'Error — please try again';
+      btn.style.background = '#3a1a1a';
+      setTimeout(() => {
+        btn.textContent = 'Send Message';
+        btn.style.background = '';
+        btn.disabled = false;
+      }, 3500);
+    }
+  });
 }
 
 
@@ -154,12 +236,12 @@ function initParticles(canvasId) {
 
   function spawn() {
     return {
-      x:       Math.random() * canvas.width,
-      y:       canvas.height + Math.random() * 30,
-      size:    Math.random() * 2 + 1,
-      speed:   Math.random() * 0.45 + 0.25,
+      x:          Math.random() * canvas.width,
+      y:          canvas.height + Math.random() * 30,
+      size:       Math.random() * 2 + 1,
+      speed:      Math.random() * 0.45 + 0.25,
       maxOpacity: Math.random() * 0.5 + 0.15,
-      drift:   (Math.random() - 0.5) * 0.25,
+      drift:      (Math.random() - 0.5) * 0.25,
     };
   }
 
@@ -173,7 +255,6 @@ function initParticles(canvasId) {
   function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Occasionally add new particle
     if (particles.length < 40 && Math.random() < 0.04) {
       particles.push(spawn());
     }
@@ -183,7 +264,7 @@ function initParticles(canvasId) {
       p.y -= p.speed;
       p.x += p.drift;
 
-      // Fade out in top 30% of canvas so they disappear before white bg
+      // Fade out in top 30% of canvas
       const fadeZone = canvas.height * 0.30;
       let opacity = p.maxOpacity;
       if (p.y < fadeZone) {
@@ -207,7 +288,6 @@ function initParticles(canvasId) {
   animate();
 }
 
-// Initialize particles on all dark sections
 window.addEventListener('load', () => {
   initParticles('particles-hero');
   initParticles('particles-about');
@@ -236,9 +316,9 @@ function initVideoCarousel() {
   // 3D transform states
   const STATES = {
     entering: { tx: '-680px', tz: '-280px', ry: '65deg',  scale: 0.62, opacity: 0,   zi: 1 },
-    left:     { tx: '-310px', tz: '-160px', ry: '42deg',  scale: 0.86, opacity: 0.7,  zi: 3 },
-    center:   { tx: '0px',   tz: '0px',    ry: '0deg',   scale: 1,    opacity: 1,    zi: 5 },
-    right:    { tx: '310px', tz: '-160px', ry: '-42deg', scale: 0.86, opacity: 0.7,  zi: 3 },
+    left:     { tx: '-310px', tz: '-160px', ry: '42deg',  scale: 0.86, opacity: 0.7, zi: 3 },
+    center:   { tx: '0px',   tz: '0px',    ry: '0deg',   scale: 1,    opacity: 1,   zi: 5 },
+    right:    { tx: '310px', tz: '-160px', ry: '-42deg', scale: 0.86, opacity: 0.7, zi: 3 },
     exiting:  { tx: '680px', tz: '-280px', ry: '-65deg', scale: 0.62, opacity: 0,   zi: 1 },
   };
 
@@ -268,7 +348,6 @@ function initVideoCarousel() {
     return div;
   }
 
-  // Initialise with 3 visible slots: left, center, right
   let nextIndex = 0;
   function nextVideo() {
     const v = videos[nextIndex % videos.length];
@@ -276,7 +355,6 @@ function initVideoCarousel() {
     return v;
   }
 
-  // Start: left=v0, center=v1, right=v2, next incoming=v3
   const leftSlot   = createSlot(nextVideo(), 'left');
   const centerSlot = createSlot(nextVideo(), 'center');
   const rightSlot  = createSlot(nextVideo(), 'right');
@@ -290,20 +368,17 @@ function initVideoCarousel() {
     if (animating) return;
     animating = true;
 
-    // Create new entering slot (instantly at entering position, off-left)
     const entering = createSlot(nextVideo(), 'entering');
     track.insertBefore(entering, track.firstChild);
 
-    // Force reflow so the no-transition positioning registers
+    // Force reflow so no-transition positioning registers
     entering.offsetHeight;
 
-    // Now animate all 4 slots through their next states
     const stateOrder = ['left', 'center', 'right', 'exiting'];
     Array.from(track.children).forEach((slot, i) => {
       applyState(slot, stateOrder[i], true);
     });
 
-    // After animation ends, remove the exiting slot
     setTimeout(() => {
       const exiting = track.querySelector('[data-state="exiting"]');
       if (exiting && exiting.parentNode === track) {
