@@ -773,3 +773,10 @@ footer {
   }
   .footer-links { display: none; }
 }
+
+/* --- FORCE HIDE MOBILE NAV ON DESKTOP --- */
+@media (min-width: 1025px) {
+  .nav-hamburger { display: none !important; }
+  .nav-mobile { display: none !important; }
+  .nav-mobile-backdrop { display: none !important; }
+}
