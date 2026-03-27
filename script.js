@@ -81,15 +81,20 @@ if (!isTouchDevice) {
 
 
 /* --- NAV SCROLL --- */
+let isInnerPage = false; // set by mobile multipage logic
+
 function updateNav() {
-  const isScrolled = scrollY > 60;
+  // On mobile inner pages, always treat as scrolled (white nav)
+  const forceScrolled = isInnerPage && window.innerWidth <= 1024;
+  const isScrolled = forceScrolled || scrollY > 60;
+
   document.getElementById('nav').classList.toggle('scrolled', isScrolled);
 
   const logoImg = document.getElementById('nav-logo-img');
   if (logoImg) {
     logoImg.src = isScrolled ? 'images/blackguylogo.png' : 'images/whiteguylogo.png';
     logoImg.style.opacity = '1';
-    logoImg.style.filter = isScrolled ? 'none' : 'none';
+    logoImg.style.filter = 'none';
   }
 
   const navCta = document.querySelector('.nav-cta');
@@ -109,8 +114,6 @@ function updateNav() {
   if (navLogoText) {
     navLogoText.style.color = isScrolled ? '#0c0c0c' : '#ffffff';
   }
-
-  // Hamburger bar color is handled by CSS (nav.scrolled .nav-hamburger span)
 }
 
 window.addEventListener('scroll', updateNav);
@@ -218,6 +221,102 @@ if (contactForm) {
     }
   });
 }
+
+
+/* --- MOBILE MULTI-PAGE MODE ---
+ * On screens ≤1024px, each section acts as its own page.
+ * Nav/hamburger links switch sections instead of scrolling.
+ * Desktop is completely unaffected.
+ */
+function initMobileMultipage() {
+  if (window.innerWidth > 1024) return;
+
+  const heroEl     = document.querySelector('.hero');
+  const tickerEl   = document.querySelector('.ticker');
+  const aboutEl    = document.getElementById('about');
+  const servicesEl = document.getElementById('services');
+  const pricingEl  = document.getElementById('pricing');
+  const workEl     = document.getElementById('work');
+  const processEl  = document.querySelector('.process');
+  const contactEl  = document.getElementById('contact');
+  const footerEl   = document.querySelector('footer');
+
+  // Give process a hookable id if missing
+  if (processEl && !processEl.id) processEl.id = 'process';
+
+  const allSections = [heroEl, tickerEl, aboutEl, servicesEl, pricingEl,
+                       workEl, processEl, contactEl].filter(Boolean);
+
+  function hideAll() {
+    allSections.forEach(el => { el.style.display = 'none'; });
+    if (footerEl) footerEl.style.display = 'none';
+  }
+
+  function showSection(targetId) {
+    hideAll();
+
+    if (!targetId || targetId === '' || targetId === 'hero') {
+      // Hero page: show hero + ticker
+      if (heroEl)   heroEl.style.display   = '';
+      if (tickerEl) tickerEl.style.display = '';
+      isInnerPage = false;
+    } else {
+      // Inner page: show the target section + footer
+      const target = document.getElementById(targetId);
+      if (target) target.style.display = '';
+      if (footerEl) footerEl.style.display = '';
+      isInnerPage = true;
+
+      // Re-init carousel if switching to work page
+      if (targetId === 'work') initVideoCarousel();
+
+      // Re-init particles if switching to a dark section
+      if (targetId === 'about')   initParticles('particles-about');
+      if (targetId === 'pricing') initParticles('particles-pricing');
+      if (targetId === 'contact') initParticles('particles-contact');
+    }
+
+    // Scroll to top & update nav colour
+    window.scrollTo(0, 0);
+    updateNav();
+
+    // Re-trigger reveal animations for newly visible elements
+    document.querySelectorAll('.reveal').forEach(el => el.classList.remove('visible'));
+    setTimeout(() => {
+      document.querySelectorAll('.reveal').forEach(el => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight) el.classList.add('visible');
+      });
+    }, 80);
+  }
+
+  // Start on hero
+  showSection('hero');
+
+  // Intercept ALL hash-link clicks on mobile
+  document.addEventListener('click', e => {
+    const link = e.target.closest('a[href]');
+    if (!link) return;
+    const href = link.getAttribute('href');
+    if (!href || !href.startsWith('#')) return;
+    e.preventDefault();
+    const targetId = href.slice(1);
+    closeMobileNav();
+    showSection(targetId);
+  });
+
+  // Logo click always goes back to hero
+  const navLogo = document.querySelector('.nav-logo');
+  if (navLogo) {
+    navLogo.addEventListener('click', e => {
+      if (window.innerWidth > 1024) return;
+      e.preventDefault();
+      showSection('hero');
+    });
+  }
+}
+
+window.addEventListener('load', initMobileMultipage);
 
 
 /* --- FLOATING PARTICLES --- */

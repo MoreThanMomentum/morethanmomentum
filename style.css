@@ -806,6 +806,33 @@ footer {
   .nav-mobile-backdrop { display: none !important; }
 }
 
+/* --- MOBILE MULTI-PAGE: section spacing & nav ---
+ * Sections shown as standalone pages need top padding to clear the fixed nav.
+ * Only applies when JS has hidden other sections (mobile/tablet).
+ */
+@media (max-width: 1024px) {
+  /* Non-hero sections used as standalone pages need breathing room under nav */
+  .about, .services, .pricing, .portfolio, .process, .contact {
+    padding-top: max(5rem, calc(56px + 2.5rem));
+  }
+
+  /* Hero already fills full viewport — keep as-is */
+
+  /* Inner page: ensure white nav is always visible */
+  body.inner-page #nav,
+  body.inner-page nav.scrolled {
+    background: rgba(244,244,242,.98) !important;
+    border-bottom: 1px solid var(--light);
+  }
+  body.inner-page .nav-hamburger span { background: var(--black) !important; }
+}
+
+@media (max-width: 640px) {
+  .about, .services, .pricing, .portfolio, .process, .contact {
+    padding-top: max(4rem, calc(56px + 2rem));
+  }
+}
+
 /* --- HIDE CUSTOM CURSOR ON TOUCH DEVICES --- */
 @media (pointer: coarse) {
   .cursor,
