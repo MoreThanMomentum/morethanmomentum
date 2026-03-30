@@ -441,14 +441,14 @@ function initVideoCarousel() {
   track.style.width = '';
   track.style.transform = '';
 
-  const videos = [
-    { num: '01', client: 'colesblanco · Running Content', title: '900K+ Views — Niche Running Video', src: 'videos/Stravarunnames1.mp4' },
-    { num: '02', client: 'Client · Category', title: 'Project Title', src: '' },
-    { num: '03', client: 'Client · Category', title: 'Project Title', src: '' },
- { num: '04', client: 'mattadamsonlive · Magic Content', title: 'Filmed On Site and Edited to Grow Audience Engagement', src: 'videos/FishHook1.mp4' },
-    { num: '05', client: 'Client · Category', title: 'Project Title', src: '' },
-    { num: '06', client: 'Client · Category', title: 'Project Title', src: '' },
-  ];
+const videos = [
+  { num: '01', client: 'colesblanco · Running Content', title: '900K+ Views — Proven Hook and Script Provided', src: 'videos/Stravarunnames1.mp4' },
+  { num: '02', client: 'mattadamsonlive · Magic Content', title: 'Filmed On Site and Edited to Grow Audience Engagement', src: 'videos/FishHook1.mp4' },
+  { num: '03', client: 'Outpace · Business Content', title: 'Ai B-Roll Generated For Simplifying Video Creation', src: 'videos/Outpaceskit1.mp4' },
+  { num: '04', client: 'Client · Category', title: 'Project Title', src: '' },
+  { num: '05', client: 'Client · Category', title: 'Project Title', src: '' },
+  { num: '06', client: 'Client · Category', title: 'Project Title', src: '' },
+];
 
   // 3D transform states
   const STATES = {
@@ -489,7 +489,7 @@ div.addEventListener('click', () => {
   // Pause the carousel auto-advance
   clearInterval(autoTimer);
 
-  window._openVideoLightbox(vid);
+  window._openVideoLightbox(vid, v.client, v.title);
 
   // Resume carousel when lightbox closes
   const waitForClose = setInterval(() => {
@@ -504,57 +504,58 @@ div.addEventListener('click', () => {
     return div;
   }
 
-let nextIndex = 0;
-  function nextVideo() {
-    const v = videos[nextIndex % videos.length];
-    nextIndex++;
-    return v;
+const n = videos.length;
+let centerIndex = 1;
+
+function getVideo(idx) {
+  return videos[((idx % n) + n) % n];
+}
+
+const leftSlot   = createSlot(getVideo(centerIndex - 1), 'left');
+const centerSlot = createSlot(getVideo(centerIndex),     'center');
+const rightSlot  = createSlot(getVideo(centerIndex + 1), 'right');
+track.appendChild(leftSlot);
+track.appendChild(centerSlot);
+track.appendChild(rightSlot);
+
+let animating = false;
+
+function advance(direction) {
+  if (animating) return;
+  animating = true;
+
+  if (direction === 'next') {
+    centerIndex = ((centerIndex - 1) + n) % n;
+    const entering = createSlot(getVideo(centerIndex - 1), 'entering');
+    track.insertBefore(entering, track.firstChild);
+    entering.offsetHeight;
+    const stateOrder = ['left', 'center', 'right', 'exiting'];
+    Array.from(track.children).forEach((slot, i) => applyState(slot, stateOrder[i], true));
+  } else {
+    centerIndex = (centerIndex + 1) % n;
+    const entering = createSlot(getVideo(centerIndex + 1), 'exiting');
+    entering.style.transition = 'none';
+    entering.style.transform = `translateX(680px) translateZ(-280px) rotateY(-65deg) scale(0.62)`;
+    entering.style.opacity = '0';
+    entering.style.zIndex = '1';
+    entering.dataset.state = 'entering-rev';
+    track.appendChild(entering);
+    entering.offsetHeight;
+    const slots = Array.from(track.children);
+    applyState(slots[0], 'exiting', true);
+    applyState(slots[1], 'left',    true);
+    applyState(slots[2], 'center',  true);
+    applyState(slots[3], 'right',   true);
   }
 
-  const leftSlot   = createSlot(nextVideo(), 'left');
-  const centerSlot = createSlot(nextVideo(), 'center');
-  const rightSlot  = createSlot(nextVideo(), 'right');
-  track.appendChild(leftSlot);
-  track.appendChild(centerSlot);
-  track.appendChild(rightSlot);
-
-  let animating = false;
-
-  function advance(direction) {
-    if (animating) return;
-    animating = true;
-
-    if (direction === 'next') {
-      const entering = createSlot(nextVideo(), 'entering');
-      track.insertBefore(entering, track.firstChild);
-      entering.offsetHeight;
-      const stateOrder = ['left', 'center', 'right', 'exiting'];
-      Array.from(track.children).forEach((slot, i) => applyState(slot, stateOrder[i], true));
-    } else {
-      nextIndex = ((nextIndex - 4) % videos.length + videos.length) % videos.length;
-      const entering = createSlot(nextVideo(), 'entering');
-      entering.style.transition = 'none';
-      entering.style.transform = `translateX(680px) translateZ(-280px) rotateY(-65deg) scale(0.62)`;
-      entering.style.opacity = '0';
-      entering.style.zIndex = '1';
-      entering.dataset.state = 'entering-rev';
-      track.appendChild(entering);
-      entering.offsetHeight;
-      const slots = Array.from(track.children);
-      applyState(slots[0], 'exiting', true);
-      applyState(slots[1], 'left',    true);
-      applyState(slots[2], 'center',  true);
-      applyState(slots[3], 'right',   true);
-    }
-
-    setTimeout(() => {
-      const dead = direction === 'next'
-        ? track.querySelector('[data-state="exiting"]')
-        : track.children[0];
-      if (dead && dead.parentNode === track) track.removeChild(dead);
-      animating = false;
-    }, 920);
-  }
+  setTimeout(() => {
+    const dead = direction === 'next'
+      ? track.querySelector('[data-state="exiting"]')
+      : track.children[0];
+    if (dead && dead.parentNode === track) track.removeChild(dead);
+    animating = false;
+  }, 920);
+}
 
   let autoTimer = setInterval(() => advance('next'), 5000);
 
@@ -608,12 +609,12 @@ function initVideoLightbox() {
   // Keep custom cursor visible above the lightbox
 const cursorEl = document.getElementById('cursor');
 const ringEl   = document.getElementById('cursorRing');
-if (cursorEl) cursorEl.style.zIndex = '10001';
-if (ringEl)   ringEl.style.zIndex   = '10001';
 
-  const inner = document.createElement('div');
+
+const inner = document.createElement('div');
   inner.style.cssText = `
     width: min(420px, 90vw);
+    max-height: 85dvh;
     aspect-ratio: 9/16;
     border-radius: 14px;
     overflow: hidden;
@@ -645,20 +646,40 @@ closeBtn.addEventListener('mouseleave', () => {
 
   let activeVideo = null;
 
-  function openLightbox(originalVideo) {
-    // Clone the video so we have a fresh independent element
+function openLightbox(originalVideo, client, title) {
+    if (cursorEl) cursorEl.style.zIndex = '10001';
+    if (ringEl)   ringEl.style.zIndex   = '10001';
     const clone = originalVideo.cloneNode(true);
     clone.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
-    clone.muted = false;  // unmute in lightbox
+    clone.muted = false;
     clone.loop = true;
     clone.play();
 
+    // Hover info overlay
+    const infoOverlay = document.createElement('div');
+    infoOverlay.style.cssText = `
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 2rem 1.4rem 1.4rem;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+      opacity: 0; transition: opacity 0.3s ease;
+      pointer-events: none;
+    `;
+    infoOverlay.innerHTML = `
+      <div style="font-size:.68rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:.35rem;">${client || ''}</div>
+      <div style="font-size:1rem;font-weight:500;color:#fff;line-height:1.3;">${title || ''}</div>
+    `;
+
     inner.innerHTML = '';
     inner.appendChild(clone);
+    inner.appendChild(infoOverlay);
     activeVideo = clone;
 
+    // Show info on hover
+    inner.addEventListener('mouseenter', () => infoOverlay.style.opacity = '1');
+    inner.addEventListener('mouseleave', () => infoOverlay.style.opacity = '0');
+
     overlay.style.pointerEvents = 'all';
-    overlay.offsetHeight; // force reflow
+    overlay.offsetHeight;
     overlay.style.opacity = '1';
     inner.style.transform = 'scale(1)';
     document.body.style.overflow = 'hidden';
