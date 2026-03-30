@@ -442,10 +442,10 @@ function initVideoCarousel() {
   track.style.transform = '';
 
   const videos = [
-    { num: '01', client: 'colesblanco · Running Content', title: '900K+ Views — Niche Running Video', src: 'videos/StravaRunNames.mp4' },
+    { num: '01', client: 'colesblanco · Running Content', title: '900K+ Views — Niche Running Video', src: 'videos/StravaRunNames1.mp4' },
     { num: '02', client: 'Client · Category', title: 'Project Title', src: '' },
     { num: '03', client: 'Client · Category', title: 'Project Title', src: '' },
- { num: '04', client: 'mattadamsonlive · Magic Content', title: 'Filmed On Site and Edited to Grow Audience Engagement', src: 'videos/FishHook.mp4' },
+ { num: '04', client: 'mattadamsonlive · Magic Content', title: 'Filmed On Site and Edited to Grow Audience Engagement', src: 'videos/FishHook1.mp4' },
     { num: '05', client: 'Client · Category', title: 'Project Title', src: '' },
     { num: '06', client: 'Client · Category', title: 'Project Title', src: '' },
   ];
