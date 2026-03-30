@@ -56,7 +56,8 @@ if (!isTouchDevice) {
     }
 
     // Swap between white and black logo based on background
-    const logoSrc = isDark ? 'images/whiteguylogo.png' : 'images/blackguylogo.png';
+    const onServiceCard = !!el?.closest('.svc');
+const logoSrc = (!onServiceCard && isDark) ? 'images/whiteguylogo.png' : 'images/blackguylogo.png';
     if (cursorImg) cursorImg.src = logoSrc;
     if (cursorRingImg) cursorRingImg.src = logoSrc;
   });
@@ -126,6 +127,7 @@ const mobileNav      = document.getElementById('navMobile');
 const mobileClose    = document.getElementById('navMobileClose');
 const mobileBackdrop = document.getElementById('navMobileBackdrop');
 
+
 function openMobileNav() {
   if (!hamburger || !mobileNav) return;
   hamburger.classList.add('open');
@@ -145,6 +147,34 @@ function closeMobileNav() {
 if (hamburger) hamburger.addEventListener('click', openMobileNav);
 if (mobileClose) mobileClose.addEventListener('click', closeMobileNav);
 if (mobileBackdrop) mobileBackdrop.addEventListener('click', closeMobileNav);
+
+/* --- CLOSE MOBILE NAV ON RESIZE --- */
+let lastWindowWidth = window.innerWidth;
+
+window.addEventListener('resize', () => {
+  const currentWidth = window.innerWidth;
+  closeMobileNav();
+
+  // Crossed back to desktop — restore all sections
+  if (currentWidth > 1024 && lastWindowWidth <= 1024) {
+    document.querySelectorAll('.hero, #about, #services, #pricing, #work, .process, #contact, footer').forEach(el => {
+      if (el) el.style.display = '';
+    });
+    const ticker = document.querySelector('.ticker');
+    if (ticker) {
+      ticker.style.position = '';
+      ticker.style.top = '';
+      ticker.style.left = '';
+      ticker.style.right = '';
+      ticker.style.zIndex = '';
+      ticker.style.display = '';
+    }
+    isInnerPage = false;
+    updateNav();
+  }
+
+  lastWindowWidth = currentWidth;
+});
 
 // Close when a mobile nav link is tapped
 document.querySelectorAll('.nav-mobile-link, .nav-mobile-cta').forEach(link => {
@@ -412,7 +442,7 @@ function initVideoCarousel() {
   track.style.transform = '';
 
   const videos = [
-    { num: '01', client: 'Client · Category', title: 'Project Title', src: '' },
+    { num: '01', client: 'Blanco · Running Content', title: '900K+ Views — Niche Running Video', src: 'videos/StravaRunNames.mp4' },
     { num: '02', client: 'Client · Category', title: 'Project Title', src: '' },
     { num: '03', client: 'Client · Category', title: 'Project Title', src: '' },
     { num: '04', client: 'Client · Category', title: 'Project Title', src: '' },
@@ -451,6 +481,25 @@ function initVideoCarousel() {
            <div class="video-placeholder-label">Your video here</div>
          </div>
          <div class="video-overlay"><div><div class="video-client">${v.client}</div><div class="video-title">${v.title}</div></div></div>`;
+         // Click to expand
+div.addEventListener('click', () => {
+  const vid = div.querySelector('video');
+  if (!vid) return;
+
+  // Pause the carousel auto-advance
+  clearInterval(autoTimer);
+
+  window._openVideoLightbox(vid);
+
+  // Resume carousel when lightbox closes
+  const waitForClose = setInterval(() => {
+    const lb = document.getElementById('videoLightbox');
+    if (lb && parseFloat(lb.style.opacity) === 0) {
+      clearInterval(waitForClose);
+      autoTimer = setInterval(() => advance('next'), 5000);
+    }
+  }, 400);
+});
     applyState(div, stateName, false);
     return div;
   }
@@ -541,4 +590,111 @@ let nextIndex = 0;
     }
   }, { passive: true });
 }
-window.addEventListener('load', initVideoCarousel);
+
+/* --- VIDEO LIGHTBOX --- */
+function initVideoLightbox() {
+  // Create overlay element once
+  const overlay = document.createElement('div');
+  overlay.id = 'videoLightbox';
+  overlay.style.cssText = `
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.92);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.35s ease;
+    cursor: pointer;
+  `;
+
+  // Keep custom cursor visible above the lightbox
+const cursorEl = document.getElementById('cursor');
+const ringEl   = document.getElementById('cursorRing');
+if (cursorEl) cursorEl.style.zIndex = '10001';
+if (ringEl)   ringEl.style.zIndex   = '10001';
+
+  const inner = document.createElement('div');
+  inner.style.cssText = `
+    width: min(420px, 90vw);
+    aspect-ratio: 9/16;
+    border-radius: 14px;
+    overflow: hidden;
+    transform: scale(0.88);
+    transition: transform 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    cursor: default;
+    position: relative;
+  `;
+
+  const closeBtn = document.createElement('button');
+  closeBtn.innerHTML = '✕';
+  closeBtn.style.cssText = `
+    position: absolute; top: 14px; right: 14px; z-index: 10;
+    background: rgba(0,0,0,0.55); color: #fff;
+    border: none; border-radius: 50%;
+    width: 34px; height: 34px; font-size: 15px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  `;
+  closeBtn.addEventListener('mouseenter', () => {
+  if (cursorEl) cursorEl.style.opacity = '1';
+});
+closeBtn.addEventListener('mouseleave', () => {
+  if (cursorEl) cursorEl.style.opacity = '1';
+});
+
+  overlay.appendChild(inner);
+  overlay.appendChild(closeBtn);
+  document.body.appendChild(overlay);
+
+  let activeVideo = null;
+
+  function openLightbox(originalVideo) {
+    // Clone the video so we have a fresh independent element
+    const clone = originalVideo.cloneNode(true);
+    clone.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+    clone.muted = false;  // unmute in lightbox
+    clone.loop = true;
+    clone.play();
+
+    inner.innerHTML = '';
+    inner.appendChild(clone);
+    activeVideo = clone;
+
+    overlay.style.pointerEvents = 'all';
+    overlay.offsetHeight; // force reflow
+    overlay.style.opacity = '1';
+    inner.style.transform = 'scale(1)';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeLightbox() {
+    overlay.style.opacity = '0';
+    inner.style.transform = 'scale(0.88)';
+    overlay.style.pointerEvents = 'none';
+    document.body.style.overflow = '';
+    if (activeVideo) {
+      activeVideo.pause();
+      activeVideo = null;
+    }
+    setTimeout(() => { inner.innerHTML = ''; }, 350);
+    if (cursorEl) cursorEl.style.zIndex = '';
+if (ringEl)   ringEl.style.zIndex   = '';
+  }
+
+  // Click on dark overlay background = close
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeLightbox();
+  });
+
+  closeBtn.addEventListener('click', closeLightbox);
+
+  // ESC key closes too
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
+  // Expose so the carousel can call openLightbox
+  window._openVideoLightbox = openLightbox;
+}
+
+window.addEventListener('load', () => {
+  initVideoLightbox();
+  initVideoCarousel();
+});
