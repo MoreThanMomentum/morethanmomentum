@@ -572,28 +572,36 @@ window.addEventListener('load', () => {
   // ── DESKTOP: cursor shake detection ──────────────────────
   if (!window.matchMedia('(pointer: coarse)').matches) {
 
-    let lastX      = 0;
+    // Track from last direction-change point, NOT last mousemove event.
+    // mousemove fires every ~4ms so per-event dx is only 1-5px — useless.
+    // Instead we measure accumulated travel since the last reversal.
+    let anchorX    = 0;      // x position at last direction change
     let lastDir    = null;
     let dirChanges = 0;
     let resetTimer = null;
     let triggered  = false;
 
-    const CHANGES_NEEDED = 5;   // direction reversals required
-    const MIN_DIST       = 55;  // minimum px per movement to count
-    const WINDOW_MS      = 800; // time to complete the shake
+    const CHANGES_NEEDED = 5;    // direction reversals needed
+    const MIN_DIST       = 80;   // px of travel per leg to count
+    const WINDOW_MS      = 900;  // full shake must complete within this
 
     document.addEventListener('mousemove', e => {
       if (triggered) return;
 
-      const dx  = e.clientX - lastX;
-      lastX = e.clientX;
-
-      if (Math.abs(dx) < MIN_DIST) return;
+      const dx  = e.clientX - anchorX;
+      if (Math.abs(dx) < MIN_DIST) return; // haven't travelled far enough yet
 
       const dir = dx > 0 ? 'r' : 'l';
-      if (dir === lastDir) return;
 
-      lastDir = dir;
+      if (dir === lastDir) {
+        // Still going the same way — push anchor forward to keep measuring
+        anchorX = e.clientX;
+        return;
+      }
+
+      // Direction reversed — count it
+      anchorX  = e.clientX;
+      lastDir  = dir;
       dirChanges++;
 
       clearTimeout(resetTimer);
