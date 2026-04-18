@@ -618,22 +618,23 @@ window.addEventListener('load', () => {
     });
 
     function fireEasterEgg(x, y) {
-      // Badge that appears near the cursor
-      const badge = document.createElement('div');
+      // Clickable badge — user must click within 3 seconds or it dismisses and resets
+      const badge = document.createElement('button');
       badge.textContent = '🏃 MTM Tools →';
       badge.style.cssText = `
         position: fixed;
-        left: ${Math.min(x + 18, window.innerWidth - 160)}px;
+        left: ${Math.min(x + 18, window.innerWidth - 175)}px;
         top:  ${Math.max(y - 48, 12)}px;
         background: #2D6BE4;
         color: #f4f4f2;
-        padding: 9px 16px;
+        padding: 10px 18px;
         border-radius: 8px;
+        border: none;
         font-family: 'DM Sans', sans-serif;
         font-size: 13px;
         font-weight: 500;
         z-index: 99999;
-        pointer-events: none;
+        cursor: pointer;
         white-space: nowrap;
         box-shadow: 0 4px 24px rgba(45,107,228,.5);
         opacity: 0;
@@ -648,13 +649,26 @@ window.addEventListener('load', () => {
         badge.style.transform = 'translateY(0) scale(1)';
       });
 
-      // Navigate after short pause
-      setTimeout(() => {
+      function dismiss() {
+        badge.style.opacity   = '0';
+        badge.style.transform = 'translateY(6px) scale(0.92)';
+        setTimeout(() => { if (badge.parentNode) badge.parentNode.removeChild(badge); }, 250);
+        // Reset everything so it can be triggered again
+        triggered  = false;
+        dirChanges = 0;
+        lastDir    = null;
+        anchorX    = 0;
+      }
+
+      // Click → navigate
+      badge.addEventListener('click', () => {
+        clearTimeout(dismissTimer);
         window.location.href = '/tools.html';
-      }, 650);
+      });
+
+      // 3 seconds with no click → dismiss and full reset
+      const dismissTimer = setTimeout(dismiss, 3000);
     }
   }
-
-
 
 })();
