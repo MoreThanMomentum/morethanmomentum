@@ -560,3 +560,93 @@ window.addEventListener('load', () => {
   initVideoLightbox();
   initVideoCarousel();
 });
+
+
+/* ============================================================
+   EASTER EGG — SPRINT TO TOOLS
+   Desktop: shake the cursor rapidly left-right to unlock /tools
+   Mobile:  tap the nav logo 5x quickly
+   ============================================================ */
+(function() {
+
+  // ── DESKTOP: cursor shake detection ──────────────────────
+  if (!window.matchMedia('(pointer: coarse)').matches) {
+
+    let lastX      = 0;
+    let lastDir    = null;
+    let dirChanges = 0;
+    let resetTimer = null;
+    let triggered  = false;
+
+    const CHANGES_NEEDED = 5;   // direction reversals required
+    const MIN_DIST       = 55;  // minimum px per movement to count
+    const WINDOW_MS      = 800; // time to complete the shake
+
+    document.addEventListener('mousemove', e => {
+      if (triggered) return;
+
+      const dx  = e.clientX - lastX;
+      lastX = e.clientX;
+
+      if (Math.abs(dx) < MIN_DIST) return;
+
+      const dir = dx > 0 ? 'r' : 'l';
+      if (dir === lastDir) return;
+
+      lastDir = dir;
+      dirChanges++;
+
+      clearTimeout(resetTimer);
+      resetTimer = setTimeout(() => {
+        dirChanges = 0;
+        lastDir    = null;
+      }, WINDOW_MS);
+
+      if (dirChanges >= CHANGES_NEEDED) {
+        triggered  = true;
+        dirChanges = 0;
+        fireEasterEgg(e.clientX, e.clientY);
+      }
+    });
+
+    function fireEasterEgg(x, y) {
+      // Badge that appears near the cursor
+      const badge = document.createElement('div');
+      badge.textContent = '🏃 MTM Tools →';
+      badge.style.cssText = `
+        position: fixed;
+        left: ${Math.min(x + 18, window.innerWidth - 160)}px;
+        top:  ${Math.max(y - 48, 12)}px;
+        background: #2D6BE4;
+        color: #f4f4f2;
+        padding: 9px 16px;
+        border-radius: 8px;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        z-index: 99999;
+        pointer-events: none;
+        white-space: nowrap;
+        box-shadow: 0 4px 24px rgba(45,107,228,.5);
+        opacity: 0;
+        transform: translateY(6px) scale(0.92);
+        transition: opacity .22s ease, transform .22s ease;
+      `;
+      document.body.appendChild(badge);
+
+      // Animate in
+      requestAnimationFrame(() => {
+        badge.style.opacity   = '1';
+        badge.style.transform = 'translateY(0) scale(1)';
+      });
+
+      // Navigate after short pause
+      setTimeout(() => {
+        window.location.href = '/tools.html';
+      }, 650);
+    }
+  }
+
+
+
+})();

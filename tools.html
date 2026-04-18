@@ -6,7 +6,16 @@
   <title>MTM Tools — Internal Dashboard</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    .mobile-block { display: none; }
+    @media (max-width: 1024px) {
+      .mobile-block { display: flex; min-height: 100vh; align-items: center; justify-content: center; padding: 32px; background: var(--black); flex-direction: column; text-align: center; gap: 20px; }
+      #dashboard, #login-screen, #tool-panel { display: none !important; }
+      .mobile-block-icon { font-size: 40px; }
+      .mobile-block-title { font-family: var(--speed); font-weight: 700; font-size: 28px; color: var(--white); }
+      .mobile-block-body { font-size: 14px; color: var(--gray); line-height: 1.7; max-width: 320px; }
+      .mobile-block-back { display: inline-block; margin-top: 8px; background: var(--accent); color: var(--white); padding: 12px 24px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 500; }
+    }
+  </style>
     :root {
       --black:        #0c0c0c;
       --dark:         #111111;
@@ -162,6 +171,14 @@
   </style>
 </head>
 <body>
+
+<!-- MOBILE BLOCK -->
+<div class="mobile-block">
+  <div class="mobile-block-icon">🖥️</div>
+  <div class="mobile-block-title">Desktop Only</div>
+  <div class="mobile-block-body">MTM Tools is designed for desktop use. Open it on your computer to run prospect research and download reports.</div>
+  <a href="index.html" class="mobile-block-back">← Back to Site</a>
+</div>
 
 <!-- LOGIN -->
 <div id="login-screen">
