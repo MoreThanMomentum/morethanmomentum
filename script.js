@@ -582,8 +582,8 @@ window.addEventListener('load', () => {
     let triggered  = false;
 
     const CHANGES_NEEDED = 5;    // direction reversals needed
-    const MIN_DIST       = 80;   // px of travel per leg to count
-    const WINDOW_MS      = 900;  // full shake must complete within this
+    const MIN_DIST       = 160;  // px of travel per leg — wide sweeps feel like a real sprint
+    const WINDOW_MS      = 1400; // wider window to allow for the bigger movements
 
     document.addEventListener('mousemove', e => {
       if (triggered) return;
