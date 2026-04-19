@@ -76,10 +76,12 @@ export async function onRequestPost(context) {
       'https://www.googleapis.com/auth/drive',
     ]);
 
-    // Create the presentation (ownership transferred to MTM user during creation)
-    const presentationId = await createPresentation(report, accessToken, env.MTM_GOOGLE_EMAIL);
+    // Create the presentation inside MTM's shared reports folder
+    const presentationId = await createPresentation(
+      report, accessToken, env.MTM_GOOGLE_EMAIL, env.MTM_REPORTS_FOLDER_ID
+    );
 
-    // Share with MTM Google account as writer (in case ownership transfer partially failed)
+    // Share with MTM Google account as writer (belt-and-suspenders)
     await sharePresentation(presentationId, env.MTM_GOOGLE_EMAIL, accessToken);
 
     const url = `https://docs.google.com/presentation/d/${presentationId}/edit`;
@@ -97,20 +99,26 @@ export async function onRequestPost(context) {
 
 // ── PRESENTATION BUILDER ──────────────────────────────────────────────────────
 
-async function createPresentation(report, token, mtmEmail) {
+async function createPresentation(report, token, mtmEmail, mtmReportsFolder) {
   const ghl = report.ghl || {};
   const ga4 = report.ga4 || {};
 
   const title = `${report.client.name} — ${report.period.label} Performance Report`;
 
-  // Step 1: Create blank presentation via Drive API (more permissive than Slides API direct creation)
+  // Step 1: Create blank presentation inside MTM's shared reports folder
+  // This creates the file in the MTM user's Drive quota (not the service account's zero-quota space)
+  const createBody = {
+    name: title,
+    mimeType: 'application/vnd.google-apps.presentation',
+  };
+  if (mtmReportsFolder) {
+    createBody.parents = [mtmReportsFolder];
+  }
+
   const createResp = await fetch(`${DRIVE_BASE}/files`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      name: title,
-      mimeType: 'application/vnd.google-apps.presentation',
-    }),
+    body: JSON.stringify(createBody),
   });
   const driveFile = await createResp.json();
   const pid = driveFile.id;
