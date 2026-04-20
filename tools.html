@@ -212,11 +212,61 @@
     .btn-slides:hover { border-color: var(--accent); background: rgba(45,107,228,.08); }
     .btn-slides:disabled { opacity: .4; cursor: not-allowed; }
 
+    /* ── PROPOSAL TOOL STYLES ──────────────────── */
+    .proposal-wrap { display: none; flex-direction: column; gap: 14px; }
+    .proposal-wrap.show { display: flex; }
+    .proposal-header { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 20px 22px; }
+    .proposal-biz-name { font-family: var(--speed); font-weight: 700; font-size: 22px; }
+    .proposal-contact { font-size: 13px; color: var(--gray); margin-top: 2px; }
+    .proposal-pkg-tag { display: inline-block; margin-top: 8px; background: rgba(45,107,228,.12); border: 1px solid rgba(45,107,228,.25); border-radius: 5px; padding: 3px 10px; font-size: 11px; font-weight: 500; color: var(--accent-light); letter-spacing: .05em; }
+    .proposal-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .proposal-sec-head { padding: 13px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+    .proposal-sec-icon { font-size: 13px; }
+    .proposal-sec-title { font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-light); }
+    .proposal-sec-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .proposal-item { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; color: rgba(255,255,255,.85); line-height: 1.55; }
+    .proposal-item::before { content: '→'; color: var(--accent-light); flex-shrink: 0; font-size: 11px; margin-top: 2px; }
+    .proposal-item.pain::before { content: '⚠'; color: var(--yellow); }
+    .proposal-item.tip::before { content: '💡'; color: var(--yellow); }
+    .proposal-item.step::before { content: '✓'; color: var(--green); }
+    .svc-row { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+    .svc-row:last-child { border-bottom: none; }
+    .svc-name { font-size: 14px; font-weight: 500; color: var(--white); margin-bottom: 3px; }
+    .svc-desc { font-size: 12px; color: var(--gray); line-height: 1.55; }
+    .invest-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .invest-card { background: rgba(255,255,255,.03); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+    .invest-card.highlight { border-color: rgba(45,107,228,.35); background: rgba(45,107,228,.06); }
+    .invest-label { font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--gray); margin-bottom: 6px; }
+    .invest-value { font-family: var(--speed); font-weight: 700; font-size: 24px; color: var(--white); line-height: 1; }
+    .invest-value.green { color: var(--green); }
+    .invest-value.blue { color: var(--accent-light); }
+    .invest-sub { font-size: 11px; color: var(--mid); margin-top: 4px; }
+    .invest-note { font-size: 12px; color: var(--gray); line-height: 1.6; padding: 12px 14px; background: rgba(245,197,24,.06); border: 1px solid rgba(245,197,24,.15); border-radius: 8px; margin-top: 4px; }
+    .roi-box { background: rgba(74,222,128,.06); border: 1px solid rgba(74,222,128,.2); border-radius: 8px; padding: 16px 18px; }
+    .roi-headline { font-family: var(--speed); font-weight: 700; font-size: 18px; color: var(--green); margin-bottom: 6px; }
+    .roi-detail { font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.6; }
+    .timeline-step { display: grid; grid-template-columns: 90px 1fr; gap: 12px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+    .timeline-step:last-child { border-bottom: none; }
+    .timeline-days { font-size: 12px; font-weight: 500; color: var(--accent-light); padding-top: 1px; }
+    .timeline-phase { font-size: 13px; font-weight: 500; color: var(--white); }
+    .timeline-desc { font-size: 12px; color: var(--gray); margin-top: 2px; }
+    .selling-tips-section { border-color: rgba(245,197,24,.25) !important; }
+    .selling-tips-section .proposal-sec-head { border-bottom-color: rgba(245,197,24,.15); }
+    .selling-tips-section .proposal-sec-title { color: var(--yellow); }
+    .proposal-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .btn-contract { flex: 1; background: transparent; border: 1px solid rgba(74,222,128,.4); color: var(--green); border-radius: 8px; padding: 13px; font-family: var(--sans); font-size: 13px; font-weight: 500; cursor: pointer; transition: border-color .2s, background .2s; }
+    .btn-contract:hover { border-color: var(--green); background: rgba(74,222,128,.08); }
+    .panel-select { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; font-family: var(--sans); font-size: 14px; color: var(--white); outline: none; transition: border-color .2s; width: 100%; appearance: none; }
+    .panel-select:focus { border-color: var(--accent); }
+    .panel-textarea { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 11px 14px; font-family: var(--sans); font-size: 14px; color: var(--white); outline: none; transition: border-color .2s; width: 100%; resize: vertical; min-height: 80px; }
+    .panel-textarea::placeholder { color: var(--mid); }
+    .panel-textarea:focus { border-color: var(--accent); }
+
     @media (max-width: 640px) {
       .dash-header { padding: 0 20px; } .dash-main { padding: 36px 20px; }
       .dash-intro-heading { font-size: 36px; } .panel-inner { max-width: 100%; }
       .social-grid { grid-template-columns: 1fr; } .metrics-grid { grid-template-columns: 1fr; }
-      .ga4-grid { grid-template-columns: 1fr; }
+      .ga4-grid { grid-template-columns: 1fr; } .invest-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -287,12 +337,12 @@
         <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
       </div>
 
-      <!-- Tool 03 — Proposal Generator (coming soon) -->
-      <div class="tool-card coming-soon">
+      <!-- Tool 03 — Proposal Generator (LIVE) -->
+      <div class="tool-card active" onclick="openProposalPanel()">
         <div class="tool-card-icon">📝</div>
-        <div class="tool-card-header"><div class="tool-card-name">Proposal Generator</div><span class="tool-card-badge badge-soon">Soon</span></div>
-        <p class="tool-card-desc">Enter discovery call details and generate a branded, fully formatted PDF proposal in seconds — tailored to the prospect's pain points, services, and ROI anchor.</p>
-        <div class="tool-card-action">Coming Soon <span class="tool-card-action-arrow">→</span></div>
+        <div class="tool-card-header"><div class="tool-card-name">Proposal Generator</div><span class="tool-card-badge badge-live">Live</span></div>
+        <p class="tool-card-desc">Enter discovery call details and generate a branded proposal + contract PDF in seconds — with ROI framing, pain points, and selling tips tailored to the prospect.</p>
+        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
       </div>
 
       <!-- Tool 04 — Onboarding Checklist (coming soon) -->
@@ -421,6 +471,87 @@
   </div>
 </div>
 
+<!-- ── PROPOSAL PANEL (Tool 03) ──────────────────────────────────────── -->
+<div id="proposal-panel" class="panel-overlay" onclick="handleProposalBackdrop(event)">
+  <div class="panel-inner">
+    <div class="panel-header">
+      <div><div class="panel-tag">Tool 03</div><div class="panel-title">Proposal Generator</div></div>
+      <button class="panel-close" onclick="closeProposalPanel()">✕</button>
+    </div>
+    <div class="panel-body" id="proposalPanelBody">
+
+      <!-- Form -->
+      <div class="panel-form" id="proposalForm">
+        <div class="panel-field">
+          <label class="panel-label" for="propBizName">Business Name</label>
+          <input type="text" id="propBizName" class="panel-input" placeholder="e.g. Riverside HVAC"/>
+        </div>
+        <div class="panel-row">
+          <div class="panel-field">
+            <label class="panel-label" for="propContact">Contact Name</label>
+            <input type="text" id="propContact" class="panel-input" placeholder="e.g. Mike Johnson"/>
+          </div>
+          <div class="panel-field">
+            <label class="panel-label" for="propCity">City & State</label>
+            <input type="text" id="propCity" class="panel-input" placeholder="e.g. Manchester, NH"/>
+          </div>
+        </div>
+        <div class="panel-row">
+          <div class="panel-field">
+            <label class="panel-label" for="propBizType">Business Type</label>
+            <select id="propBizType" class="panel-input">
+              <option value="">Select...</option>
+              <option value="HVAC">HVAC</option>
+              <option value="Plumbing">Plumbing</option>
+              <option value="Roofing">Roofing</option>
+              <option value="Landscaping">Landscaping</option>
+              <option value="Electrician">Electrician</option>
+              <option value="Gym / Fitness">Gym / Fitness</option>
+              <option value="Med Spa">Med Spa</option>
+              <option value="Chiropractor">Chiropractor</option>
+              <option value="Auto / Dealer">Auto / Dealer</option>
+              <option value="Cleaning Service">Cleaning Service</option>
+              <option value="General Contractor">General Contractor</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="panel-field">
+            <label class="panel-label" for="propCustValue">Avg Customer Value ($)</label>
+            <input type="number" id="propCustValue" class="panel-input" placeholder="e.g. 3000"/>
+          </div>
+        </div>
+        <div class="panel-field">
+          <label class="panel-label" for="propPackage">Package</label>
+          <select id="propPackage" class="panel-input">
+            <option value="starter">The Starter — $1,000 setup + $500/mo intro</option>
+            <option value="growth">The Growth Engine — $2,500 setup + $500/mo intro</option>
+            <option value="full">The Full System — $3,500 setup + $500/mo intro</option>
+          </select>
+        </div>
+        <div class="panel-field">
+          <label class="panel-label" for="propNotes">Discovery Notes <span>(optional — AI uses these to personalize)</span></label>
+          <textarea id="propNotes" class="panel-textarea" placeholder="e.g. Losing leads to competitors, website from 2016, no follow-up system, tried an agency before..."></textarea>
+        </div>
+        <div class="panel-inline-error" id="proposalErr"></div>
+        <button class="panel-run-btn" id="proposalRunBtn" onclick="runProposal()">Generate Proposal →</button>
+      </div>
+
+      <!-- Loading -->
+      <div class="panel-loading" id="proposalLoadingEl">
+        <div class="loading-spinner"></div>
+        <div class="loading-label">
+          <strong id="proposalLoadingMsg">Analyzing their business...</strong>
+          <span>Building your proposal — usually 10–15 seconds.</span>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="proposal-wrap" id="proposalWrap"></div>
+
+    </div>
+  </div>
+</div>
+
 <script>
 /* ══════════════════════════════════════════════
    AUTH
@@ -470,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bizName').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('bizCity').focus(); });
   document.getElementById('bizCity').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('bizUrl').focus(); });
   document.getElementById('bizUrl').addEventListener('keydown', e => { if (e.key === 'Enter') runProspect(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePanel(); closeReportPanel(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePanel(); closeReportPanel(); closeProposalPanel(); } });
   checkSession();
 });
 
@@ -1082,6 +1213,481 @@ function fmtDuration(sec) {
   if (!sec) return '—';
   const m = Math.floor(sec / 60), s = sec % 60;
   return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
+
+/* ══════════════════════════════════════════════
+   PROPOSAL PANEL (Tool 03)
+══════════════════════════════════════════════ */
+function openProposalPanel() {
+  document.getElementById('proposal-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('propBizName').focus(), 300);
+}
+function closeProposalPanel() {
+  document.getElementById('proposal-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleProposalBackdrop(e) { if (e.target === document.getElementById('proposal-panel')) closeProposalPanel(); }
+
+const PROPOSAL_MSGS = ['Analyzing their business...', 'Identifying pain points...', 'Building ROI projection...', 'Crafting the pitch...', 'Generating your proposal...'];
+let _proposal = null;
+
+async function runProposal() {
+  const bizName   = document.getElementById('propBizName').value.trim();
+  const contact   = document.getElementById('propContact').value.trim();
+  const city      = document.getElementById('propCity').value.trim();
+  const bizType   = document.getElementById('propBizType').value;
+  const custValue = document.getElementById('propCustValue').value;
+  const packageId = document.getElementById('propPackage').value;
+  const notes     = document.getElementById('propNotes').value.trim();
+  const errEl     = document.getElementById('proposalErr');
+
+  errEl.classList.remove('show');
+
+  if (!bizName)  { errEl.textContent = 'Enter a business name.';  errEl.classList.add('show'); return; }
+  if (!contact)  { errEl.textContent = 'Enter a contact name.';   errEl.classList.add('show'); return; }
+  if (!city)     { errEl.textContent = 'Enter a city and state.';  errEl.classList.add('show'); return; }
+  if (!bizType)  { errEl.textContent = 'Select a business type.';  errEl.classList.add('show'); return; }
+
+  document.getElementById('proposalForm').style.display = 'none';
+  document.getElementById('proposalLoadingEl').classList.add('show');
+  document.getElementById('proposalWrap').classList.remove('show');
+
+  let mi = 0;
+  const msgTimer = setInterval(() => {
+    mi = (mi + 1) % PROPOSAL_MSGS.length;
+    const el = document.getElementById('proposalLoadingMsg');
+    if (el) el.textContent = PROPOSAL_MSGS[mi];
+  }, 3500);
+
+  try {
+    const res = await fetch('/api/proposal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        businessName: bizName,
+        contactName: contact,
+        city,
+        businessType: bizType,
+        avgCustomerValue: custValue,
+        packageId,
+        discoveryNotes: notes,
+      }),
+    });
+    const data = await res.json();
+    clearInterval(msgTimer);
+
+    if (!data.success || !data.proposal) {
+      showProposalError(data.error || 'Proposal generation failed. Please try again.');
+      return;
+    }
+
+    _proposal = data.proposal;
+    renderProposal(data.proposal);
+    document.getElementById('proposalLoadingEl').classList.remove('show');
+    document.getElementById('proposalWrap').classList.add('show');
+
+  } catch {
+    clearInterval(msgTimer);
+    showProposalError('Connection error. Please try again.');
+  }
+}
+
+function showProposalError(msg) {
+  document.getElementById('proposalLoadingEl').classList.remove('show');
+  document.getElementById('proposalForm').style.display = 'flex';
+  const errEl = document.getElementById('proposalErr');
+  errEl.textContent = msg;
+  errEl.classList.add('show');
+}
+
+function resetProposal() {
+  _proposal = null;
+  document.getElementById('proposalWrap').innerHTML = '';
+  document.getElementById('proposalWrap').classList.remove('show');
+  document.getElementById('proposalErr').classList.remove('show');
+  document.getElementById('proposalForm').style.display = 'flex';
+  setTimeout(() => document.getElementById('propBizName').focus(), 50);
+}
+
+function renderProposal(p) {
+  const pkg  = p.package || {};
+  const inv  = p.investment || {};
+  const roi  = p.roi;
+
+  const painHTML = (p.painPoints || []).map(pt => `<div class="proposal-item pain">${esc(pt)}</div>`).join('');
+
+  const svcHTML = (pkg.services || []).map(s => `
+    <div class="svc-row">
+      <div class="svc-name">${esc(s.name)}</div>
+      <div class="svc-desc">${esc(s.desc)}</div>
+    </div>
+  `).join('');
+
+  const investHTML = `
+    <div class="invest-grid">
+      <div class="invest-card">
+        <div class="invest-label">One-Time Setup</div>
+        <div class="invest-value blue">${fmtCurrency(inv.setupFee)}</div>
+        <div class="invest-sub">Build + configure + launch</div>
+      </div>
+      <div class="invest-card highlight">
+        <div class="invest-label">Monthly (Intro Rate)</div>
+        <div class="invest-value green">${fmtCurrency(inv.introMonthly)}/mo</div>
+        <div class="invest-sub">Until performance milestones hit</div>
+      </div>
+    </div>
+    <div class="invest-note">
+      <strong>How it works:</strong> You start at ${fmtCurrency(inv.introMonthly)}/month while we prove the system works. Once agreed-upon performance milestones are reached, the monthly investment moves to ${fmtCurrency(inv.fullMonthly)}/month. You only pay full price when the results justify it.
+    </div>
+  `;
+
+  const roiHTML = roi ? `
+    <div class="roi-box">
+      <div class="roi-headline">${esc(roi.headline)}</div>
+      <div class="roi-detail">
+        At ${fmtCurrency(roi.avgCustomerValue)} per customer, your ${fmtCurrency(inv.introMonthly)}/mo investment breaks even with just ${roi.breakEvenLeads} new customer${roi.breakEvenLeads !== 1 ? 's' : ''} per month. Everything after that is pure upside.
+      </div>
+    </div>
+  ` : '<div class="proposal-item">Add average customer value to see ROI projection.</div>';
+
+  const timelineHTML = (p.timeline || []).map(t => `
+    <div class="timeline-step">
+      <div class="timeline-days">${esc(t.days)}</div>
+      <div>
+        <div class="timeline-phase">${esc(t.phase)}</div>
+        <div class="timeline-desc">${esc(t.desc)}</div>
+      </div>
+    </div>
+  `).join('');
+
+  const stepsHTML = (p.nextSteps || []).map(s => `<div class="proposal-item step">${esc(s)}</div>`).join('');
+
+  const tipsHTML = (p.sellingTips || []).map(t => `<div class="proposal-item tip">${esc(t)}</div>`).join('');
+
+  document.getElementById('proposalWrap').innerHTML = `
+    <div class="proposal-header">
+      <div class="proposal-biz-name">${esc(p.businessName)}</div>
+      <div class="proposal-contact">Prepared for ${esc(p.contactName)} · ${esc(p.city)}</div>
+      <div class="proposal-pkg-tag">${esc(pkg.name)}</div>
+    </div>
+
+    <div class="proposal-section">
+      <div class="proposal-sec-head"><span class="proposal-sec-icon">⚠️</span><span class="proposal-sec-title">What You're Losing Right Now</span></div>
+      <div class="proposal-sec-body">${painHTML}</div>
+    </div>
+
+    <div class="proposal-section">
+      <div class="proposal-sec-head"><span class="proposal-sec-icon">📦</span><span class="proposal-sec-title">${esc(pkg.name)} — What's Included</span></div>
+      <div class="proposal-sec-body">${svcHTML}</div>
+    </div>
+
+    <div class="proposal-section">
+      <div class="proposal-sec-head"><span class="proposal-sec-icon">💰</span><span class="proposal-sec-title">Your Investment</span></div>
+      <div class="proposal-sec-body">${investHTML}</div>
+    </div>
+
+    <div class="proposal-section">
+      <div class="proposal-sec-head"><span class="proposal-sec-icon">📈</span><span class="proposal-sec-title">ROI Projection</span></div>
+      <div class="proposal-sec-body">${roiHTML}</div>
+    </div>
+
+    <div class="proposal-section">
+      <div class="proposal-sec-head"><span class="proposal-sec-icon">🗓️</span><span class="proposal-sec-title">Delivery Timeline</span></div>
+      <div class="proposal-sec-body">${timelineHTML}</div>
+    </div>
+
+    <div class="proposal-section">
+      <div class="proposal-sec-head"><span class="proposal-sec-icon">✅</span><span class="proposal-sec-title">Next Steps</span></div>
+      <div class="proposal-sec-body">${stepsHTML}</div>
+    </div>
+
+    <div class="proposal-section selling-tips-section">
+      <div class="proposal-sec-head"><span class="proposal-sec-icon">🔒</span><span class="proposal-sec-title">Sales Notes (Internal Only)</span></div>
+      <div class="proposal-sec-body">${tipsHTML}</div>
+    </div>
+
+    <div class="proposal-actions">
+      <button class="btn-pdf" onclick="generateProposalPDF(_proposal)">⬇ Download Proposal</button>
+      <button class="btn-contract" onclick="generateContractPDF(_proposal)">📄 Download Contract</button>
+      <button class="btn-new" onclick="resetProposal()">New Proposal</button>
+    </div>
+  `;
+}
+
+
+/* ══════════════════════════════════════════════
+   PROPOSAL PDF
+══════════════════════════════════════════════ */
+function generateProposalPDF(p) {
+  if (!window.jspdf) { alert('PDF library still loading. Try again in a moment.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, ml = 18, mr = 18, cw = W - ml - mr;
+  let y = 0;
+
+  const BLUE=[45,107,228], WHITE=[244,244,242], GRAY=[130,130,130], LIGHT=[225,225,222], BLACK=[12,12,12];
+  const GREEN=[74,222,128], YELLOW=[245,197,24], ACCENT_LIGHT=[91,143,240];
+
+  const sf = (style, size, rgb) => { doc.setFont('helvetica',style); doc.setFontSize(size); doc.setTextColor(...(rgb||BLACK)); };
+  const rule = yy => { doc.setDrawColor(...LIGHT); doc.line(ml,yy,W-mr,yy); return yy+5; };
+  const maybeNewPage = needed => { if (y + needed > H - 16) { doc.addPage(); y = 18; } };
+
+  function secHead(label, yy) {
+    maybeNewPage(14);
+    doc.setFillColor(240, 242, 250); doc.rect(ml, yy, cw, 8, 'F');
+    sf('bold', 8, BLUE); doc.text(label.toUpperCase(), ml + 4, yy + 5.5);
+    return yy + 13;
+  }
+
+  function bulletLine(text, yy, icon) {
+    maybeNewPage(12);
+    const prefix = icon || '→';
+    sf('bold', 8, icon === '⚠' ? YELLOW : icon === '✓' ? GREEN : BLUE); doc.text(prefix, ml + 2, yy);
+    sf('normal', 8.5, BLACK);
+    const lines = doc.splitTextToSize(text, cw - 14);
+    doc.text(lines, ml + 11, yy);
+    return yy + lines.length * 5 + 2.5;
+  }
+
+  const pkg = p.package || {};
+  const inv = p.investment || {};
+  const roi = p.roi;
+
+  // ── Cover header
+  doc.setFillColor(...BLUE); doc.rect(0, 0, W, 20, 'F');
+  sf('bold', 13, WHITE); doc.text('MORE THAN MOMENTUM', ml, 9);
+  sf('normal', 7.5, [180,205,245]); doc.text('Growth Proposal  ·  morethanmomentum.com', ml, 15.5);
+  y = 28;
+
+  // ── Business info
+  sf('bold', 20, BLACK); doc.text(p.businessName || '', ml, y); y += 6;
+  sf('normal', 10, GRAY); doc.text(`Prepared for ${p.contactName || ''} · ${p.city || ''}`, ml, y); y += 5;
+  sf('bold', 11, BLUE); doc.text(pkg.name || '', ml, y); y += 4;
+  sf('italic', 9, GRAY); doc.text(pkg.tagline || '', ml, y); y += 5;
+  sf('normal', 7.5, GRAY);
+  doc.text(`Generated: ${new Date(p.generatedAt).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}`, ml, y); y += 8;
+  y = rule(y);
+
+  // ── Pain points
+  y = secHead('What You\'re Losing Right Now', y);
+  (p.painPoints || []).forEach(pt => { y = bulletLine(pt, y, '⚠'); });
+  y += 3; y = rule(y);
+
+  // ── Services
+  y = secHead(pkg.name + ' — What\'s Included', y);
+  (pkg.services || []).forEach(s => {
+    maybeNewPage(16);
+    sf('bold', 9, BLACK); doc.text(s.name, ml, y); y += 4.5;
+    sf('normal', 8, GRAY);
+    const dl = doc.splitTextToSize(s.desc, cw - 4);
+    doc.text(dl, ml + 2, y); y += dl.length * 4.3 + 4;
+  });
+  y += 2; y = rule(y);
+
+  // ── Investment
+  y = secHead('Your Investment', y);
+  maybeNewPage(50);
+
+  // Setup box
+  doc.setFillColor(245, 247, 252); doc.setDrawColor(...LIGHT);
+  const bw = (cw - 6) / 2;
+  doc.roundedRect(ml, y, bw, 22, 2, 2, 'FD');
+  sf('bold', 7, GRAY); doc.text('ONE-TIME SETUP', ml + 4, y + 5.5);
+  sf('bold', 14, BLUE); doc.text(fmtCurrency(inv.setupFee), ml + 4, y + 14);
+  sf('normal', 7, GRAY); doc.text('Build + configure + launch', ml + 4, y + 19.5);
+
+  // Monthly box
+  doc.setFillColor(235, 250, 240); doc.setDrawColor(180, 235, 200);
+  doc.roundedRect(ml + bw + 6, y, bw, 22, 2, 2, 'FD');
+  sf('bold', 7, GRAY); doc.text('MONTHLY (INTRO RATE)', ml + bw + 10, y + 5.5);
+  sf('bold', 14, GREEN); doc.text(fmtCurrency(inv.introMonthly) + '/mo', ml + bw + 10, y + 14);
+  sf('normal', 7, GRAY); doc.text('Until milestones hit', ml + bw + 10, y + 19.5);
+  y += 28;
+
+  // Pricing note
+  sf('normal', 8, [80,80,80]);
+  const noteText = `How it works: You start at ${fmtCurrency(inv.introMonthly)}/month while we prove the system works. Once agreed-upon performance milestones are reached, the monthly investment moves to ${fmtCurrency(inv.fullMonthly)}/month. You only pay full price when the results justify it.`;
+  const noteLines = doc.splitTextToSize(noteText, cw - 8);
+  doc.setFillColor(255, 252, 235); doc.roundedRect(ml, y, cw, noteLines.length * 4.5 + 10, 2, 2, 'F');
+  doc.text(noteLines, ml + 4, y + 6);
+  y += noteLines.length * 4.5 + 14;
+  y = rule(y);
+
+  // ── ROI
+  if (roi) {
+    y = secHead('ROI Projection', y);
+    maybeNewPage(25);
+    doc.setFillColor(235, 250, 240); doc.roundedRect(ml, y, cw, 20, 2, 2, 'F');
+    sf('bold', 12, GREEN); doc.text(roi.headline, ml + 5, y + 8);
+    sf('normal', 8.5, [60,80,60]);
+    const roiDetail = `At ${fmtCurrency(roi.avgCustomerValue)} per customer, your ${fmtCurrency(inv.introMonthly)}/mo investment breaks even with just ${roi.breakEvenLeads} new customer${roi.breakEvenLeads !== 1 ? 's' : ''} per month.`;
+    const rdl = doc.splitTextToSize(roiDetail, cw - 10);
+    doc.text(rdl, ml + 5, y + 14);
+    y += 24; y = rule(y);
+  }
+
+  // ── Timeline
+  y = secHead('Delivery Timeline', y);
+  (p.timeline || []).forEach(t => {
+    maybeNewPage(14);
+    sf('bold', 8, BLUE); doc.text(t.days, ml, y);
+    sf('bold', 9, BLACK); doc.text(t.phase, ml + 30, y); y += 4.5;
+    sf('normal', 8, GRAY);
+    const tdl = doc.splitTextToSize(t.desc, cw - 34);
+    doc.text(tdl, ml + 30, y); y += tdl.length * 4.3 + 3;
+  });
+  y += 2; y = rule(y);
+
+  // ── Next steps
+  y = secHead('Next Steps', y);
+  (p.nextSteps || []).forEach(s => { y = bulletLine(s, y, '✓'); });
+
+  // ── Footer
+  const np = doc.getNumberOfPages();
+  for (let i = 1; i <= np; i++) {
+    doc.setPage(i);
+    doc.setFillColor(245,245,243); doc.rect(0,H-11,W,11,'F');
+    sf('normal', 7, GRAY);
+    doc.text('More Than Momentum  ·  morethanmomentum.com  ·  Confidential', ml, H-4);
+    doc.text(`${i} / ${np}`, W-mr, H-4, { align:'right' });
+  }
+
+  const slug = (p.businessName||'prospect').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  doc.save(`MTM-Proposal-${slug}.pdf`);
+}
+
+
+/* ══════════════════════════════════════════════
+   CONTRACT PDF
+══════════════════════════════════════════════ */
+function generateContractPDF(p) {
+  if (!window.jspdf) { alert('PDF library still loading. Try again in a moment.'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, ml = 18, mr = 18, cw = W - ml - mr;
+  let y = 0;
+
+  const BLUE=[45,107,228], WHITE=[244,244,242], GRAY=[130,130,130], LIGHT=[225,225,222], BLACK=[12,12,12];
+
+  const sf = (style, size, rgb) => { doc.setFont('helvetica',style); doc.setFontSize(size); doc.setTextColor(...(rgb||BLACK)); };
+  const rule = yy => { doc.setDrawColor(...LIGHT); doc.line(ml,yy,W-mr,yy); return yy+5; };
+  const maybeNewPage = needed => { if (y + needed > H - 20) { doc.addPage(); y = 18; } };
+
+  const pkg = p.package || {};
+  const inv = p.investment || {};
+  const today = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+  // ── Header
+  doc.setFillColor(...BLUE); doc.rect(0, 0, W, 20, 'F');
+  sf('bold', 13, WHITE); doc.text('MORE THAN MOMENTUM', ml, 9);
+  sf('normal', 7.5, [180,205,245]); doc.text('Service Agreement  ·  morethanmomentum.com', ml, 15.5);
+  y = 30;
+
+  // ── Title
+  sf('bold', 20, BLACK); doc.text('Service Agreement', ml, y); y += 8;
+  sf('normal', 9, GRAY); doc.text(`Date: ${today}`, ml, y); y += 8;
+  y = rule(y);
+
+  // ── Parties
+  sf('bold', 11, BLUE); doc.text('PARTIES', ml, y); y += 6;
+  sf('bold', 9, BLACK); doc.text('Provider:', ml, y);
+  sf('normal', 9, BLACK); doc.text('More Than Momentum (MTM)', ml + 22, y); y += 5;
+  sf('normal', 8, GRAY); doc.text('morethanmomentum.com', ml + 22, y); y += 7;
+  sf('bold', 9, BLACK); doc.text('Client:', ml, y);
+  sf('normal', 9, BLACK); doc.text(`${p.businessName || '_______________'}`, ml + 22, y); y += 5;
+  sf('normal', 8, GRAY); doc.text(`Contact: ${p.contactName || '_______________'}  ·  ${p.city || ''}`, ml + 22, y); y += 8;
+  y = rule(y);
+
+  // ── Scope of Services
+  sf('bold', 11, BLUE); doc.text('SCOPE OF SERVICES', ml, y); y += 7;
+  sf('normal', 9, BLACK); doc.text(`Package: ${pkg.name || '_______________'}`, ml, y); y += 6;
+  (pkg.services || []).forEach(s => {
+    maybeNewPage(10);
+    sf('bold', 8, BLUE); doc.text('→', ml + 2, y);
+    sf('bold', 8.5, BLACK); doc.text(s.name, ml + 11, y); y += 4.5;
+    sf('normal', 8, GRAY);
+    const dl = doc.splitTextToSize(s.desc, cw - 14);
+    doc.text(dl, ml + 11, y); y += dl.length * 4.3 + 3;
+  });
+  y += 2; y = rule(y);
+
+  // ── Investment
+  sf('bold', 11, BLUE); doc.text('INVESTMENT', ml, y); y += 7;
+
+  sf('bold', 9, BLACK); doc.text('One-Time Setup Fee:', ml, y);
+  sf('normal', 9, BLACK); doc.text(fmtCurrency(inv.setupFee), ml + 50, y); y += 5;
+  sf('normal', 8, GRAY); doc.text('Due upon signing. Covers full build, configuration, and launch.', ml + 4, y); y += 7;
+
+  sf('bold', 9, BLACK); doc.text('Monthly Investment:', ml, y); y += 5;
+  sf('normal', 8.5, BLACK);
+  doc.text(`Introductory rate: ${fmtCurrency(inv.introMonthly)}/month`, ml + 4, y); y += 5;
+  doc.text(`Full rate: ${fmtCurrency(inv.fullMonthly)}/month (effective upon milestone achievement)`, ml + 4, y); y += 6;
+
+  sf('normal', 8, GRAY);
+  const milestoneNote = 'The monthly rate begins at the introductory rate upon launch. The full monthly rate takes effect once mutually agreed-upon performance milestones are achieved. Specific milestones will be defined in writing during the onboarding phase and appended to this agreement.';
+  const mnl = doc.splitTextToSize(milestoneNote, cw - 8);
+  doc.text(mnl, ml + 4, y); y += mnl.length * 4.3 + 4;
+  y += 2; y = rule(y);
+
+  // ── Terms
+  sf('bold', 11, BLUE); doc.text('TERMS & CONDITIONS', ml, y); y += 7;
+
+  const terms = [
+    { title: 'Duration & Billing', text: 'This agreement begins on the date signed and continues on a month-to-month basis after the initial setup period. The setup fee is due upon signing. Monthly fees are billed on the 1st of each month following launch.' },
+    { title: 'Cancellation', text: 'Either party may terminate this agreement with 30 days written notice. No refunds are provided for the setup fee once work has begun. Any prepaid monthly fees will be refunded for unused full months.' },
+    { title: 'Ownership', text: 'The Client retains full ownership of their domain, website content, CRM data, and all creative assets produced under this agreement. Upon termination, all credentials and access will be transferred to the Client within 7 business days.' },
+    { title: 'Platform Costs', text: 'The monthly investment includes the GoHighLevel CRM platform fee for the Client\'s sub-account. The Client is not required to maintain a separate GHL subscription.' },
+    { title: 'Revisions', text: 'The initial website build includes up to 2 rounds of revisions. Additional revision rounds or scope changes beyond the original agreement may incur additional fees, which will be communicated in advance.' },
+    { title: 'Confidentiality', text: 'Both parties agree to keep confidential any proprietary information, business strategies, customer data, or trade secrets shared during the engagement.' },
+    { title: 'Ad Spend', text: 'If paid advertising is included in the selected package, the Client pays their own ad budget directly to the advertising platform. MTM\'s fee covers campaign management only.' },
+  ];
+
+  terms.forEach(t => {
+    maybeNewPage(18);
+    sf('bold', 9, BLACK); doc.text(t.title, ml, y); y += 4.5;
+    sf('normal', 8, GRAY);
+    const tl = doc.splitTextToSize(t.text, cw - 4);
+    doc.text(tl, ml + 2, y); y += tl.length * 4.3 + 5;
+  });
+
+  y += 2; y = rule(y);
+
+  // ── Signatures
+  maybeNewPage(60);
+  sf('bold', 11, BLUE); doc.text('SIGNATURES', ml, y); y += 10;
+
+  // Provider
+  sf('bold', 9, BLACK); doc.text('More Than Momentum', ml, y); y += 8;
+  doc.setDrawColor(...LIGHT); doc.line(ml, y, ml + 70, y); y += 4;
+  sf('normal', 8, GRAY); doc.text('Signature', ml, y); y += 6;
+  doc.line(ml, y, ml + 70, y); y += 4;
+  sf('normal', 8, GRAY); doc.text('Printed Name', ml, y); y += 6;
+  doc.line(ml, y, ml + 50, y); y += 4;
+  sf('normal', 8, GRAY); doc.text('Date', ml, y); y += 12;
+
+  // Client
+  sf('bold', 9, BLACK); doc.text(p.businessName || 'Client', ml, y); y += 8;
+  doc.setDrawColor(...LIGHT); doc.line(ml, y, ml + 70, y); y += 4;
+  sf('normal', 8, GRAY); doc.text('Signature', ml, y); y += 6;
+  doc.line(ml, y, ml + 70, y); y += 4;
+  sf('normal', 8, GRAY); doc.text('Printed Name', ml, y); y += 6;
+  doc.line(ml, y, ml + 50, y); y += 4;
+  sf('normal', 8, GRAY); doc.text('Date', ml, y);
+
+  // ── Footer
+  const np = doc.getNumberOfPages();
+  for (let i = 1; i <= np; i++) {
+    doc.setPage(i);
+    doc.setFillColor(245,245,243); doc.rect(0,H-11,W,11,'F');
+    sf('normal', 7, GRAY);
+    doc.text('More Than Momentum  ·  morethanmomentum.com  ·  Confidential', ml, H-4);
+    doc.text(`${i} / ${np}`, W-mr, H-4, { align:'right' });
+  }
+
+  const slug = (p.businessName||'client').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  doc.save(`MTM-Contract-${slug}.pdf`);
 }
 
 
