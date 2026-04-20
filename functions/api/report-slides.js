@@ -99,6 +99,7 @@ async function getOAuthAccessToken(env) {
   return data.access_token;
 }
 
+
 // ── PRESENTATION BUILDER ──────────────────────────────────────────────────────
 
 async function createPresentation(report, token, mtmReportsFolder) {
@@ -106,7 +107,7 @@ async function createPresentation(report, token, mtmReportsFolder) {
   const ga4 = report.ga4 || {};
   const title = `${report.client.name} — ${report.period.label} Performance Report`;
 
-  // ── Step 1: Create via Slides API directly (avoids Drive API quirks with batchUpdate) ──
+  // Step 1: Create via Slides API — returns presentation with 1 default slide
   const createResp = await fetch(`${SLIDES_BASE}/presentations`, {
     method: 'POST',
     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -125,15 +126,13 @@ async function createPresentation(report, token, mtmReportsFolder) {
     });
   }
 
-  // ── Step 2: Delete the default blank slide (separate batchUpdate) ──
-  const defaultSlideId = presentation.slides?.[0]?.objectId;
-  if (defaultSlideId) {
-    await doBatchUpdate(pid, [{ deleteObject: { objectId: defaultSlideId } }], token);
-  }
+  // The default slide becomes slide_cover. We duplicate it 5x for the other slides.
+  // duplicateObject avoids addSlide entirely.
+  const sourceId = presentation.slides?.[0]?.objectId;
+  if (!sourceId) throw new Error('No default slide in new presentation');
 
-  // Slide IDs
   const S = {
-    cover:     'slide_cover',
+    cover:     sourceId,
     metrics:   'slide_metrics',
     sources:   'slide_sources',
     deals:     'slide_deals',
@@ -141,22 +140,25 @@ async function createPresentation(report, token, mtmReportsFolder) {
     takeaways: 'slide_takeaways',
   };
 
-  // ── Step 3: Add all slides + set backgrounds (separate batchUpdate) ──
-  const slideReqs = [
-    ...Object.values(S).map(id => ({
-      addSlide: { objectId: id, slideLayoutReference: { predefinedLayout: 'BLANK' } }
-    })),
-    ...Object.values(S).map(id => ({
-      updatePageProperties: {
-        objectId: id,
-        pageProperties: { pageBackgroundFill: { solidFill: { color: { rgbColor: C.BLACK } } } },
-        fields: 'pageBackgroundFill',
-      }
-    })),
-  ];
-  await doBatchUpdate(pid, slideReqs, token);
+  // Step 2: Duplicate source slide 5 times — each gets a custom objectId
+  await doBatchUpdate(pid, [
+    { duplicateObject: { objectId: sourceId, objectIds: { [sourceId]: S.metrics   } } },
+    { duplicateObject: { objectId: sourceId, objectIds: { [sourceId]: S.sources   } } },
+    { duplicateObject: { objectId: sourceId, objectIds: { [sourceId]: S.deals     } } },
+    { duplicateObject: { objectId: sourceId, objectIds: { [sourceId]: S.website   } } },
+    { duplicateObject: { objectId: sourceId, objectIds: { [sourceId]: S.takeaways } } },
+  ], token);
 
-  // ── Step 4: Add all content (shapes, text) ──
+  // Step 3: Set all slide backgrounds to black
+  await doBatchUpdate(pid, Object.values(S).map(id => ({
+    updatePageProperties: {
+      objectId: id,
+      pageProperties: { pageBackgroundFill: { solidFill: { color: { rgbColor: C.BLACK } } } },
+      fields: 'pageBackgroundFill',
+    },
+  })), token);
+
+  // Step 4: Add all content
   const contentReqs = [
     // ══ SLIDE 1 — COVER ══════════════════════════════════════════════════════
     ...rect('cover_bar', S.cover, 0, 0, SW, px(6), C.BLUE),
@@ -173,26 +175,21 @@ async function createPresentation(report, token, mtmReportsFolder) {
     ...rect('cover_bottom', S.cover, 0, SH - px(4), SW, px(4), C.CARD),
     ...text('cover_footer', S.cover, 'morethanmomentum.com', px(56), SH - px(28), SW - px(112), px(20),
       { size: 9, color: C.MID }),
-
     // ══ SLIDE 2 — PIPELINE SUMMARY ═══════════════════════════════════════════
     ...slideHeader('metrics_bar', 'metrics_title', S.metrics, 'Pipeline Summary'),
-    ...metricCard('mc1', S.metrics, px(48),  px(100), fmtCurrency(ghl.wonRevenue),          'WON REVENUE',    `${fmtNum(ghl.wonDeals)} deals closed`, C.GREEN),
-    ...metricCard('mc2', S.metrics, px(320), px(100), fmtNum(ghl.totalLeads),               'TOTAL LEADS',    `Top: ${ghl.topSource || '—'}`, C.ACCENT_LIGHT),
-    ...metricCard('mc3', S.metrics, px(592), px(100), fmtCurrency(ghl.openPipelineValue),   'OPEN PIPELINE',  `${fmtNum(ghl.openDeals)} opportunities`, C.WHITE),
-    ...metricCard('mc4', S.metrics, px(864), px(100), fmtNum(ghl.lostDeals),               'LOST DEALS',     'This period', C.GRAY),
-
+    ...metricCard('mc1', S.metrics, px(48),  px(100), fmtCurrency(ghl.wonRevenue),        'WON REVENUE',   `${fmtNum(ghl.wonDeals)} deals closed`, C.GREEN),
+    ...metricCard('mc2', S.metrics, px(320), px(100), fmtNum(ghl.totalLeads),             'TOTAL LEADS',   `Top: ${ghl.topSource || '—'}`, C.ACCENT_LIGHT),
+    ...metricCard('mc3', S.metrics, px(592), px(100), fmtCurrency(ghl.openPipelineValue), 'OPEN PIPELINE', `${fmtNum(ghl.openDeals)} opportunities`, C.WHITE),
+    ...metricCard('mc4', S.metrics, px(864), px(100), fmtNum(ghl.lostDeals),             'LOST DEALS',    'This period', C.GRAY),
     // ══ SLIDE 3 — LEAD SOURCES ═══════════════════════════════════════════════
     ...slideHeader('sources_bar', 'sources_title', S.sources, 'Lead Sources'),
     ...buildSourcesSlide(S.sources, ghl.leadSources || []),
-
     // ══ SLIDE 4 — WON DEALS ══════════════════════════════════════════════════
     ...slideHeader('deals_bar', 'deals_title', S.deals, 'Won Deals'),
     ...buildDealsSlide(S.deals, ghl.wonDealsList || [], ghl.wonRevenue),
-
     // ══ SLIDE 5 — WEBSITE PERFORMANCE ════════════════════════════════════════
     ...slideHeader('website_bar', 'website_title', S.website, 'Website — Google Analytics'),
     ...buildGA4Slide(S.website, ga4),
-
     // ══ SLIDE 6 — KEY TAKEAWAYS ══════════════════════════════════════════════
     ...slideHeader('takeaways_bar', 'takeaways_title', S.takeaways, 'Key Takeaways'),
     ...buildTakeawaysSlide(S.takeaways, report.takeaways || []),
@@ -213,6 +210,7 @@ async function doBatchUpdate(pid, requests, token) {
   if (data.error) throw new Error(`batchUpdate failed: ${JSON.stringify(data.error)}`);
   return data;
 }
+
 
 // ── SLIDE SECTION BUILDERS ────────────────────────────────────────────────────
 
