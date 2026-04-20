@@ -497,106 +497,139 @@
     <div class="panel-body" id="proposalPanelBody">
 
       <!-- Form -->
-      <div class="panel-form" id="proposalForm">
+      <div class="panel-form" id="proposalForm" style="gap:12px;max-height:calc(100vh - 120px);overflow-y:auto;padding-right:6px;">
+
+        <!-- SERVICE SELECTION -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+          <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);margin-bottom:10px;">Select Services</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <label style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;flex:1;min-width:150px;transition:border-color .2s;" id="chkWebLabel">
+              <input type="checkbox" id="chkWeb" checked onchange="toggleServiceSections()" style="accent-color:var(--accent);width:16px;height:16px;"/>
+              <span style="font-size:13px;color:var(--white);font-weight:500;">🌐 Website Design</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;flex:1;min-width:150px;transition:border-color .2s;" id="chkBackLabel">
+              <input type="checkbox" id="chkBack" checked onchange="toggleServiceSections()" style="accent-color:var(--accent);width:16px;height:16px;"/>
+              <span style="font-size:13px;color:var(--white);font-weight:500;">⚙️ Backend & Lead Gen</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:10px 14px;cursor:pointer;flex:1;min-width:150px;transition:border-color .2s;" id="chkSocLabel">
+              <input type="checkbox" id="chkSoc" onchange="toggleServiceSections()" style="accent-color:var(--accent);width:16px;height:16px;"/>
+              <span style="font-size:13px;color:var(--white);font-weight:500;">📱 Social Media</span>
+            </label>
+          </div>
+          <div id="socialMinNote" style="display:none;font-size:11px;color:var(--yellow);margin-top:8px;">⚠ Social media requires a minimum $2,500/month due to filming & editing labor.</div>
+        </div>
+
+        <!-- BUSINESS INFO -->
         <div class="panel-field">
-          <label class="panel-label" for="propBizName">Business Name</label>
+          <label class="panel-label">Business Name</label>
           <input type="text" id="propBizName" class="panel-input" placeholder="e.g. Riverside HVAC"/>
         </div>
         <div class="panel-row">
-          <div class="panel-field">
-            <label class="panel-label" for="propContact">Contact Name</label>
-            <input type="text" id="propContact" class="panel-input" placeholder="e.g. Mike Johnson"/>
-          </div>
-          <div class="panel-field">
-            <label class="panel-label" for="propCity">City & State</label>
-            <input type="text" id="propCity" class="panel-input" placeholder="e.g. Manchester, NH"/>
-          </div>
+          <div class="panel-field"><label class="panel-label">Contact Name</label><input type="text" id="propContact" class="panel-input" placeholder="e.g. Mike Johnson"/></div>
+          <div class="panel-field"><label class="panel-label">City & State</label><input type="text" id="propCity" class="panel-input" placeholder="e.g. Manchester, NH"/></div>
         </div>
         <div class="panel-row">
-          <div class="panel-field">
-            <label class="panel-label" for="propBizType">Business Type</label>
+          <div class="panel-field"><label class="panel-label">Business Type</label>
             <select id="propBizType" class="panel-input">
-              <option value="">Select...</option>
-              <option value="HVAC">HVAC</option>
-              <option value="Plumbing">Plumbing</option>
-              <option value="Roofing">Roofing</option>
-              <option value="Landscaping">Landscaping</option>
-              <option value="Electrician">Electrician</option>
-              <option value="Gym / Fitness">Gym / Fitness</option>
-              <option value="Med Spa">Med Spa</option>
-              <option value="Chiropractor">Chiropractor</option>
-              <option value="Auto / Dealer">Auto / Dealer</option>
-              <option value="Cleaning Service">Cleaning Service</option>
-              <option value="General Contractor">General Contractor</option>
-              <option value="Other">Other</option>
+              <option value="">Select...</option><option value="HVAC">HVAC</option><option value="Plumbing">Plumbing</option><option value="Roofing">Roofing</option><option value="Landscaping">Landscaping</option><option value="Electrician">Electrician</option><option value="Gym / Fitness">Gym / Fitness</option><option value="Med Spa">Med Spa</option><option value="Chiropractor">Chiropractor</option><option value="Auto / Dealer">Auto / Dealer</option><option value="Cleaning Service">Cleaning Service</option><option value="General Contractor">General Contractor</option><option value="Pet Store / Services">Pet Store / Services</option><option value="Dentist">Dentist</option><option value="Salon / Barber">Salon / Barber</option><option value="Other">Other</option>
             </select>
           </div>
-          <div class="panel-field">
-            <label class="panel-label" for="propCustValue">Avg Customer Value ($)</label>
-            <input type="number" id="propCustValue" class="panel-input" placeholder="e.g. 3000"/>
-          </div>
+          <div class="panel-field"><label class="panel-label">Avg Customer Value ($)</label><input type="number" id="propCustValue" class="panel-input" placeholder="e.g. 3000"/></div>
+        </div>
+
+        <!-- DISCOVERY DATA -->
+        <div class="panel-row">
+          <div class="panel-field"><label class="panel-label">Budget Before Results ($) <span>max they'll spend upfront</span></label><input type="number" id="propBudget" class="panel-input" placeholder="e.g. 2000"/></div>
+          <div class="panel-field"><label class="panel-label">Current Mkt Spend ($/mo)</label><input type="number" id="propMktSpend" class="panel-input" placeholder="e.g. 500 or 0"/></div>
         </div>
         <div class="panel-row">
-          <div class="panel-field">
-            <label class="panel-label" for="propMktSpend">Current Marketing Spend ($/mo)</label>
-            <input type="number" id="propMktSpend" class="panel-input" placeholder="e.g. 500 or 0"/>
+          <div class="panel-field"><label class="panel-label">#1 Pain Point</label>
+            <select id="propPain" class="panel-input">
+              <option value="">Select...</option><option value="Losing leads — no follow-up system">Losing leads — no follow-up</option><option value="Website doesn't reflect business quality">Bad website</option><option value="No online presence at all">No online presence</option><option value="Inconsistent or zero social media">No social media</option><option value="Need more leads / customers">Need more leads</option><option value="Bad experience with previous agency">Burned by agency before</option><option value="Don't have time to manage marketing">No time for marketing</option><option value="Other">Other</option>
+            </select>
           </div>
-          <div class="panel-field">
-            <label class="panel-label" for="propTriedBefore">What have they tried?</label>
+          <div class="panel-field"><label class="panel-label">What they tried before</label>
             <select id="propTriedBefore" class="panel-input">
-              <option value="Nothing">Nothing</option>
-              <option value="DIY social media">DIY social media</option>
-              <option value="Hired an agency before">Hired an agency before</option>
-              <option value="Hired a freelancer">Hired a freelancer</option>
-              <option value="Ran paid ads">Ran paid ads</option>
-              <option value="Built own website">Built own website</option>
-              <option value="Multiple things">Multiple things</option>
+              <option value="Nothing">Nothing</option><option value="DIY social media">DIY social media</option><option value="Hired an agency before">Hired an agency</option><option value="Hired a freelancer">Hired a freelancer</option><option value="Ran paid ads">Ran paid ads</option><option value="Built own website">Built own website</option><option value="Multiple things">Multiple things</option>
             </select>
           </div>
         </div>
-        <div class="panel-field">
-          <label class="panel-label" for="propPain">What's their #1 pain?</label>
-          <select id="propPain" class="panel-input">
-            <option value="">Select...</option>
-            <option value="Losing leads — no follow-up system">Losing leads — no follow-up system</option>
-            <option value="Website doesn't reflect business quality">Website doesn't reflect business quality</option>
-            <option value="Inconsistent or zero social media">Inconsistent or zero social media</option>
-            <option value="No online presence at all">No online presence at all</option>
-            <option value="Need more leads / customers">Need more leads / customers</option>
-            <option value="Bad experience with previous agency">Bad experience with previous agency</option>
-            <option value="Don't have time to manage marketing">Don't have time to manage marketing</option>
-            <option value="Other">Other</option>
-          </select>
+        <div class="panel-field"><label class="panel-label">What outcome would make them sign today?</label><input type="text" id="propOutcome" class="panel-input" placeholder="e.g. A website that actually brings in leads"/></div>
+
+        <!-- SOCIAL GOAL (conditional) -->
+        <div id="socialGoalSection" style="display:none;">
+          <div class="panel-field"><label class="panel-label">Social media goal</label>
+            <select id="propSocialGoal" class="panel-input">
+              <option value="leads">Leads / customers calling or booking</option>
+              <option value="brand">Brand awareness / followers / visibility</option>
+              <option value="both">Both equally</option>
+            </select>
+          </div>
         </div>
-        <div class="panel-field">
-          <label class="panel-label" for="propOutcome">What outcome would make them sign today?</label>
-          <input type="text" id="propOutcome" class="panel-input" placeholder="e.g. A website that actually brings in leads"/>
+
+        <!-- WEBSITE SCOPE (conditional) -->
+        <div id="webScopeSection" style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+          <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);margin-bottom:10px;">🌐 Website Scope</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <div class="panel-field"><label class="panel-label"># of Pages</label><input type="number" id="propWebPages" class="panel-input" value="5" min="1"/></div>
+            <div class="panel-field"><label class="panel-label">Min Images</label><input type="number" id="propWebImages" class="panel-input" value="3" min="1"/></div>
+            <div class="panel-field"><label class="panel-label">Min Videos</label><input type="number" id="propWebVideos" class="panel-input" value="1" min="0"/></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+            <div class="panel-field"><label class="panel-label">Lead Capture Method</label>
+              <select id="propWebLeadCapture" class="panel-input">
+                <option value="contact_form">Contact Form</option><option value="quote_request">Quote Request Form</option><option value="booking_calendar">Booking Calendar</option><option value="phone_click">Click-to-Call</option><option value="chat_widget">Chat Widget</option><option value="multiple">Multiple Methods</option>
+              </select>
+            </div>
+            <div class="panel-field"><label class="panel-label">XML Sitemap for SEO</label>
+              <select id="propWebXml" class="panel-input"><option value="true" selected>Yes — include</option><option value="false">No</option></select>
+            </div>
+          </div>
         </div>
+
+        <!-- SOCIAL SCOPE (conditional) -->
+        <div id="socScopeSection" style="display:none;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+          <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);margin-bottom:10px;">📱 Social Media Scope</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div class="panel-field"><label class="panel-label">Same Posts / Week <span>(cross-posted to all platforms)</span></label><input type="number" id="propSocSame" class="panel-input" value="3" min="1" max="7"/></div>
+            <div class="panel-field"><label class="panel-label">Unique Posts / Week <span>(platform-specific, e.g. GBP)</span></label><input type="number" id="propSocDiff" class="panel-input" value="1" min="0" max="5"/></div>
+          </div>
+          <div class="panel-field" style="margin-top:8px;"><label class="panel-label">Platforms</label><input type="text" id="propSocPlatforms" class="panel-input" placeholder="e.g. Instagram, Facebook, TikTok, Google Business Profile"/></div>
+        </div>
+
+        <!-- CURRENT METRICS -->
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+          <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);margin-bottom:10px;">📊 Current Metrics <span style="color:var(--mid);text-transform:none;letter-spacing:0;font-weight:400;">(for contract benchmarks)</span></div>
+          <div id="metricWebFields" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+            <div class="panel-field"><label class="panel-label">Website Traffic (visitors/mo)</label><input type="number" id="propMetricTraffic" class="panel-input" placeholder="e.g. 500"/></div>
+            <div class="panel-field"><label class="panel-label">Leads / Month</label><input type="number" id="propMetricLeads" class="panel-input" placeholder="e.g. 10"/></div>
+          </div>
+          <div id="metricSocialFields" style="display:none;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px;">
+            <div class="panel-field"><label class="panel-label">Instagram Followers</label><input type="number" id="propMetricIG" class="panel-input" placeholder="e.g. 500"/></div>
+            <div class="panel-field"><label class="panel-label">Facebook Followers</label><input type="number" id="propMetricFB" class="panel-input" placeholder="e.g. 200"/></div>
+            <div class="panel-field"><label class="panel-label">TikTok Followers</label><input type="number" id="propMetricTT" class="panel-input" placeholder="e.g. 0"/></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:8px;">
+            <div class="panel-field"><label class="panel-label">Google Reviews <span>(count, e.g. 47)</span></label><input type="number" id="propMetricReviews" class="panel-input" placeholder="e.g. 12"/></div>
+          </div>
+        </div>
+
+        <!-- MEETING -->
         <div class="panel-row">
-          <div class="panel-field">
-            <label class="panel-label" for="propMeetingCadence">Meeting Preference</label>
-            <select id="propMeetingCadence" class="panel-input">
-              <option value="weekly">Weekly (1 hr max)</option>
-              <option value="biweekly">Biweekly (30 min)</option>
-              <option value="monthly_email" selected>Monthly email report</option>
-            </select>
+          <div class="panel-field"><label class="panel-label">Meeting Preference</label>
+            <select id="propMeetingCadence" class="panel-input"><option value="weekly">Weekly (1 hr max)</option><option value="biweekly">Biweekly (30 min)</option><option value="monthly_email" selected>Monthly email report</option></select>
           </div>
-          <div class="panel-field">
-            <label class="panel-label" for="propMeetingDay">Preferred Day <span>(if applicable)</span></label>
-            <select id="propMeetingDay" class="panel-input">
-              <option value="">No preference</option>
-              <option value="Monday">Monday</option>
-              <option value="Tuesday">Tuesday</option>
-              <option value="Wednesday">Wednesday</option>
-              <option value="Thursday">Thursday</option>
-              <option value="Friday">Friday</option>
-            </select>
+          <div class="panel-field"><label class="panel-label">Preferred Day</label>
+            <select id="propMeetingDay" class="panel-input"><option value="">No preference</option><option value="Monday">Monday</option><option value="Tuesday">Tuesday</option><option value="Wednesday">Wednesday</option><option value="Thursday">Thursday</option><option value="Friday">Friday</option></select>
           </div>
         </div>
+
+        <!-- NOTES -->
         <div class="panel-field">
-          <label class="panel-label" for="propNotes">Discovery Notes <span>(anything else from the call — AI uses these to personalize the offer)</span></label>
-          <textarea id="propNotes" class="panel-textarea" placeholder="e.g. Lost 3 jobs last month because no one followed up. Website from 2016. Tried hiring a social media person but they ghosted. Has 349 existing contacts in an Excel sheet..."></textarea>
+          <label class="panel-label">Discovery Notes <span>(AI uses everything here)</span></label>
+          <textarea id="propNotes" class="panel-textarea" placeholder="e.g. Lost 3 jobs last month because no one followed up. Website from 2016. Has 349 contacts in Excel. Competitor down the street has 200 Google reviews..."></textarea>
         </div>
+
         <div class="panel-inline-error" id="proposalErr"></div>
         <button class="panel-run-btn" id="proposalRunBtn" onclick="runProposal()">Build Grand Slam Offer →</button>
       </div>
@@ -762,85 +795,45 @@ function renderBrief(b) {
   const tps  = (b.talkingPoints||[]).map(t=>`<div class="brief-item">${esc(t)}</div>`).join('');
   const approach = b.recommendedApproach || b.recommendedPackage || {};
 
-  // Discovery questions — handle both new object format and legacy array format
+  // Discovery questions — handle both structured and legacy formats
   const dq = b.discoveryQuestions || {};
   let discoveryHTML;
   if (Array.isArray(dq)) {
-    // Legacy array format
     discoveryHTML = dq.map((q,i)=>`<div class="brief-item"><span class="brief-item-num">${i+1}.</span>${esc(q)}</div>`).join('');
   } else {
-    // New structured format — labeled questions that map to Tool 02 fields
     const qFields = [
-      ['💰', 'Customer Value', dq.customerValue],
-      ['📊', 'Marketing Spend', dq.marketingSpend],
-      ['🎯', 'Pain Point', dq.painPoint],
-      ['✅', 'Desired Outcome', dq.desiredOutcome],
-      ['🔄', 'Tried Before', dq.triedBefore],
-      ['📅', 'Meeting Preference', dq.meetingPreference],
+      ['💰','Customer Value',dq.customerValue],['💵','Budget Before Results',dq.budgetBeforeResults],
+      ['📊','Marketing Spend',dq.marketingSpend],['🎯','Pain Point',dq.painPoint],
+      ['✅','Desired Outcome',dq.desiredOutcome],['🔄','Tried Before',dq.triedBefore],
+      ['📱','Social Media Goal',dq.socialGoal],['📅','Meeting Preference',dq.meetingPreference],
     ];
-    discoveryHTML = qFields
-      .filter(([,,v]) => v)
-      .map(([icon, label, q]) => `<div class="brief-item" style="flex-direction:column;gap:3px;">
-        <span style="font-size:10px;color:var(--accent-light);text-transform:uppercase;letter-spacing:.08em;font-weight:500;">${icon} ${label} → Tool 02</span>
-        <span style="color:rgba(255,255,255,.85);">${esc(q)}</span>
-      </div>`).join('');
-    // Additional questions
-    if (dq.additional && dq.additional.length > 0) {
-      discoveryHTML += dq.additional.map(q => `<div class="brief-item">${esc(q)}</div>`).join('');
-    }
+    discoveryHTML = qFields.filter(([,,v])=>v).map(([icon,label,q])=>`<div class="brief-item" style="flex-direction:column;gap:3px;"><span style="font-size:10px;color:var(--accent-light);text-transform:uppercase;letter-spacing:.08em;font-weight:500;">${icon} ${label} → Tool 02</span><span style="color:rgba(255,255,255,.85);">${esc(q)}</span></div>`).join('');
+    // Current metrics questions
+    const cm = dq.currentMetrics || {};
+    const metricQs = [['📈','Website Traffic',cm.websiteTraffic],['📞','Leads/Month',cm.leadsPerMonth],['👥','Social Followers',cm.socialFollowers]];
+    discoveryHTML += metricQs.filter(([,,v])=>v).map(([icon,label,q])=>`<div class="brief-item" style="flex-direction:column;gap:3px;"><span style="font-size:10px;color:var(--green);text-transform:uppercase;letter-spacing:.08em;font-weight:500;">${icon} ${label} → Benchmarks</span><span style="color:rgba(255,255,255,.85);">${esc(q)}</span></div>`).join('');
+    if (dq.additional && dq.additional.length > 0) discoveryHTML += dq.additional.map(q=>`<div class="brief-item">${esc(q)}</div>`).join('');
   }
 
+  // Estimated metrics from research
+  const em = p.estimatedMetrics || {};
+  const metricsHTML = (em.websiteTraffic || em.instagramFollowers) ? `
+    <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+      ${em.websiteTraffic ? `<div style="font-size:11px;color:var(--gray);"><strong style="color:var(--white);">${esc(em.websiteTraffic)}</strong> est. traffic</div>` : ''}
+      ${em.instagramFollowers && em.instagramFollowers !== 'Unknown' ? `<div style="font-size:11px;color:var(--gray);"><strong style="color:var(--white);">${esc(em.instagramFollowers)}</strong> IG followers</div>` : ''}
+      ${em.facebookFollowers && em.facebookFollowers !== 'Unknown' ? `<div style="font-size:11px;color:var(--gray);"><strong style="color:var(--white);">${esc(em.facebookFollowers)}</strong> FB followers</div>` : ''}
+    </div>
+  ` : '';
+
   document.getElementById('briefWrap').innerHTML = `
-    <div class="brief-header">
-      <div>
-        <div class="brief-biz-name">${esc(b.businessName)}</div>
-        <div class="brief-biz-city">${esc(b.city)}</div>
-        <div class="brief-grade-summary">${esc(p.gradeSummary||'')}</div>
-      </div>
-      <div class="brief-grade ${GRADE_CLS[p.overallGrade]||'grade-c'}">${esc(p.overallGrade||'?')}</div>
-    </div>
-    <div class="brief-section">
-      <div class="brief-sec-head"><span class="brief-sec-icon">🌐</span><span class="brief-sec-title">Digital Profile</span></div>
-      <div class="brief-sec-body">
-        <div class="profile-row"><span class="profile-key">Website</span><span class="profile-val">${esc(p.websitePlatform||'Unknown')} · ${esc(p.websiteQuality||'Unknown')}<small>${esc(p.websiteNotes||'')}</small></span></div>
-        <div class="profile-row"><span class="profile-key">Reviews</span><span class="profile-val">${esc(p.googleReviews||'Not Found')}</span></div>
-        <div class="social-grid">${socialHTML}</div>
-      </div>
-    </div>
-    <div class="brief-section">
-      <div class="brief-sec-head"><span class="brief-sec-icon">⚡</span><span class="brief-sec-title">Gap Analysis</span></div>
-      <div class="brief-sec-body"><div class="brief-list">${gaps}</div></div>
-    </div>
-    <div class="brief-section">
-      <div class="brief-sec-head"><span class="brief-sec-icon">💬</span><span class="brief-sec-title">Discovery Questions — Ask These on the Call</span></div>
-      <div class="brief-sec-body"><div class="brief-list">${discoveryHTML}</div></div>
-    </div>
-    <div class="brief-section">
-      <div class="brief-sec-head"><span class="brief-sec-icon">🎯</span><span class="brief-sec-title">MTM Talking Points</span></div>
-      <div class="brief-sec-body"><div class="brief-list">${tps}</div></div>
-    </div>
-    <div class="brief-section">
-      <div class="brief-sec-head"><span class="brief-sec-icon">🧭</span><span class="brief-sec-title">Recommended Approach</span></div>
-      <div class="brief-sec-body">
-        <div class="pkg-box">
-          ${approach.track ? `<div style="font-size:10px;color:var(--accent-light);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:4px;">${esc(approach.track)}</div>` : ''}
-          <div class="pkg-name">${esc(approach.scope || approach.name || '')}</div>
-          <div class="pkg-rationale">${esc(approach.rationale||'')}</div>
-        </div>
-      </div>
-    </div>
-    <div class="brief-section" style="border-color:rgba(74,222,128,.25);">
-      <div class="brief-sec-head" style="border-bottom-color:rgba(74,222,128,.15);"><span class="brief-sec-icon">🔗</span><span class="brief-sec-title" style="color:var(--green);">After the Call → Tool 02</span></div>
-      <div class="brief-sec-body">
-        <div style="font-size:12px;color:var(--gray);line-height:1.6;">
-          Once you have the answers above, open <strong style="color:var(--white);">Tool 02 — Proposal Generator</strong> and enter the discovery data. The AI will build a custom Grand Slam Offer with guarantee-based pricing, a branded proposal, and a ready-to-sign contract.
-        </div>
-      </div>
-    </div>
-    <div class="brief-actions">
-      <button class="btn-pdf" onclick="generatePDF(_brief)">⬇ Download PDF</button>
-      <button class="btn-new" onclick="resetProspect()">New Research</button>
-    </div>
+    <div class="brief-header"><div><div class="brief-biz-name">${esc(b.businessName)}</div><div class="brief-biz-city">${esc(b.city)}</div><div class="brief-grade-summary">${esc(p.gradeSummary||'')}</div></div><div class="brief-grade ${GRADE_CLS[p.overallGrade]||'grade-c'}">${esc(p.overallGrade||'?')}</div></div>
+    <div class="brief-section"><div class="brief-sec-head"><span class="brief-sec-icon">🌐</span><span class="brief-sec-title">Digital Profile</span></div><div class="brief-sec-body"><div class="profile-row"><span class="profile-key">Website</span><span class="profile-val">${esc(p.websitePlatform||'Unknown')} · ${esc(p.websiteQuality||'Unknown')}<small>${esc(p.websiteNotes||'')}</small></span></div><div class="profile-row"><span class="profile-key">Reviews</span><span class="profile-val">${esc(p.googleReviews||'Not Found')}</span></div><div class="social-grid">${socialHTML}</div>${metricsHTML}</div></div>
+    <div class="brief-section"><div class="brief-sec-head"><span class="brief-sec-icon">⚡</span><span class="brief-sec-title">Gap Analysis</span></div><div class="brief-sec-body"><div class="brief-list">${gaps}</div></div></div>
+    <div class="brief-section"><div class="brief-sec-head"><span class="brief-sec-icon">💬</span><span class="brief-sec-title">Discovery Questions — Ask These on the Call</span></div><div class="brief-sec-body"><div class="brief-list">${discoveryHTML}</div></div></div>
+    <div class="brief-section"><div class="brief-sec-head"><span class="brief-sec-icon">🎯</span><span class="brief-sec-title">MTM Talking Points</span></div><div class="brief-sec-body"><div class="brief-list">${tps}</div></div></div>
+    <div class="brief-section"><div class="brief-sec-head"><span class="brief-sec-icon">🧭</span><span class="brief-sec-title">Recommended Approach</span></div><div class="brief-sec-body"><div class="pkg-box">${approach.track?`<div style="font-size:10px;color:var(--accent-light);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:4px;">${esc(approach.track)}</div>`:''}<div class="pkg-name">${esc(approach.scope||approach.name||'')}</div><div class="pkg-rationale">${esc(approach.rationale||'')}</div></div></div></div>
+    <div class="brief-section" style="border-color:rgba(74,222,128,.25);"><div class="brief-sec-head" style="border-bottom-color:rgba(74,222,128,.15);"><span class="brief-sec-icon">🔗</span><span class="brief-sec-title" style="color:var(--green);">After the Call → Tool 02</span></div><div class="brief-sec-body"><div style="font-size:12px;color:var(--gray);line-height:1.6;">Once you have the answers above, open <strong style="color:var(--white);">Tool 02 — Proposal Generator</strong> and enter the discovery data. Select which services the client wants (Website / Backend / Social), fill in their answers, and the AI builds a custom Grand Slam Offer with a ready-to-sign contract.</div></div></div>
+    <div class="brief-actions"><button class="btn-pdf" onclick="generatePDF(_brief)">⬇ Download PDF</button><button class="btn-new" onclick="resetProspect()">New Research</button></div>
   `;
 }
 
@@ -923,29 +916,22 @@ function generatePDF(b) {
   (b.gapAnalysis||[]).forEach(g => { y = bulletLine(g, y, null); });
   y += 3; y = rule(y);
 
-  y = secHead('', 'Discovery Questions — Ask These on the Call', y);
+  y = secHead('', 'Discovery Questions — Ask on the Call', y);
   const dq = b.discoveryQuestions || {};
   if (Array.isArray(dq)) {
     dq.forEach((q,i) => { y = bulletLine(q, y, i+1); });
   } else {
-    const qFields = [
-      ['CUSTOMER VALUE', dq.customerValue],
-      ['MARKETING SPEND', dq.marketingSpend],
-      ['PAIN POINT', dq.painPoint],
-      ['DESIRED OUTCOME', dq.desiredOutcome],
-      ['TRIED BEFORE', dq.triedBefore],
-      ['MEETING PREFERENCE', dq.meetingPreference],
-    ];
-    qFields.filter(([,v]) => v).forEach(([label, q], i) => {
-      maybeNewPage(14);
-      sf('bold', 7, BLUE); doc.text(`${label} → Tool 02`, ml + 2, y); y += 4;
-      sf('normal', 8.5, BLACK);
-      const lines = doc.splitTextToSize(q, cw - 6);
-      doc.text(lines, ml + 4, y); y += lines.length * 4.5 + 3;
+    const qFields = [['CUSTOMER VALUE',dq.customerValue],['BUDGET BEFORE RESULTS',dq.budgetBeforeResults],['MARKETING SPEND',dq.marketingSpend],['PAIN POINT',dq.painPoint],['DESIRED OUTCOME',dq.desiredOutcome],['TRIED BEFORE',dq.triedBefore],['SOCIAL GOAL',dq.socialGoal],['MEETING PREFERENCE',dq.meetingPreference]];
+    qFields.filter(([,v])=>v).forEach(([label,q])=>{
+      maybeNewPage(14);sf('bold',7,BLUE);doc.text(`${label} → Tool 02`,ml+2,y);y+=4;
+      sf('normal',8.5,BLACK);const lines=doc.splitTextToSize(q,cw-6);doc.text(lines,ml+4,y);y+=lines.length*4.5+3;
     });
-    if (dq.additional && dq.additional.length > 0) {
-      dq.additional.forEach(q => { y = bulletLine(q, y, null); });
-    }
+    const cm = dq.currentMetrics || {};
+    [['WEBSITE TRAFFIC',cm.websiteTraffic],['LEADS/MONTH',cm.leadsPerMonth],['SOCIAL FOLLOWERS',cm.socialFollowers]].filter(([,v])=>v).forEach(([label,q])=>{
+      maybeNewPage(14);sf('bold',7,[74,222,128]);doc.text(`${label} → Benchmarks`,ml+2,y);y+=4;
+      sf('normal',8.5,BLACK);const lines=doc.splitTextToSize(q,cw-6);doc.text(lines,ml+4,y);y+=lines.length*4.5+3;
+    });
+    if (dq.additional && dq.additional.length>0) dq.additional.forEach(q=>{y=bulletLine(q,y,null);});
   }
   y += 3; y = rule(y);
 
@@ -1344,12 +1330,14 @@ function fmtDuration(sec) {
 }
 
 
+
 /* ══════════════════════════════════════════════
    PROPOSAL PANEL (Tool 02)
 ══════════════════════════════════════════════ */
 function openProposalPanel() {
   document.getElementById('proposal-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
+  toggleServiceSections();
   setTimeout(() => document.getElementById('propBizName').focus(), 300);
 }
 function closeProposalPanel() {
@@ -1358,52 +1346,85 @@ function closeProposalPanel() {
 }
 function handleProposalBackdrop(e) { if (e.target === document.getElementById('proposal-panel')) closeProposalPanel(); }
 
-const PROPOSAL_MSGS = ['Analyzing their business...', 'Identifying pain points...', 'Stacking value...', 'Building guarantee metrics...', 'Crafting the Grand Slam Offer...'];
+function toggleServiceSections() {
+  const web = document.getElementById('chkWeb').checked;
+  const soc = document.getElementById('chkSoc').checked;
+  const back = document.getElementById('chkBack').checked;
+  document.getElementById('webScopeSection').style.display = web ? 'block' : 'none';
+  document.getElementById('socScopeSection').style.display = soc ? 'block' : 'none';
+  document.getElementById('socialGoalSection').style.display = soc ? 'block' : 'none';
+  document.getElementById('socialMinNote').style.display = soc ? 'block' : 'none';
+  document.getElementById('metricWebFields').style.display = (web || back) ? 'grid' : 'none';
+  document.getElementById('metricSocialFields').style.display = soc ? 'grid' : 'none';
+  ['chkWebLabel','chkBackLabel','chkSocLabel'].forEach(id => {
+    const el = document.getElementById(id);
+    const inp = el.querySelector('input');
+    el.style.borderColor = inp.checked ? 'rgba(45,107,228,.5)' : 'var(--border)';
+    el.style.background = inp.checked ? 'rgba(45,107,228,.06)' : 'rgba(255,255,255,.03)';
+  });
+}
+
+const PROPOSAL_MSGS = ['Analyzing their business...','Identifying pain points...','Stacking value...','Building guarantee metrics...','Crafting the Grand Slam Offer...'];
 let _proposal = null;
 
 async function runProposal() {
-  const bizName   = document.getElementById('propBizName').value.trim();
-  const contact   = document.getElementById('propContact').value.trim();
-  const city      = document.getElementById('propCity').value.trim();
-  const bizType   = document.getElementById('propBizType').value;
-  const custValue = document.getElementById('propCustValue').value;
-  const mktSpend  = document.getElementById('propMktSpend').value;
-  const pain      = document.getElementById('propPain').value;
-  const outcome   = document.getElementById('propOutcome').value.trim();
-  const tried     = document.getElementById('propTriedBefore').value;
-  const cadence   = document.getElementById('propMeetingCadence').value;
-  const day       = document.getElementById('propMeetingDay').value;
-  const notes     = document.getElementById('propNotes').value.trim();
-  const errEl     = document.getElementById('proposalErr');
+  const bizName = document.getElementById('propBizName').value.trim();
+  const contact = document.getElementById('propContact').value.trim();
+  const city    = document.getElementById('propCity').value.trim();
+  const bizType = document.getElementById('propBizType').value;
+  const errEl   = document.getElementById('proposalErr');
+  const web = document.getElementById('chkWeb').checked;
+  const back = document.getElementById('chkBack').checked;
+  const soc = document.getElementById('chkSoc').checked;
 
   errEl.classList.remove('show');
-  if (!bizName) { errEl.textContent = 'Enter a business name.';  errEl.classList.add('show'); return; }
-  if (!contact) { errEl.textContent = 'Enter a contact name.';   errEl.classList.add('show'); return; }
-  if (!city)    { errEl.textContent = 'Enter a city and state.';  errEl.classList.add('show'); return; }
-  if (!bizType) { errEl.textContent = 'Select a business type.';  errEl.classList.add('show'); return; }
+  if (!bizName) { errEl.textContent = 'Enter a business name.'; errEl.classList.add('show'); return; }
+  if (!contact) { errEl.textContent = 'Enter a contact name.'; errEl.classList.add('show'); return; }
+  if (!city) { errEl.textContent = 'Enter a city and state.'; errEl.classList.add('show'); return; }
+  if (!bizType) { errEl.textContent = 'Select a business type.'; errEl.classList.add('show'); return; }
+  if (!web && !back && !soc) { errEl.textContent = 'Select at least one service.'; errEl.classList.add('show'); return; }
 
   document.getElementById('proposalForm').style.display = 'none';
   document.getElementById('proposalLoadingEl').classList.add('show');
   document.getElementById('proposalWrap').classList.remove('show');
 
   let mi = 0;
-  const msgTimer = setInterval(() => {
-    mi = (mi + 1) % PROPOSAL_MSGS.length;
-    const el = document.getElementById('proposalLoadingMsg');
-    if (el) el.textContent = PROPOSAL_MSGS[mi];
-  }, 3500);
+  const msgTimer = setInterval(() => { mi = (mi+1) % PROPOSAL_MSGS.length; const el = document.getElementById('proposalLoadingMsg'); if (el) el.textContent = PROPOSAL_MSGS[mi]; }, 3500);
 
   try {
-    const res = await fetch('/api/proposal', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        businessName: bizName, contactName: contact, city, businessType: bizType,
-        avgCustomerValue: custValue, currentMarketingSpend: mktSpend,
-        painPoint: pain, desiredOutcome: outcome, triedBefore: tried,
-        meetingCadence: cadence, meetingDay: day, discoveryNotes: notes,
-      }),
-    });
+    const payload = {
+      businessName: bizName, contactName: contact, city, businessType: bizType,
+      serviceWebsite: web, serviceBackend: back, serviceSocial: soc,
+      avgCustomerValue: document.getElementById('propCustValue').value,
+      budgetBeforeResults: document.getElementById('propBudget').value,
+      currentMarketingSpend: document.getElementById('propMktSpend').value,
+      painPoint: document.getElementById('propPain').value,
+      desiredOutcome: document.getElementById('propOutcome').value.trim(),
+      triedBefore: document.getElementById('propTriedBefore').value,
+      socialGoal: soc ? document.getElementById('propSocialGoal').value : '',
+      meetingCadence: document.getElementById('propMeetingCadence').value,
+      meetingDay: document.getElementById('propMeetingDay').value,
+      discoveryNotes: document.getElementById('propNotes').value.trim(),
+      currentWebsiteTraffic: document.getElementById('propMetricTraffic')?.value || '',
+      currentLeadsPerMonth: document.getElementById('propMetricLeads')?.value || '',
+      currentInstagramFollowers: soc ? document.getElementById('propMetricIG').value : '',
+      currentFacebookFollowers: soc ? document.getElementById('propMetricFB').value : '',
+      currentTiktokFollowers: soc ? document.getElementById('propMetricTT').value : '',
+      currentGoogleReviews: document.getElementById('propMetricReviews')?.value || '',
+    };
+    if (web) {
+      payload.websitePages = document.getElementById('propWebPages').value;
+      payload.websiteXmlSitemap = document.getElementById('propWebXml').value;
+      payload.websiteMinImages = document.getElementById('propWebImages').value;
+      payload.websiteMinVideos = document.getElementById('propWebVideos').value;
+      payload.websiteLeadCapture = document.getElementById('propWebLeadCapture').value;
+    }
+    if (soc) {
+      payload.socialSamePostsPerWeek = document.getElementById('propSocSame').value;
+      payload.socialDiffPostsPerWeek = document.getElementById('propSocDiff').value;
+      payload.socialPlatforms = document.getElementById('propSocPlatforms').value;
+    }
+    const res = await fetch('/api/proposal', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const data = await res.json();
     clearInterval(msgTimer);
     if (!data.success || !data.proposal) { showProposalError(data.error || 'Offer generation failed.'); return; }
@@ -1411,18 +1432,13 @@ async function runProposal() {
     renderProposal(data.proposal);
     document.getElementById('proposalLoadingEl').classList.remove('show');
     document.getElementById('proposalWrap').classList.add('show');
-  } catch {
-    clearInterval(msgTimer);
-    showProposalError('Connection error. Please try again.');
-  }
+  } catch { clearInterval(msgTimer); showProposalError('Connection error.'); }
 }
 
 function showProposalError(msg) {
   document.getElementById('proposalLoadingEl').classList.remove('show');
   document.getElementById('proposalForm').style.display = 'flex';
-  const errEl = document.getElementById('proposalErr');
-  errEl.textContent = msg;
-  errEl.classList.add('show');
+  const e = document.getElementById('proposalErr'); e.textContent = msg; e.classList.add('show');
 }
 
 function resetProposal() {
@@ -1436,144 +1452,121 @@ function resetProposal() {
 
 function applyProposalEdits() {
   if (!_proposal) return;
-  const s = document.getElementById('editSetup').value;
-  const i = document.getElementById('editIntro').value;
-  const st = document.getElementById('editStandard').value;
-  const t = document.getElementById('editTerm').value;
-  if (s) _proposal.setupFee = parseInt(s);
-  if (i) _proposal.introMonthly = parseInt(i);
-  if (st) _proposal.standardMonthly = parseInt(st);
-  if (t) _proposal.minimumTermDays = parseInt(t);
-  // Re-compute ROI
+  const fields = {
+    setupFee: 'editSetup', introMonthly: 'editIntro', standardMonthly: 'editStandard',
+    minimumTermDays: 'editTerm',
+  };
+  for (const [key, id] of Object.entries(fields)) {
+    const el = document.getElementById(id);
+    if (el && el.value) _proposal[key] = parseInt(el.value);
+  }
+  const spEl = document.getElementById('editSetupPayment');
+  if (spEl) _proposal.setupPaymentStructure = spEl.value;
+  // Web scope
+  const wpEl = document.getElementById('editWebPages');
+  if (wpEl && _proposal.webScope) _proposal.webScope.pages = parseInt(wpEl.value) || 5;
+  const wiEl = document.getElementById('editWebImages');
+  if (wiEl && _proposal.webScope) _proposal.webScope.minImages = parseInt(wiEl.value) || 3;
+  const wvEl = document.getElementById('editWebVideos');
+  if (wvEl && _proposal.webScope) _proposal.webScope.minVideos = parseInt(wvEl.value) || 1;
+  // Social scope
+  const ssEl = document.getElementById('editSocSame');
+  if (ssEl && _proposal.socScope) _proposal.socScope.samePostsPerWeek = parseInt(ssEl.value) || 3;
+  const sdEl = document.getElementById('editSocDiff');
+  if (sdEl && _proposal.socScope) _proposal.socScope.diffPostsPerWeek = parseInt(sdEl.value) || 1;
+  // ROI recalc
   const cv = _proposal.roi?.avgCustomerValue || 0;
   if (cv > 0 && _proposal.introMonthly > 0) {
     _proposal.roi.introMonthly = _proposal.introMonthly;
     _proposal.roi.breakEvenLeads = Math.ceil(_proposal.introMonthly / cv);
     _proposal.roi.headline = cv >= _proposal.introMonthly
       ? `One new customer covers ${Math.floor(cv / _proposal.introMonthly)} month${Math.floor(cv / _proposal.introMonthly) !== 1 ? 's' : ''} of your intro rate.`
-      : `${Math.ceil(_proposal.introMonthly / cv)} new customers per month covers your full investment.`;
+      : `${Math.ceil(_proposal.introMonthly / cv)} new customers per month covers your investment.`;
   }
   renderProposal(_proposal);
 }
 
 function renderProposal(p) {
   const roi = p.roi;
+  const ws = p.webScope || {};
+  const ss = p.socScope || {};
+  const painHTML = (p.painPoints||[]).map(pt=>`<div class="proposal-item pain">${esc(pt)}</div>`).join('');
+  const svcHTML = (p.services||[]).map(s=>`<div class="svc-row"><div class="svc-name">${esc(s.name)}</div><div class="svc-desc">${esc(s.desc)}</div>${s.valueHighlight?`<div class="svc-value">${esc(s.valueHighlight)}</div>`:''}</div>`).join('');
 
-  const painHTML = (p.painPoints || []).map(pt => `<div class="proposal-item pain">${esc(pt)}</div>`).join('');
+  const guaranteeHTML = (p.guaranteeMetrics||[]).length > 0 ? `
+    <div class="guarantee-row"><div class="guarantee-row-head">Metric</div><div class="guarantee-row-head">Baseline</div><div class="guarantee-row-head">Target</div><div class="guarantee-row-head">Source</div></div>
+    ${(p.guaranteeMetrics||[]).map(g=>`<div class="guarantee-row"><div class="guarantee-metric">${esc(g.metric)}</div><div class="guarantee-baseline">${esc(g.baseline)}</div><div class="guarantee-target">${esc(g.target)}</div><div class="guarantee-source">${esc(g.source)}</div></div>`).join('')}
+  ` : '<div class="proposal-item">No metrics defined — add via edit controls above.</div>';
 
-  const svcHTML = (p.services || []).map(s => `
-    <div class="svc-row">
-      <div class="svc-name">${esc(s.name)}</div>
-      <div class="svc-desc">${esc(s.desc)}</div>
-      ${s.valueHighlight ? `<div class="svc-value">${esc(s.valueHighlight)}</div>` : ''}
-    </div>
-  `).join('');
+  const roiHTML = roi ? `<div class="roi-box"><div class="roi-headline">${esc(roi.headline)}</div><div class="roi-detail">At ${fmtCurrency(roi.avgCustomerValue)} per customer, your ${fmtCurrency(p.introMonthly)}/mo breaks even with ${roi.breakEvenLeads} new customer${roi.breakEvenLeads!==1?'s':''}/month.</div></div>` : '';
+  const timelineHTML = (p.timeline||[]).map(t=>`<div class="timeline-step"><div class="timeline-days">${esc(t.days)}</div><div><div class="timeline-phase">${esc(t.phase)}</div><div class="timeline-desc">${esc(t.desc)}</div></div></div>`).join('');
+  const stepsHTML = (p.nextSteps||[]).map(s=>`<div class="proposal-item step">${esc(s)}</div>`).join('');
+  const tipsHTML = (p.sellingTips||[]).map(t=>`<div class="proposal-item tip">${esc(t)}</div>`).join('');
 
-  const guaranteeHTML = (p.guaranteeMetrics || []).length > 0 ? `
-    <div class="guarantee-row">
-      <div class="guarantee-row-head">Metric</div>
-      <div class="guarantee-row-head">Baseline</div>
-      <div class="guarantee-row-head">Target</div>
-      <div class="guarantee-row-head">Source</div>
-    </div>
-    ${(p.guaranteeMetrics || []).map(g => `
-      <div class="guarantee-row">
-        <div class="guarantee-metric">${esc(g.metric)}</div>
-        <div class="guarantee-baseline">${esc(g.baseline)}</div>
-        <div class="guarantee-target">${esc(g.target)}</div>
-        <div class="guarantee-source">${esc(g.source)}</div>
-      </div>
-    `).join('')}
-  ` : '<div class="proposal-item">No guarantee metrics defined.</div>';
-
-  const roiHTML = roi ? `
-    <div class="roi-box">
-      <div class="roi-headline">${esc(roi.headline)}</div>
-      <div class="roi-detail">At ${fmtCurrency(roi.avgCustomerValue)} per customer, your ${fmtCurrency(p.introMonthly)}/mo investment breaks even with just ${roi.breakEvenLeads} new customer${roi.breakEvenLeads !== 1 ? 's' : ''} per month. Everything after that is pure upside.</div>
-    </div>
-  ` : '<div class="proposal-item">Add average customer value to see ROI projection.</div>';
-
-  const timelineHTML = (p.timeline || []).map(t => `
-    <div class="timeline-step">
-      <div class="timeline-days">${esc(t.days)}</div>
-      <div><div class="timeline-phase">${esc(t.phase)}</div><div class="timeline-desc">${esc(t.desc)}</div></div>
-    </div>
-  `).join('');
-
-  const stepsHTML = (p.nextSteps || []).map(s => `<div class="proposal-item step">${esc(s)}</div>`).join('');
-  const tipsHTML = (p.sellingTips || []).map(t => `<div class="proposal-item tip">${esc(t)}</div>`).join('');
+  // Services badges
+  const badges = [];
+  if (p.serviceWebsite) badges.push('🌐 Website');
+  if (p.serviceBackend) badges.push('⚙️ Backend');
+  if (p.serviceSocial) badges.push('📱 Social');
 
   document.getElementById('proposalWrap').innerHTML = `
     <div class="proposal-header">
       <div class="proposal-biz-name">${esc(p.businessName)}</div>
       <div class="proposal-contact">Prepared for ${esc(p.contactName)} · ${esc(p.city)}</div>
-      <div class="proposal-offer-tag">${esc(p.offerName)}</div>
-      ${p.offerTagline ? `<div class="proposal-tagline">${esc(p.offerTagline)}</div>` : ''}
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+        ${badges.map(b=>`<span class="proposal-offer-tag">${b}</span>`).join('')}
+      </div>
+      <div class="proposal-offer-tag" style="margin-top:4px;">${esc(p.offerName)}</div>
+      ${p.offerTagline?`<div class="proposal-tagline">${esc(p.offerTagline)}</div>`:''}
     </div>
 
-    <div class="edit-bar">
-      <span class="edit-bar-label">✏️ Edit Offer</span>
-      <span class="edit-bar-note">Adjust pricing and term before generating PDFs:</span>
-    </div>
+    <!-- EDIT CONTROLS -->
+    <div class="edit-bar"><span class="edit-bar-label">✏️ Edit Offer</span><span class="edit-bar-note">Adjust any values before generating PDFs</span></div>
     <div class="proposal-section">
-      <div class="proposal-sec-body" style="gap:12px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;">
-          <div class="panel-field"><label class="panel-label">Setup ($)</label><input type="number" class="edit-inline edit-inline-wide" id="editSetup" value="${p.setupFee}" onchange="applyProposalEdits()"/></div>
+      <div class="proposal-sec-body" style="gap:10px;">
+        <div style="font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;font-weight:500;">Pricing</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px;">
+          <div class="panel-field"><label class="panel-label">Setup $</label><input type="number" class="edit-inline edit-inline-wide" id="editSetup" value="${p.setupFee}" onchange="applyProposalEdits()"/></div>
           <div class="panel-field"><label class="panel-label">Intro $/mo</label><input type="number" class="edit-inline edit-inline-wide" id="editIntro" value="${p.introMonthly}" onchange="applyProposalEdits()"/></div>
           <div class="panel-field"><label class="panel-label">Standard $/mo</label><input type="number" class="edit-inline edit-inline-wide" id="editStandard" value="${p.standardMonthly}" onchange="applyProposalEdits()"/></div>
           <div class="panel-field"><label class="panel-label">Term (days)</label><input type="number" class="edit-inline edit-inline-wide" id="editTerm" value="${p.minimumTermDays}" onchange="applyProposalEdits()"/></div>
         </div>
-      </div>
-    </div>
-
-    <div class="proposal-section">
-      <div class="proposal-sec-head"><span class="proposal-sec-icon">⚠️</span><span class="proposal-sec-title">What You're Losing Right Now</span></div>
-      <div class="proposal-sec-body">${painHTML}</div>
-    </div>
-
-    <div class="proposal-section">
-      <div class="proposal-sec-head"><span class="proposal-sec-icon">📦</span><span class="proposal-sec-title">${esc(p.offerName)} — What's Included</span></div>
-      <div class="proposal-sec-body">${svcHTML}
-        ${p.valueStack ? `<div class="value-stack-box">${esc(p.valueStack)}</div>` : ''}
-      </div>
-    </div>
-
-    <div class="proposal-section">
-      <div class="proposal-sec-head"><span class="proposal-sec-icon">💰</span><span class="proposal-sec-title">Your Investment</span></div>
-      <div class="proposal-sec-body">
-        <div class="invest-grid">
-          <div class="invest-card highlight"><div class="invest-label">One-Time Setup</div><div class="invest-value blue">${fmtCurrency(p.setupFee)}</div><div class="invest-sub">Build + configure + launch</div></div>
-          <div class="invest-card green-highlight"><div class="invest-label">Intro Rate</div><div class="invest-value green">${fmtCurrency(p.introMonthly)}/mo</div><div class="invest-sub">Until benchmarks hit</div></div>
-          <div class="invest-card"><div class="invest-label">Standard Rate</div><div class="invest-value">${fmtCurrency(p.standardMonthly)}/mo</div><div class="invest-sub">After all metrics met</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div class="panel-field"><label class="panel-label">Setup Payment</label><select class="edit-inline edit-inline-wide" id="editSetupPayment" onchange="applyProposalEdits()" style="width:100%;"><option value="half_upfront" ${p.setupPaymentStructure==='half_upfront'?'selected':''}>Half upfront, half on completion</option><option value="full_upfront" ${p.setupPaymentStructure==='full_upfront'?'selected':''}>Full upfront</option></select></div>
         </div>
-        <div class="invest-note"><strong>Performance-based pricing:</strong> You start at ${fmtCurrency(p.introMonthly)}/month while we prove the system works. The standard rate of ${fmtCurrency(p.standardMonthly)}/month activates only after all performance benchmarks below are simultaneously achieved. You only pay more when the results justify it.</div>
+        ${p.serviceWebsite ? `
+        <div style="font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;font-weight:500;margin-top:6px;">Website Scope</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;">
+          <div class="panel-field"><label class="panel-label"># Pages</label><input type="number" class="edit-inline edit-inline-wide" id="editWebPages" value="${ws.pages||5}" onchange="applyProposalEdits()"/></div>
+          <div class="panel-field"><label class="panel-label">Min Images</label><input type="number" class="edit-inline edit-inline-wide" id="editWebImages" value="${ws.minImages||3}" onchange="applyProposalEdits()"/></div>
+          <div class="panel-field"><label class="panel-label">Min Videos</label><input type="number" class="edit-inline edit-inline-wide" id="editWebVideos" value="${ws.minVideos||1}" onchange="applyProposalEdits()"/></div>
+        </div>` : ''}
+        ${p.serviceSocial ? `
+        <div style="font-size:10px;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;font-weight:500;margin-top:6px;">Social Scope</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+          <div class="panel-field"><label class="panel-label">Same Posts/Wk</label><input type="number" class="edit-inline edit-inline-wide" id="editSocSame" value="${ss.samePostsPerWeek||3}" onchange="applyProposalEdits()"/></div>
+          <div class="panel-field"><label class="panel-label">Unique Posts/Wk</label><input type="number" class="edit-inline edit-inline-wide" id="editSocDiff" value="${ss.diffPostsPerWeek||1}" onchange="applyProposalEdits()"/></div>
+        </div>` : ''}
       </div>
     </div>
 
-    <div class="proposal-section">
-      <div class="proposal-sec-head"><span class="proposal-sec-icon">🎯</span><span class="proposal-sec-title">Performance Guarantee</span></div>
-      <div class="proposal-sec-body">${guaranteeHTML}</div>
-    </div>
+    <div class="proposal-section"><div class="proposal-sec-head"><span class="proposal-sec-icon">⚠️</span><span class="proposal-sec-title">What You're Losing Right Now</span></div><div class="proposal-sec-body">${painHTML}</div></div>
+    <div class="proposal-section"><div class="proposal-sec-head"><span class="proposal-sec-icon">📦</span><span class="proposal-sec-title">${esc(p.offerName)} — What's Included</span></div><div class="proposal-sec-body">${svcHTML}${p.valueStack?`<div class="value-stack-box">${esc(p.valueStack)}</div>`:''}</div></div>
 
-    <div class="proposal-section">
-      <div class="proposal-sec-head"><span class="proposal-sec-icon">📈</span><span class="proposal-sec-title">ROI Projection</span></div>
-      <div class="proposal-sec-body">${roiHTML}</div>
-    </div>
+    <div class="proposal-section"><div class="proposal-sec-head"><span class="proposal-sec-icon">💰</span><span class="proposal-sec-title">Your Investment</span></div><div class="proposal-sec-body">
+      <div class="invest-grid">
+        <div class="invest-card highlight"><div class="invest-label">Setup Fee</div><div class="invest-value blue">${fmtCurrency(p.setupFee)}</div><div class="invest-sub">${p.setupPaymentStructure==='half_upfront'?'Half now, half on completion':'Due upon signing'}</div></div>
+        <div class="invest-card green-highlight"><div class="invest-label">Intro Rate</div><div class="invest-value green">${fmtCurrency(p.introMonthly)}/mo</div><div class="invest-sub">Until benchmarks hit</div></div>
+        <div class="invest-card"><div class="invest-label">Standard Rate</div><div class="invest-value">${fmtCurrency(p.standardMonthly)}/mo</div><div class="invest-sub">After all metrics met</div></div>
+      </div>
+      <div class="invest-note"><strong>Performance-based pricing:</strong> You start at ${fmtCurrency(p.introMonthly)}/month. Standard rate of ${fmtCurrency(p.standardMonthly)}/month activates only after all performance benchmarks are simultaneously achieved. Billing due on the Monday closest to your sign date each month.</div>
+    </div></div>
 
-    <div class="proposal-section">
-      <div class="proposal-sec-head"><span class="proposal-sec-icon">🗓️</span><span class="proposal-sec-title">Delivery Timeline</span></div>
-      <div class="proposal-sec-body">${timelineHTML}</div>
-    </div>
-
-    <div class="proposal-section">
-      <div class="proposal-sec-head"><span class="proposal-sec-icon">✅</span><span class="proposal-sec-title">Next Steps</span></div>
-      <div class="proposal-sec-body">${stepsHTML}</div>
-    </div>
-
-    <div class="proposal-section selling-tips-section">
-      <div class="proposal-sec-head"><span class="proposal-sec-icon">🔒</span><span class="proposal-sec-title">Sales Notes (Internal Only — Not in PDFs)</span></div>
-      <div class="proposal-sec-body">${tipsHTML}</div>
-    </div>
+    <div class="proposal-section"><div class="proposal-sec-head"><span class="proposal-sec-icon">🎯</span><span class="proposal-sec-title">Performance Guarantee</span></div><div class="proposal-sec-body">${guaranteeHTML}</div></div>
+    ${roi?`<div class="proposal-section"><div class="proposal-sec-head"><span class="proposal-sec-icon">📈</span><span class="proposal-sec-title">ROI Projection</span></div><div class="proposal-sec-body">${roiHTML}</div></div>`:''}
+    <div class="proposal-section"><div class="proposal-sec-head"><span class="proposal-sec-icon">🗓️</span><span class="proposal-sec-title">Delivery Timeline</span></div><div class="proposal-sec-body">${timelineHTML}</div></div>
+    <div class="proposal-section"><div class="proposal-sec-head"><span class="proposal-sec-icon">✅</span><span class="proposal-sec-title">Next Steps</span></div><div class="proposal-sec-body">${stepsHTML}</div></div>
+    <div class="proposal-section selling-tips-section"><div class="proposal-sec-head"><span class="proposal-sec-icon">🔒</span><span class="proposal-sec-title">Sales Notes (Internal Only)</span></div><div class="proposal-sec-body">${tipsHTML}</div></div>
 
     <div class="proposal-actions">
       <button class="btn-pdf" onclick="generateProposalPDF(_proposal)">⬇ Download Proposal</button>
@@ -1589,14 +1582,14 @@ function renderProposal(p) {
 function generateProposalPDF(p) {
   if (!window.jspdf) { alert('PDF library still loading.'); return; }
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const W=210,H=297,ml=18,mr=18,cw=W-ml-mr; let y=0;
   const BLUE=[45,107,228],WHITE=[244,244,242],GRAY=[130,130,130],LIGHT=[225,225,222],BLACK=[12,12,12],GREEN=[74,222,128],YELLOW=[245,197,24],AL=[91,143,240];
   const sf=(s,sz,c)=>{doc.setFont('helvetica',s);doc.setFontSize(sz);doc.setTextColor(...(c||BLACK));};
   const rule=yy=>{doc.setDrawColor(...LIGHT);doc.line(ml,yy,W-mr,yy);return yy+5;};
   const mnp=n=>{if(y+n>H-16){doc.addPage();y=18;}};
   function secH(l,yy){mnp(14);doc.setFillColor(240,242,250);doc.rect(ml,yy,cw,8,'F');sf('bold',8,BLUE);doc.text(l.toUpperCase(),ml+4,yy+5.5);return yy+13;}
-  function bLine(t,yy,ico){mnp(12);const pr=ico||'→';sf('bold',8,ico==='⚠'?YELLOW:ico==='✓'?GREEN:BLUE);doc.text(pr,ml+2,yy);sf('normal',8.5,BLACK);const ln=doc.splitTextToSize(t,cw-14);doc.text(ln,ml+11,yy);return yy+ln.length*5+2.5;}
+  function bLine(t,yy,ico){mnp(12);sf('bold',8,ico==='⚠'?YELLOW:ico==='✓'?GREEN:BLUE);doc.text(ico||'→',ml+2,yy);sf('normal',8.5,BLACK);const ln=doc.splitTextToSize(t,cw-14);doc.text(ln,ml+11,yy);return yy+ln.length*5+2.5;}
   // Header
   doc.setFillColor(...BLUE);doc.rect(0,0,W,20,'F');sf('bold',13,WHITE);doc.text('MORE THAN MOMENTUM',ml,9);sf('normal',7.5,[180,205,245]);doc.text('Growth Proposal  ·  morethanmomentum.com',ml,15.5);y=28;
   sf('bold',20,BLACK);doc.text(p.businessName||'',ml,y);y+=6;
@@ -1604,245 +1597,226 @@ function generateProposalPDF(p) {
   sf('bold',11,BLUE);doc.text(p.offerName||'',ml,y);y+=4;
   if(p.offerTagline){sf('italic',9,GRAY);doc.text(p.offerTagline,ml,y);y+=4;}
   sf('normal',7.5,GRAY);doc.text(`Generated: ${new Date(p.generatedAt).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}`,ml,y);y+=8;y=rule(y);
-  // Pain points
+  // Pain
   y=secH('What You\'re Losing Right Now',y);(p.painPoints||[]).forEach(pt=>{y=bLine(pt,y,'⚠');});y+=3;y=rule(y);
   // Services
   y=secH(p.offerName+' — What\'s Included',y);
-  (p.services||[]).forEach(s=>{mnp(16);sf('bold',9,BLACK);doc.text(s.name,ml,y);y+=4.5;sf('normal',8,GRAY);const dl=doc.splitTextToSize(s.desc,cw-4);doc.text(dl,ml+2,y);y+=dl.length*4.3+1;if(s.valueHighlight){sf('italic',7.5,AL);doc.text(s.valueHighlight,ml+2,y);y+=4;}y+=2;});
+  (p.services||[]).forEach(s=>{mnp(16);sf('bold',9,BLACK);doc.text(s.name,ml,y);y+=4.5;sf('normal',8,GRAY);const dl=doc.splitTextToSize(s.desc,cw-4);doc.text(dl,ml+2,y);y+=dl.length*4.3+4;});
   if(p.valueStack){mnp(16);sf('italic',8.5,[60,80,130]);const vl=doc.splitTextToSize(p.valueStack,cw-8);doc.setFillColor(240,244,255);doc.roundedRect(ml,y,cw,vl.length*4.5+10,2,2,'F');doc.text(vl,ml+4,y+6);y+=vl.length*4.5+14;}
   y+=2;y=rule(y);
   // Investment
   y=secH('Your Investment',y);mnp(50);
   const bw=(cw-12)/3;
-  doc.setFillColor(245,247,252);doc.setDrawColor(...LIGHT);doc.roundedRect(ml,y,bw,22,2,2,'FD');sf('bold',7,GRAY);doc.text('ONE-TIME SETUP',ml+4,y+5.5);sf('bold',14,BLUE);doc.text(fmtCurrency(p.setupFee),ml+4,y+14);
+  doc.setFillColor(245,247,252);doc.setDrawColor(...LIGHT);doc.roundedRect(ml,y,bw,22,2,2,'FD');sf('bold',7,GRAY);doc.text('SETUP FEE',ml+4,y+5.5);sf('bold',14,BLUE);doc.text(fmtCurrency(p.setupFee),ml+4,y+14);sf('normal',6.5,GRAY);doc.text(p.setupPaymentStructure==='half_upfront'?'Half now, half done':'Due on signing',ml+4,y+19);
   doc.setFillColor(235,250,240);doc.setDrawColor(180,235,200);doc.roundedRect(ml+bw+6,y,bw,22,2,2,'FD');sf('bold',7,GRAY);doc.text('INTRO RATE',ml+bw+10,y+5.5);sf('bold',14,GREEN);doc.text(fmtCurrency(p.introMonthly)+'/mo',ml+bw+10,y+14);
-  doc.setFillColor(245,247,252);doc.setDrawColor(...LIGHT);doc.roundedRect(ml+bw*2+12,y,bw,22,2,2,'FD');sf('bold',7,GRAY);doc.text('STANDARD RATE',ml+bw*2+16,y+5.5);sf('bold',14,BLACK);doc.text(fmtCurrency(p.standardMonthly)+'/mo',ml+bw*2+16,y+14);
-  y+=28;
-  sf('normal',8,[80,80,80]);const pn=`Performance-based pricing: You start at ${fmtCurrency(p.introMonthly)}/month. The standard rate of ${fmtCurrency(p.standardMonthly)}/month activates only after all performance benchmarks are simultaneously achieved.`;const pnl=doc.splitTextToSize(pn,cw-8);doc.setFillColor(255,252,235);doc.roundedRect(ml,y,cw,pnl.length*4.5+10,2,2,'F');doc.text(pnl,ml+4,y+6);y+=pnl.length*4.5+14;y=rule(y);
-  // Guarantee
-  if((p.guaranteeMetrics||[]).length>0){y=secH('Performance Guarantee',y);sf('bold',7,GRAY);doc.text('METRIC',ml,y);doc.text('BASELINE',ml+70,y);doc.text('TARGET',ml+110,y);doc.text('SOURCE',ml+145,y);y+=5;
-  (p.guaranteeMetrics||[]).forEach(g=>{mnp(10);sf('normal',8,BLACK);const mln=doc.splitTextToSize(g.metric,65);doc.text(mln,ml,y);sf('normal',7.5,GRAY);doc.text(g.baseline||'TBD',ml+70,y);sf('bold',8,GREEN);doc.text(g.target||'',ml+110,y);sf('normal',7,GRAY);doc.text(g.source||'',ml+145,y);y+=Math.max(mln.length*4.5,6)+2;});y+=3;y=rule(y);}
+  doc.setFillColor(245,247,252);doc.setDrawColor(...LIGHT);doc.roundedRect(ml+bw*2+12,y,bw,22,2,2,'FD');sf('bold',7,GRAY);doc.text('STANDARD',ml+bw*2+16,y+5.5);sf('bold',14,BLACK);doc.text(fmtCurrency(p.standardMonthly)+'/mo',ml+bw*2+16,y+14);
+  y+=28;y=rule(y);
+  // Guarantees
+  if((p.guaranteeMetrics||[]).length>0){y=secH('Performance Guarantee',y);sf('bold',7,GRAY);doc.text('METRIC',ml,y);doc.text('BASELINE',ml+68,y);doc.text('TARGET',ml+108,y);doc.text('SOURCE',ml+148,y);y+=5;
+  (p.guaranteeMetrics||[]).forEach(g=>{mnp(10);sf('normal',8,BLACK);const mln=doc.splitTextToSize(g.metric,62);doc.text(mln,ml,y);sf('normal',7.5,GRAY);doc.text(g.baseline||'TBD',ml+68,y);sf('bold',8,GREEN);doc.text(g.target||'',ml+108,y);sf('normal',7,GRAY);doc.text(g.source||'',ml+148,y);y+=Math.max(mln.length*4.5,6)+2;});y+=3;y=rule(y);}
   // ROI
-  if(p.roi){y=secH('ROI Projection',y);mnp(25);doc.setFillColor(235,250,240);doc.roundedRect(ml,y,cw,20,2,2,'F');sf('bold',12,GREEN);doc.text(p.roi.headline,ml+5,y+8);sf('normal',8.5,[60,80,60]);const rd=`At ${fmtCurrency(p.roi.avgCustomerValue)} per customer, your ${fmtCurrency(p.introMonthly)}/mo investment breaks even with just ${p.roi.breakEvenLeads} new customer${p.roi.breakEvenLeads!==1?'s':''} per month.`;const rdl=doc.splitTextToSize(rd,cw-10);doc.text(rdl,ml+5,y+14);y+=24;y=rule(y);}
+  if(p.roi){y=secH('ROI Projection',y);mnp(22);doc.setFillColor(235,250,240);doc.roundedRect(ml,y,cw,18,2,2,'F');sf('bold',12,GREEN);doc.text(p.roi.headline,ml+5,y+8);sf('normal',8,[60,80,60]);doc.text(`${p.roi.breakEvenLeads} customer${p.roi.breakEvenLeads!==1?'s':''}/month = break even`,ml+5,y+14);y+=22;y=rule(y);}
   // Timeline
-  y=secH('Delivery Timeline',y);(p.timeline||[]).forEach(t=>{mnp(14);sf('bold',8,BLUE);doc.text(t.days,ml,y);sf('bold',9,BLACK);doc.text(t.phase,ml+30,y);y+=4.5;sf('normal',8,GRAY);const tdl=doc.splitTextToSize(t.desc,cw-34);doc.text(tdl,ml+30,y);y+=tdl.length*4.3+3;});y+=2;y=rule(y);
-  // Next steps
+  y=secH('Delivery Timeline',y);(p.timeline||[]).forEach(t=>{mnp(14);sf('bold',8,BLUE);doc.text(t.days,ml,y);sf('bold',9,BLACK);doc.text(t.phase,ml+30,y);y+=4.5;sf('normal',8,GRAY);const tl=doc.splitTextToSize(t.desc,cw-34);doc.text(tl,ml+30,y);y+=tl.length*4.3+3;});y+=2;y=rule(y);
   y=secH('Next Steps',y);(p.nextSteps||[]).forEach(s=>{y=bLine(s,y,'✓');});
   // Footer
   const np=doc.getNumberOfPages();for(let i=1;i<=np;i++){doc.setPage(i);doc.setFillColor(245,245,243);doc.rect(0,H-11,W,11,'F');sf('normal',7,GRAY);doc.text('More Than Momentum  ·  morethanmomentum.com  ·  Confidential',ml,H-4);doc.text(`${i} / ${np}`,W-mr,H-4,{align:'right'});}
-  const slug=(p.businessName||'prospect').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  doc.save(`MTM-Proposal-${slug}.pdf`);
+  doc.save(`MTM-Proposal-${(p.businessName||'prospect').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}.pdf`);
 }
 
-
 /* ══════════════════════════════════════════════
-   CONTRACT PDF — Matches SNH template structure
+   CONTRACT PDF — Three-checkbox, specific scopes, Monday billing
 ══════════════════════════════════════════════ */
 function generateContractPDF(p) {
   if (!window.jspdf) { alert('PDF library still loading.'); return; }
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
   const W=210,H=297,ml=18,mr=18,cw=W-ml-mr; let y=0;
   const BLUE=[45,107,228],WHITE=[244,244,242],GRAY=[130,130,130],LIGHT=[225,225,222],BLACK=[12,12,12];
   const sf=(s,sz,c)=>{doc.setFont('helvetica',s);doc.setFontSize(sz);doc.setTextColor(...(c||BLACK));};
   const rule=yy=>{doc.setDrawColor(...LIGHT);doc.line(ml,yy,W-mr,yy);return yy+5;};
   const mnp=n=>{if(y+n>H-20){doc.addPage();y=18;}};
-
+  const ws = p.webScope || {};
+  const ss = p.socScope || {};
   const today = new Date();
-  const fmtDate = d => d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  const termEnd = new Date(today); termEnd.setDate(termEnd.getDate() + (p.minimumTermDays || 60));
-  const termDays = p.minimumTermDays || 60;
+  const fmtD = d => d.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+  const termEnd = new Date(today); termEnd.setDate(termEnd.getDate()+(p.minimumTermDays||60));
+  const leadCapLabels = {contact_form:'Contact Form',quote_request:'Quote Request Form',booking_calendar:'Booking/Appointment Calendar',phone_click:'Click-to-Call Button',chat_widget:'Chat Widget',multiple:'Multiple Lead Capture Methods'};
 
-  function secTitle(num, title) {
-    mnp(14); y += 4;
-    sf('bold', 11, BLUE); doc.text(`SECTION ${num} — ${title.toUpperCase()}`, ml, y); y += 7;
+  function secTitle(n,t){mnp(14);y+=4;sf('bold',11,BLUE);doc.text(`SECTION ${n} — ${t.toUpperCase()}`,ml,y);y+=7;}
+  function subSec(n,t){mnp(10);sf('bold',9,BLACK);doc.text(`${n} ${t}`,ml,y);y+=5;}
+  function para(t){sf('normal',8.5,BLACK);const l=doc.splitTextToSize(t,cw-4);mnp(l.length*4.5+4);doc.text(l,ml+2,y);y+=l.length*4.5+3;}
+  function bullet(t){mnp(12);sf('bold',8,BLUE);doc.text('•',ml+4,y);sf('normal',8.5,BLACK);const l=doc.splitTextToSize(t,cw-16);doc.text(l,ml+12,y);y+=l.length*4.5+2;}
+
+  // HEADER
+  doc.setFillColor(...BLUE);doc.rect(0,0,W,20,'F');sf('bold',13,WHITE);doc.text('MORE THAN MOMENTUM',ml,9);sf('normal',7.5,[180,205,245]);doc.text('Digital Marketing Services Agreement',ml,15.5);y=28;
+  sf('bold',16,BLACK);doc.text('DIGITAL MARKETING SERVICES AGREEMENT',ml,y);y+=7;
+  sf('normal',10,GRAY);doc.text(`More Than A Jump LLC & ${p.businessName||'___'}`,ml,y);y+=6;
+  sf('normal',9,GRAY);doc.text(`Effective Date: ${fmtD(today)}`,ml,y);y+=5;
+  doc.text(`Minimum Term End Date: ${fmtD(termEnd)}`,ml,y);y+=5;
+  doc.text('Governing Law: State of Delaware',ml,y);y+=8;y=rule(y);
+
+  // SEC 1 PARTIES
+  secTitle(1,'Parties');
+  para(`This Digital Marketing Services Agreement ("Agreement") is entered into as of ${fmtD(today)} by and between:`);
+  sf('bold',9,BLACK);doc.text('SERVICE PROVIDER',ml+2,y);doc.text('CLIENT',ml+cw/2+4,y);y+=5;
+  sf('normal',8.5,BLACK);doc.text('More Than A Jump LLC',ml+2,y);doc.text(p.businessName||'___',ml+cw/2+4,y);y+=4.5;
+  sf('normal',8,GRAY);doc.text('("MTM" / "More Than Momentum"',ml+2,y);doc.text(`Contact: ${p.contactName||'___'}`,ml+cw/2+4,y);y+=4;
+  doc.text(' / "Momentum" / "Service Provider")',ml+2,y);doc.text(p.city||'',ml+cw/2+4,y);y+=4;
+  doc.text('State of Delaware',ml+2,y);y+=4;doc.text('morethanmomentum.com',ml+2,y);y+=6;y=rule(y);
+
+  // SEC 2 TERM
+  secTitle(2,'Term & Termination');
+  subSec('2.1','Minimum Term');
+  para(`This Agreement shall remain in force for a minimum period of ${p.minimumTermDays||60} days (the "Minimum Term"), ending no earlier than ${fmtD(termEnd)}. Neither party may terminate during the Minimum Term. This period allows MTM sufficient time to complete initial deliverables and demonstrate measurable progress toward the Performance Benchmarks in Section 5.`);
+  subSec('2.2','Termination After Minimum Term');
+  para('After the Minimum Term, the Client may terminate at any time, for any reason, without penalty. Termination shall be communicated in writing (email acceptable).');
+  subSec('2.3','Early Termination Penalty');
+  para(`If the Client terminates prior to the Minimum Term expiration, the Client shall pay: the full monthly retainer (${fmtCurrency(p.introMonthly)}) for the month of termination; and a one-time early termination fee of ${fmtCurrency(p.setupFee)}. This penalty reflects costs incurred for setup, configuration, and early-stage work.`);
+  subSec('2.4','MTM\'s Rights Upon Termination');
+  para('Upon termination, MTM retains the irrevocable, perpetual, royalty-free right to use all deliverables for portfolio, case studies, proposals, and advertising. This right survives termination indefinitely.');
+  subSec('2.5','Client\'s Assets Upon Termination');
+  para('The Client retains full ownership of and access to: the website, all social media accounts, all content posted during the engagement, and the GoHighLevel CRM account and data. MTM shall not revoke access following termination.');
+  y=rule(y);
+
+  // SEC 3 SCOPE
+  secTitle(3,'Scope of Services');
+  para('MTM agrees to provide the following services during the term of this Agreement. All services are included within the fees defined in Section 4.');
+  let secNum = 1;
+
+  if (p.serviceWebsite) {
+    subSec(`3.${secNum}`,'Website Design & Development');
+    para(`MTM shall design, develop, and deliver a custom website for ${p.businessName||'the Client'}, including the following specified deliverables:`);
+    bullet(`${ws.pages||5} website pages, designed and built from scratch (not from a pre-made template)`);
+    bullet(`Spots for a minimum of ${ws.minImages||3} professional images and a minimum of ${ws.minVideos||1} video`);
+    if (ws.xmlSitemap !== false) bullet('XML sitemap file generated and submitted for search engine optimization (SEO)');
+    bullet(`At least one (1) functional lead capture mechanism: ${leadCapLabels[ws.leadCapture]||ws.leadCapture||'Contact Form'}`);
+    bullet('Mobile-responsive design optimized for all screen sizes');
+    bullet('All internal links verified functional at time of delivery');
+    para('The website will be hosted on Cloudflare Pages with a password-protected admin panel for the Client to manage content updates independently. The website is designed to capture and route visitor inquiries; MTM does not guarantee any specific volume of inquiries, leads, or conversions resulting from the website.');
+    secNum++;
   }
 
-  function subSec(num, title) {
-    mnp(10);
-    sf('bold', 9, BLACK); doc.text(`${num} ${title}`, ml, y); y += 5;
+  if (p.serviceBackend) {
+    subSec(`3.${secNum}`,'GoHighLevel (GHL) CRM & Lead Automation');
+    para('MTM shall provide and maintain a GoHighLevel sub-account for the Client with the subscription cost included in the monthly retainer. The account shall include:');
+    bullet('A configured sales pipeline with defined stages for lead tracking');
+    bullet('Lead source attribution for tracking where contacts originate');
+    bullet('Automated email and SMS sequences triggered by form submissions and pipeline stage changes');
+    bullet('Contact management with the ability to search, filter, and segment contacts');
+    bullet('Lead capture integration connecting website forms to the CRM');
+    para('The GoHighLevel platform is provided as a tool for collecting and organizing leads. MTM configures the system and maintains its operation. MTM does not guarantee any specific volume of leads captured, response rates, or conversion outcomes. The Client shall have full access to the GHL account during and after the engagement.');
+    secNum++;
   }
 
-  function para(text) {
-    sf('normal', 8.5, BLACK);
-    const lines = doc.splitTextToSize(text, cw - 4);
-    mnp(lines.length * 4.5 + 4);
-    doc.text(lines, ml + 2, y); y += lines.length * 4.5 + 3;
+  if (p.serviceSocial) {
+    subSec(`3.${secNum}`,'Social Media Management');
+    para(`MTM shall manage the Client's social media presence with the following minimum posting commitments:`);
+    bullet(`${ss.samePostsPerWeek||3} posts per week cross-posted simultaneously across managed platforms (${ss.platforms||'Instagram, Facebook, TikTok'})`);
+    bullet(`${ss.diffPostsPerWeek||1} unique post(s) per week created specifically for individual platforms (e.g., Google Business Profile)`);
+    bullet(`Total minimum: ${(ss.samePostsPerWeek||3)+(ss.diffPostsPerWeek||1)} pieces of original content per week`);
+    para('Services include: on-site or remote content filming, professional video editing, graphic design, caption writing, scheduling, and posting. Content calendars are planned on a monthly basis. MTM does not guarantee any specific follower count, engagement rate, reach, or impression volume.');
+    secNum++;
   }
 
-  function bullet(text) {
-    mnp(12);
-    sf('bold', 8, BLUE); doc.text('•', ml + 4, y);
-    sf('normal', 8.5, BLACK);
-    const lines = doc.splitTextToSize(text, cw - 16);
-    doc.text(lines, ml + 12, y); y += lines.length * 4.5 + 2;
+  // Meeting/reporting
+  subSec(`3.${secNum}`, p.meetingCadence==='weekly'?'Weekly Strategy Meeting':p.meetingCadence==='biweekly'?'Biweekly Strategy Meeting':'Monthly Performance Reporting');
+  para(p.meetingDescription||'MTM shall deliver monthly performance reports via email.');
+  secNum++;
+
+  // Out of scope
+  subSec(`3.${secNum}`,'Out-of-Scope Work');
+  para(`Any work not explicitly listed in the sections above shall be considered out-of-scope and billed at a rate of $${p.outOfScopeRate||50}.00 USD per hour. Out-of-scope work must be discussed and approved by the Client during a scheduled meeting or via written communication (email acceptable) before work begins. MTM shall not perform or invoice for out-of-scope work that was not pre-approved by the Client.`);
+  y=rule(y);
+
+  // SEC 4 FEES
+  secTitle(4,'Fees & Payment Terms');
+  subSec('4.1','Setup Fee');
+  if (p.setupPaymentStructure === 'half_upfront') {
+    para(`A one-time setup fee of ${fmtCurrency(p.setupFee)} is due as follows: ${fmtCurrency(Math.ceil(p.setupFee/2))} due upon signing this Agreement, and ${fmtCurrency(Math.floor(p.setupFee/2))} due upon completion of all initial deliverables described in Section 3. "Completion" is defined as the date MTM notifies the Client in writing that all setup deliverables are ready for review.`);
+  } else {
+    para(`A one-time setup fee of ${fmtCurrency(p.setupFee)} is due in full upon signing this Agreement. This covers the complete build, configuration, and launch of all systems described in Section 3.`);
   }
+  subSec('4.2','Introductory Rate');
+  para(`The Client shall pay MTM a monthly retainer of ${fmtCurrency(p.introMonthly)} per month (the "Introductory Rate"). This rate reflects a performance-based engagement structure. The standard market rate for equivalent services is ${fmtCurrency(p.standardMonthly)} per month.`);
+  subSec('4.3','Standard Rate');
+  para(`Upon verified achievement of all Performance Benchmarks defined in Section 5, the monthly retainer shall automatically increase to ${fmtCurrency(p.standardMonthly)} per month (the "Standard Rate"), effective on the first billing date following benchmark verification. The Standard Rate shall not decrease regardless of subsequent metric fluctuations.`);
+  subSec('4.4','Payment Method & Due Date');
+  para('All payments shall be made by check (payable to More Than A Jump LLC), ACH bank transfer, or credit/debit card. Monthly payments are due on the Monday closest to the calendar anniversary of the Effective Date each month (the "Billing Monday"). The first monthly payment is due on the first Billing Monday following the completion of initial setup deliverables.');
+  subSec('4.5','Grace Period & Late Fees');
+  para('The Client has a seven (7) day grace period from each Billing Monday. If payment is not received by the following Monday, a flat late fee of $50.00 USD shall be assessed. If payment is not received within fourteen (14) days of the Billing Monday, MTM reserves the right to suspend all services without further notice until all outstanding amounts are paid in full.');
+  y=rule(y);
 
-  // ── HEADER ──
-  doc.setFillColor(...BLUE); doc.rect(0, 0, W, 20, 'F');
-  sf('bold', 13, WHITE); doc.text('MORE THAN MOMENTUM', ml, 9);
-  sf('normal', 7.5, [180,205,245]); doc.text('Digital Marketing Services Agreement', ml, 15.5);
-  y = 28;
-
-  // ── TITLE BLOCK ──
-  sf('bold', 16, BLACK); doc.text('DIGITAL MARKETING SERVICES AGREEMENT', ml, y); y += 7;
-  sf('normal', 10, GRAY); doc.text(`More Than A Jump LLC & ${p.businessName || '___________'}`, ml, y); y += 6;
-  sf('normal', 9, GRAY);
-  doc.text(`Effective Date: ${fmtDate(today)}`, ml, y); y += 5;
-  doc.text(`Minimum Term End Date: ${fmtDate(termEnd)}`, ml, y); y += 5;
-  doc.text('Governing Law: State of Delaware', ml, y); y += 8;
-  y = rule(y);
-
-  // ── SECTION 1: PARTIES ──
-  secTitle(1, 'Parties');
-  para(`This Digital Marketing Services Agreement ("Agreement") is entered into as of ${fmtDate(today)} (the "Effective Date"), by and between:`);
-  sf('bold', 9, BLACK); doc.text('SERVICE PROVIDER', ml + 2, y); doc.text('CLIENT', ml + cw/2 + 4, y); y += 5;
-  sf('normal', 8.5, BLACK);
-  doc.text('More Than A Jump LLC', ml + 2, y); doc.text(p.businessName || '_______________', ml + cw/2 + 4, y); y += 4.5;
-  sf('normal', 8, GRAY);
-  doc.text('("MTM" / "More Than Momentum"', ml + 2, y); doc.text(`("Client")`, ml + cw/2 + 4, y); y += 4;
-  doc.text(' / "Momentum" / "Service Provider")', ml + 2, y); doc.text(`Contact: ${p.contactName || '_______________'}`, ml + cw/2 + 4, y); y += 4;
-  doc.text('State of Delaware', ml + 2, y); doc.text(p.city || '', ml + cw/2 + 4, y); y += 4;
-  doc.text('morethanmomentum.com', ml + 2, y); y += 6;
-  y = rule(y);
-
-  // ── SECTION 2: TERM & TERMINATION ──
-  secTitle(2, 'Term & Termination');
-  subSec('2.1', 'Minimum Term');
-  para(`This Agreement shall commence on the Effective Date and shall remain in full force and effect for a minimum period of ${termDays} days (the "Minimum Term"), ending no earlier than ${fmtDate(termEnd)}. Neither party may terminate this Agreement during the Minimum Term. This minimum term is necessary to allow MTM sufficient time to complete the initial build, establish platform systems, and demonstrate measurable progress toward the Performance Benchmarks defined in Section 5.`);
-  subSec('2.2', 'Termination After Minimum Term');
-  para('After the Minimum Term has expired, the Client may terminate this Agreement at any time, for any reason, without restriction, penalty, or required notice period. Termination shall be communicated in writing (email is acceptable) to MTM.');
-  subSec('2.3', 'Early Termination Penalty');
-  para(`If the Client terminates this Agreement prior to the expiration of the Minimum Term, the Client shall be liable for: the full monthly retainer fee (${fmtCurrency(p.introMonthly)}) for the calendar month in which termination occurs; and a one-time early termination fee of ${fmtCurrency(p.introMonthly)}. The total early termination obligation shall not exceed ${fmtCurrency(p.introMonthly * 2)}. This penalty reflects the reasonable costs incurred by MTM for initial setup and early-stage work.`);
-  subSec('2.4', 'MTM\'s Rights Upon Termination');
-  para('Upon termination by either party, MTM retains the irrevocable, perpetual, royalty-free right to use any and all websites, social media content, posts, graphics, videos, analytics data, performance reports, and any other deliverables created during the engagement for MTM\'s own business purposes, including but not limited to: portfolio presentations, case studies, proposals to prospective clients, and paid or unpaid advertising. This right survives termination indefinitely.');
-  subSec('2.5', 'Client\'s Assets Upon Termination');
-  para('Upon termination, the Client shall retain full ownership of and continued access to: the website, all social media accounts, all social media content posted during the engagement, and the GoHighLevel (GHL) CRM account and all data contained therein. MTM shall not revoke, restrict, or interfere with the Client\'s access to any of these assets following termination.');
-  y = rule(y);
-
-  // ── SECTION 3: SCOPE OF SERVICES ──
-  secTitle(3, 'Scope of Services');
-  para('MTM agrees to provide the following services to the Client during the term of this Agreement. All services listed in this section are included within the monthly retainer fee defined in Section 4.');
-  (p.services || []).forEach((s, i) => {
-    subSec(`3.${i + 1}`, s.name);
-    para(s.desc);
-  });
-  // Meeting/reporting cadence
-  subSec(`3.${(p.services||[]).length + 1}`, p.meetingCadence === 'weekly' ? 'Weekly Strategy Meeting' : p.meetingCadence === 'biweekly' ? 'Biweekly Strategy Meeting' : 'Monthly Performance Reporting');
-  para(p.meetingDescription || 'MTM shall deliver monthly performance reports via email.');
-  // Out-of-scope
-  subSec(`3.${(p.services||[]).length + 2}`, 'Out-of-Scope Work');
-  para(`Any additions, modifications, or new features requested by the Client that fall outside the scope defined above shall be billed at a rate of $${p.outOfScopeRate || 50}.00 USD per hour. All out-of-scope work must be discussed and approved by the Client before work begins. MTM shall not perform or invoice for out-of-scope work that was not pre-approved.`);
-  y = rule(y);
-
-  // ── SECTION 4: FEES & PAYMENT ──
-  secTitle(4, 'Fees & Payment Terms');
-  subSec('4.1', 'Introductory Rate');
-  para(`In consideration of the Services described in Section 3, the Client shall pay MTM a monthly retainer of ${fmtCurrency(p.introMonthly)} per month (the "Introductory Rate"). The Introductory Rate reflects a performance-based engagement structure offered by MTM. The standard market rate for equivalent services is ${fmtCurrency(p.standardMonthly)} per month.`);
-  subSec('4.2', 'Standard Rate');
-  para(`Upon verified achievement of all Performance Benchmarks defined in Section 5, the monthly retainer shall automatically increase to ${fmtCurrency(p.standardMonthly)} per month (the "Standard Rate"), effective on the first (1st) day of the calendar month immediately following the month in which all benchmarks are confirmed as met. The Standard Rate shall remain in effect for the duration of the Agreement. The Standard Rate shall not decrease regardless of subsequent fluctuations in performance metrics.`);
-  subSec('4.3', 'Setup Fee');
-  para(`A one-time setup fee of ${fmtCurrency(p.setupFee)} is due upon signing. This covers the full build, configuration, and launch of all systems described in Section 3.`);
-  subSec('4.4', 'Payment Method & Due Date');
-  para('All payments shall be made by check (payable to More Than A Jump LLC), ACH transfer, or credit/debit card, and shall be submitted on or before the first (1st) day of each calendar month for that month\'s services.');
-  subSec('4.5', 'Grace Period & Late Fees');
-  para('The Client shall have a seven (7) day grace period from the first of each month. If payment is not received by the eighth (8th) day, a flat late fee of $50.00 USD shall be assessed. If full payment is not received by the fourteenth (14th) day, MTM reserves the right to suspend all services without further notice until all outstanding amounts are paid in full.');
-  y = rule(y);
-
-  // ── SECTION 5: PERFORMANCE BENCHMARKS ──
-  secTitle(5, 'Performance Benchmarks & Rate Trigger');
-  para('The following Performance Benchmarks establish the verified baselines and target thresholds that, when all simultaneously met within the same calendar month, trigger the transition from the Introductory Rate to the Standard Rate. MTM does not guarantee achievement of these benchmarks, as outcomes are influenced by factors partially or fully outside MTM\'s control.');
-  if ((p.guaranteeMetrics||[]).length > 0) {
-    y += 2;
-    sf('bold', 7.5, GRAY); doc.text('METRIC', ml + 2, y); doc.text('BASELINE', ml + 70, y); doc.text('TARGET', ml + 110, y); doc.text('SOURCE', ml + 148, y); y += 5;
-    (p.guaranteeMetrics||[]).forEach(g => {
-      mnp(10);
-      sf('normal', 8, BLACK); const mln = doc.splitTextToSize(g.metric, 62); doc.text(mln, ml + 2, y);
-      sf('normal', 7.5, GRAY); doc.text(g.baseline || 'TBD', ml + 70, y);
-      sf('bold', 8, [45,107,228]); doc.text(g.target || '', ml + 110, y);
-      sf('normal', 7, GRAY); doc.text(g.source || '', ml + 148, y);
-      y += Math.max(mln.length * 4.5, 6) + 2;
-    });
-    y += 3;
+  // SEC 5 BENCHMARKS
+  secTitle(5,'Performance Benchmarks & Rate Trigger');
+  para('The following Performance Benchmarks establish verified baselines and target thresholds. When all benchmarks are simultaneously met within the same calendar month, the Introductory Rate transitions to the Standard Rate. MTM does not guarantee achievement of these benchmarks.');
+  if ((p.guaranteeMetrics||[]).length>0) {
+    y+=2;sf('bold',7.5,GRAY);doc.text('METRIC',ml+2,y);doc.text('BASELINE',ml+68,y);doc.text('TARGET',ml+108,y);doc.text('SOURCE',ml+148,y);y+=5;
+    (p.guaranteeMetrics||[]).forEach(g=>{mnp(10);sf('normal',8,BLACK);const m=doc.splitTextToSize(g.metric,60);doc.text(m,ml+2,y);sf('normal',7.5,GRAY);doc.text(g.baseline||'TBD',ml+68,y);sf('bold',8,BLUE);doc.text(g.target||'',ml+108,y);sf('normal',7,GRAY);doc.text(g.source||'',ml+148,y);y+=Math.max(m.length*4.5,6)+2;});y+=3;
   }
-  para('All benchmarks must be achieved simultaneously within the same calendar month for the rate trigger to apply. Achievement shall be verified jointly by both parties using the data sources identified above.');
-  y = rule(y);
+  para('All benchmarks must be achieved simultaneously within the same calendar month. Achievement shall be verified jointly by both parties using the data sources identified above.');
+  y=rule(y);
 
-  // ── SECTION 6: ACCOUNT ACCESS (FIXED) ──
-  secTitle(6, 'Account Access & Digital Credentials');
-  para('As a condition of this Agreement, the Client agrees to provide MTM with full administrative access to all digital accounts necessary to perform the Services, including but not limited to: the website, social media accounts, Google Analytics (GA4), Google Business Profile, and any other platform reasonably required. The Client shall provide requested access within forty-eight (48) hours of MTM\'s request. If the Client fails to provide access within this window, MTM\'s obligations shall be suspended without penalty until access is granted.');
-  y = rule(y);
+  // SEC 6 ACCESS
+  secTitle(6,'Account Access & Digital Credentials');
+  para('The Client agrees to provide MTM with full administrative access to all digital accounts necessary to perform Services within forty-eight (48) hours of request. If the Client fails to provide access within this window, MTM\'s obligations shall be suspended without penalty until access is granted.');
+  y=rule(y);
 
-  // ── SECTION 7: CLIENT RESPONSIBILITIES (MIXED) ──
-  secTitle(7, 'Client Responsibilities & Conduct');
-  subSec('7.1', 'Website Modification Restriction');
-  para('The Client acknowledges that unauthorized modifications to the website — outside of features available through the provided admin panel — may disrupt functionality. The Client agrees not to make website modifications outside of the admin panel without prior discussion with MTM. Unauthorized modifications release MTM from any obligation to remediate resulting issues at no additional charge.');
-
-  if (p.socialInScope) {
-    subSec('7.2', 'Social Media Posting Restriction');
-    para('The Client agrees not to publish posts to managed social media feeds without prior discussion with MTM, to maintain content consistency. The Client is expressly permitted to post to Stories, reply to comments, and respond to direct messages without restriction.');
+  // SEC 7 CLIENT RESPONSIBILITIES
+  secTitle(7,'Client Responsibilities & Conduct');
+  let s7 = 1;
+  if (p.serviceWebsite) {
+    subSec(`7.${s7}`,'Website Modification Restriction');
+    para('The Client shall not make modifications to the website outside of the provided admin panel without prior written approval from MTM. Unauthorized modifications release MTM from any obligation to remediate resulting issues at no additional charge.');
+    s7++;
   }
+  if (p.serviceSocial) {
+    subSec(`7.${s7}`,'Social Media Posting Restriction');
+    para('The Client shall not publish posts to managed social media feeds without prior discussion with MTM, to maintain content consistency. The Client is expressly permitted to post to Stories, reply to comments, and respond to direct messages without restriction.');
+    s7++;
+  }
+  subSec(`7.${s7}`,'Material Provision');
+  para('The Client shall provide requested materials (photos, pricing, credentials, event info) within forty-eight (48) hours. Delays caused by the Client shall not constitute a breach by MTM.');
+  s7++;
+  subSec(`7.${s7}`,'Exclusivity of Digital Services');
+  para('During the term of this Agreement, the Client shall not engage any third-party agency, contractor, or individual to provide services overlapping with this Agreement\'s scope. Because MTM\'s compensation is tied directly to the achievement of specific digital performance metrics, engaging competing providers could interfere with the measurement and achievement of those metrics, directly impacting both parties\' interests under this Agreement. This restriction does not prohibit the Client from personally engaging with their audience.');
+  y=rule(y);
 
-  subSec(p.socialInScope ? '7.3' : '7.2', 'Material Provision');
-  para('When MTM requests materials from the Client — including but not limited to: photos, pricing information, account credentials, or event information — the Client agrees to provide such materials within forty-eight (48) hours. Delays caused by the Client shall not constitute a breach by MTM.');
+  // SECS 8-13 (FIXED)
+  secTitle(8,'Analytics & Data Rights');
+  para('MTM shall have the right to access, review, record, and utilize all analytics data for: verifying benchmarks, informing strategy, portfolio/case study use, and reporting. MTM shall not sell Client data to unaffiliated third parties. Data in advertising shall be anonymized unless the Client provides written consent.');
+  y=rule(y);
+  secTitle(9,'Intellectual Property & Usage Rights');
+  para('Upon full payment, the Client receives full usage rights to all deliverables. MTM retains a concurrent, perpetual, non-exclusive license for portfolio and business development. MTM retains ownership of proprietary tools, templates, workflows, and code frameworks.');
+  y=rule(y);
+  secTitle(10,'Non-Disparagement');
+  para('Neither party shall make false, misleading, or disparaging statements about the other during or after the term. This does not prevent truthful statements in response to legal inquiries.');
+  y=rule(y);
+  secTitle(11,'Performance Disclaimer & Force Majeure');
+  para('MTM shall use commercially reasonable efforts to deliver services and support benchmark achievement. MTM makes no guarantee of specific outcomes within any timeframe. Results are influenced by factors outside MTM\'s control. Neither party is in breach for failure caused by force majeure events.');
+  y=rule(y);
+  secTitle(12,'Governing Law & Dispute Resolution');
+  para('This Agreement is governed by Delaware law. Disputes shall be submitted to binding arbitration in Delaware per AAA rules. Each party bears its own legal fees unless the arbitrator determines otherwise.');
+  y=rule(y);
+  secTitle(13,'Entire Agreement & Amendments');
+  para('This constitutes the entire agreement and supersedes all prior understandings. No amendment is valid unless in writing and signed by both parties. If any provision is unenforceable, remaining provisions remain in force.');
+  y=rule(y);
 
-  subSec(p.socialInScope ? '7.4' : '7.3', 'Exclusivity of Digital Services');
-  para('During the term of this Agreement, the Client agrees not to engage any third-party agency, contractor, or individual to provide services that overlap with the scope of this Agreement. Because MTM\'s compensation is tied directly to the achievement of specific digital performance metrics, the Client acknowledges that engaging competing service providers could interfere with or undermine the measurement and achievement of those metrics, directly impacting both parties\' interests under this Agreement. This restriction does not prohibit the Client from personally engaging with their audience in a personal capacity.');
-  y = rule(y);
+  // SIGNATURES
+  mnp(80);y+=6;sf('bold',14,BLACK);doc.text('SIGNATURE PAGE',ml,y);y+=8;
+  para('By signing below, each party acknowledges they have read, understood, and agree to all terms.');y+=6;
+  sf('bold',10,BLACK);doc.text('SERVICE PROVIDER',ml,y);doc.text('CLIENT',ml+cw/2+4,y);y+=6;
+  sf('normal',9,BLACK);doc.text('More Than A Jump LLC',ml,y);doc.text(p.businessName||'___',ml+cw/2+4,y);y+=10;
+  doc.setDrawColor(...LIGHT);doc.line(ml,y,ml+70,y);doc.line(ml+cw/2+4,y,ml+cw/2+74,y);y+=4;
+  sf('normal',8,GRAY);doc.text('Signature',ml,y);doc.text('Signature',ml+cw/2+4,y);y+=8;
+  doc.line(ml,y,ml+70,y);doc.line(ml+cw/2+4,y,ml+cw/2+74,y);y+=4;
+  sf('normal',8,GRAY);doc.text('Printed Name & Title',ml,y);doc.text('Printed Name & Title',ml+cw/2+4,y);y+=8;
+  doc.line(ml,y,ml+50,y);doc.line(ml+cw/2+4,y,ml+cw/2+54,y);y+=4;
+  sf('normal',8,GRAY);doc.text('Date',ml,y);doc.text('Date',ml+cw/2+4,y);
 
-  // ── SECTION 8: ANALYTICS (FIXED) ──
-  secTitle(8, 'Analytics & Data Rights');
-  para('MTM shall have the right to access, review, record, and utilize all analytics and performance data associated with the Client\'s digital presence for: verifying Performance Benchmarks, informing content and campaign strategy, use in MTM\'s portfolio and case studies, and performance reporting. MTM shall not sell or transfer Client data to unaffiliated third parties. Client data used in advertising shall be anonymized unless the Client provides written consent.');
-  y = rule(y);
-
-  // ── SECTION 9: IP (FIXED) ──
-  secTitle(9, 'Intellectual Property & Usage Rights');
-  para('Upon full payment, the Client shall receive full, unrestricted usage rights to all deliverables created by MTM. MTM retains a concurrent, perpetual, royalty-free, non-exclusive license to reproduce and reference all deliverables for portfolio and business development purposes. MTM retains ownership of all proprietary tools, templates, workflows, automation logic, and code frameworks used in delivery.');
-  y = rule(y);
-
-  // ── SECTION 10: NON-DISPARAGEMENT (FIXED) ──
-  secTitle(10, 'Non-Disparagement');
-  para('Both parties agree not to make false, misleading, or disparaging statements about the other party during or following the term of this Agreement. This does not prevent truthful statements in response to legal inquiries or honest feedback through mutually agreed channels.');
-  y = rule(y);
-
-  // ── SECTION 11: DISCLAIMER (FIXED) ──
-  secTitle(11, 'Performance Disclaimer & Force Majeure');
-  para('MTM shall use commercially reasonable efforts to deliver all services and support achievement of Performance Benchmarks. MTM makes no guarantee that specific performance outcomes will be achieved within any particular timeframe. Results are influenced by factors outside MTM\'s direct control. Neither party shall be in breach for failure caused by circumstances beyond reasonable control.');
-  y = rule(y);
-
-  // ── SECTION 12: GOVERNING LAW (FIXED) ──
-  secTitle(12, 'Governing Law & Dispute Resolution');
-  para('This Agreement shall be governed by the laws of the State of Delaware. Disputes that cannot be resolved through good-faith negotiation shall be submitted to binding arbitration in Delaware, in accordance with the American Arbitration Association rules. Each party shall bear its own legal fees unless the arbitrator determines otherwise.');
-  y = rule(y);
-
-  // ── SECTION 13: ENTIRE AGREEMENT (FIXED) ──
-  secTitle(13, 'Entire Agreement & Amendments');
-  para('This Agreement constitutes the entire agreement between the parties and supersedes all prior understandings. No amendment shall be valid unless in writing and signed by both parties. If any provision is found unenforceable, the remaining provisions remain in full force.');
-  y = rule(y);
-
-  // ── SIGNATURE PAGE ──
-  mnp(80); y += 6;
-  sf('bold', 14, BLACK); doc.text('SIGNATURE PAGE', ml, y); y += 8;
-  para('By signing below, each party acknowledges that they have read, understood, and agree to be bound by all terms and conditions of this Agreement.');
-  y += 6;
-
-  // Provider
-  sf('bold', 10, BLACK); doc.text('SERVICE PROVIDER', ml, y); doc.text('CLIENT', ml + cw/2 + 4, y); y += 6;
-  sf('normal', 9, BLACK); doc.text('More Than A Jump LLC', ml, y); doc.text(p.businessName || '_______________', ml + cw/2 + 4, y); y += 10;
-  doc.setDrawColor(...LIGHT);
-  doc.line(ml, y, ml + 70, y); doc.line(ml + cw/2 + 4, y, ml + cw/2 + 74, y); y += 4;
-  sf('normal', 8, GRAY); doc.text('Signature', ml, y); doc.text('Signature', ml + cw/2 + 4, y); y += 8;
-  doc.line(ml, y, ml + 70, y); doc.line(ml + cw/2 + 4, y, ml + cw/2 + 74, y); y += 4;
-  sf('normal', 8, GRAY); doc.text('Printed Name & Title', ml, y); doc.text('Printed Name & Title', ml + cw/2 + 4, y); y += 8;
-  doc.line(ml, y, ml + 50, y); doc.line(ml + cw/2 + 4, y, ml + cw/2 + 54, y); y += 4;
-  sf('normal', 8, GRAY); doc.text('Date', ml, y); doc.text('Date', ml + cw/2 + 4, y);
-
-  // Footer all pages
   const np=doc.getNumberOfPages();for(let i=1;i<=np;i++){doc.setPage(i);doc.setFillColor(245,245,243);doc.rect(0,H-11,W,11,'F');sf('normal',7,GRAY);doc.text('More Than A Jump LLC  ·  Digital Marketing Services Agreement  ·  Confidential',ml,H-4);doc.text(`${i} / ${np}`,W-mr,H-4,{align:'right'});}
-  const slug=(p.businessName||'client').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  doc.save(`MTM-Contract-${slug}.pdf`);
+  doc.save(`MTM-Contract-${(p.businessName||'client').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'')}.pdf`);
 }
-
 
 /* ══════════════════════════════════════════════
    GOOGLE SLIDES (Tool 03)

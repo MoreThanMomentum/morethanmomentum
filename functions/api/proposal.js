@@ -1,53 +1,40 @@
 /**
- * MTM Proposal Generator v2 — Pages Function
+ * MTM Proposal Generator v3 — Pages Function
  * Route: POST /api/proposal
  *
- * Hormozi Grand Slam Offer model: AI analyzes discovery data and builds
- * a custom offer with guarantee-based pricing. No fixed packages —
- * every proposal is tailored to the prospect's pain and desired outcome.
+ * Three-checkbox architecture: Website / Backend & Lead Gen / Social Media
+ * Hormozi Grand Slam Offer with variable pricing, specific contract scopes,
+ * Monday billing, exact benchmark metrics, and full playbook knowledge.
  *
- * Environment Variables Required:
- *   ANTHROPIC_API_KEY — MTM Anthropic key
- *
- * Hard Floors (enforced post-AI):
- *   Minimum setup fee:   $500
- *   Minimum intro monthly: $200
- *   Guarantees: only metrics MTM can track and achieve
- *              (website traffic, online leads, social followers, engagement)
- *              NEVER sales, revenue, or conversions the client controls
+ * Hard Floors:
+ *   Min setup fee:              $1,000
+ *   Min monthly WITHOUT social: $200
+ *   Min monthly WITH social:    $2,500
+ *   Min term: website-only 30d, website+backend 45d, social 60d, all 60d
+ *   Out-of-scope rate:          $50/hr (fixed)
  */
 
-const MIN_SETUP = 500;
-const MIN_MONTHLY_INTRO = 200;
+const MIN_SETUP = 1000;
+const MIN_MONTHLY_NO_SOCIAL = 200;
+const MIN_MONTHLY_WITH_SOCIAL = 2500;
 const OUT_OF_SCOPE_RATE = 50;
-
-const SERVICE_CATALOG = [
-  { id: 'website',      name: 'Website Design & Development',          costBasis: 800,  type: 'setup' },
-  { id: 'crm',          name: 'GoHighLevel CRM + Lead Automation',     costBasis: 400,  type: 'setup' },
-  { id: 'social',       name: 'Social Media Management',               costBasis: 500,  type: 'monthly' },
-  { id: 'email_sms',    name: 'Advanced Email + SMS Automation',        costBasis: 300,  type: 'monthly' },
-  { id: 'content_film', name: 'Monthly Content Filming & Production',  costBasis: 800,  type: 'monthly' },
-  { id: 'paid_ads',     name: 'Paid Ads Management (Meta/Google)',      costBasis: 600,  type: 'monthly' },
-  { id: 'seo',          name: 'SEO Foundation & Optimization',          costBasis: 300,  type: 'setup' },
-  { id: 'review_auto',  name: 'Google Review Request Automation',       costBasis: 200,  type: 'setup' },
-  { id: 'reporting',    name: 'Monthly Performance Reporting',          costBasis: 150,  type: 'monthly' },
-];
 
 const ALLOWED_METRICS = [
   'Monthly Website Traffic (Unique Visitors)',
   'Monthly Qualified Leads (GHL Pipeline)',
+  'Monthly Website Form Submissions',
   'Instagram Followers',
   'Facebook Page Followers',
+  'TikTok Followers',
   'Google Business Profile Views',
   'Social Media Engagement Rate',
   'Email Open Rate',
-  'Website Form Submissions',
   'Google Review Count',
 ];
 
 const FORBIDDEN_METRICS = [
   'sales', 'revenue', 'profit', 'conversions', 'close rate',
-  'appointments booked', 'customers acquired', 'ROI',
+  'appointments booked', 'customers acquired', 'ROI', 'bookings',
 ];
 
 // ── MAIN HANDLER ─────────────────────────────────────────────────────────────
@@ -59,79 +46,155 @@ export async function onRequestPost(context) {
   try {
     const body = await request.json();
     const {
-      businessName, contactName, city, businessType,
-      avgCustomerValue, currentMarketingSpend,
-      painPoint, desiredOutcome, triedBefore,
+      businessName, contactName, contactEmail, contactPhone, businessAddress,
+      city, businessType,
+      // Service checkboxes
+      serviceWebsite, serviceBackend, serviceSocial,
+      // Discovery data
+      avgCustomerValue, budgetBeforeResults, currentMarketingSpend,
+      painPoint, desiredOutcome, triedBefore, socialGoal,
       meetingCadence, meetingDay, discoveryNotes,
+      // Website scope
+      websitePages, websiteXmlSitemap, websiteMinImages, websiteMinVideos, websiteLeadCapture,
+      // Social scope
+      socialSamePostsPerWeek, socialDiffPostsPerWeek, socialPlatforms,
+      // Current metrics (for benchmarks)
+      currentWebsiteTraffic, currentLeadsPerMonth,
+      currentInstagramFollowers, currentFacebookFollowers, currentTiktokFollowers,
+      currentGoogleReviews,
+      // Overrides
+      setupFeeOverride, introMonthlyOverride, standardMonthlyOverride,
+      minimumTermOverride, setupPaymentStructure,
     } = body;
 
     if (!businessName || !contactName || !city || !businessType) {
       return new Response(JSON.stringify({ error: 'businessName, contactName, city, and businessType are required.' }), { status: 400, headers });
     }
 
-    const custValue = parseFloat(avgCustomerValue) || 0;
-    const mktSpend  = parseFloat(currentMarketingSpend) || 0;
+    if (!serviceWebsite && !serviceBackend && !serviceSocial) {
+      return new Response(JSON.stringify({ error: 'Select at least one service: Website, Backend & Lead Gen, or Social Media.' }), { status: 400, headers });
+    }
 
-    const aiOffer = await generateGrandSlamOffer(
-      { businessName, contactName, city, businessType, custValue, mktSpend, painPoint, desiredOutcome, triedBefore, meetingCadence, meetingDay, discoveryNotes },
-      env.ANTHROPIC_API_KEY
-    );
+    const hasSocial = !!serviceSocial;
+    const hasWebsite = !!serviceWebsite;
+    const hasBackend = !!serviceBackend;
+    const custValue = parseFloat(avgCustomerValue) || 0;
+    const budget = parseFloat(budgetBeforeResults) || 0;
+    const mktSpend = parseFloat(currentMarketingSpend) || 0;
+
+    // Compute minimum term based on services
+    let defaultMinTerm = 60;
+    if (hasWebsite && !hasBackend && !hasSocial) defaultMinTerm = 30;
+    else if (hasWebsite && hasBackend && !hasSocial) defaultMinTerm = 45;
+    else if (hasSocial) defaultMinTerm = 60;
+
+    // Generate AI offer
+    const aiOffer = await generateGrandSlamOffer({
+      businessName, contactName, city, businessType,
+      hasWebsite, hasBackend, hasSocial,
+      custValue, budget, mktSpend, painPoint, desiredOutcome,
+      triedBefore, socialGoal, meetingCadence, meetingDay, discoveryNotes,
+      websitePages, websiteXmlSitemap, websiteMinImages, websiteMinVideos, websiteLeadCapture,
+      socialSamePostsPerWeek, socialDiffPostsPerWeek, socialPlatforms,
+      currentWebsiteTraffic, currentLeadsPerMonth,
+      currentInstagramFollowers, currentFacebookFollowers, currentTiktokFollowers,
+      currentGoogleReviews,
+      defaultMinTerm, budget,
+    }, env.ANTHROPIC_API_KEY);
+
+    // Apply overrides if provided
+    let setupFee = setupFeeOverride ? parseInt(setupFeeOverride) : aiOffer.setupFee;
+    let introMonthly = introMonthlyOverride ? parseInt(introMonthlyOverride) : aiOffer.introMonthly;
+    let standardMonthly = standardMonthlyOverride ? parseInt(standardMonthlyOverride) : aiOffer.standardMonthly;
+    let minimumTermDays = minimumTermOverride ? parseInt(minimumTermOverride) : (aiOffer.minimumTermDays || defaultMinTerm);
+    let setupPayment = setupPaymentStructure || aiOffer.setupPaymentStructure || 'half_upfront';
 
     // Enforce hard floors
-    if (aiOffer.setupFee < MIN_SETUP) aiOffer.setupFee = MIN_SETUP;
-    if (aiOffer.introMonthly < MIN_MONTHLY_INTRO) aiOffer.introMonthly = MIN_MONTHLY_INTRO;
-    if (aiOffer.standardMonthly <= aiOffer.introMonthly) aiOffer.standardMonthly = Math.max(aiOffer.introMonthly * 3, 600);
+    if (setupFee < MIN_SETUP) setupFee = MIN_SETUP;
+    const minMonthly = hasSocial ? MIN_MONTHLY_WITH_SOCIAL : MIN_MONTHLY_NO_SOCIAL;
+    if (introMonthly < minMonthly) introMonthly = minMonthly;
+    if (standardMonthly <= introMonthly) standardMonthly = Math.max(introMonthly * 3, minMonthly * 3);
+    if (minimumTermDays < 30) minimumTermDays = 30;
+    if (minimumTermDays > 90) minimumTermDays = 90;
 
-    // Strip forbidden guarantee metrics
-    aiOffer.guaranteeMetrics = (aiOffer.guaranteeMetrics || []).filter(m => {
+    // Strip forbidden metrics
+    let guaranteeMetrics = (aiOffer.guaranteeMetrics || []).filter(m => {
       const lower = (m.metric || '').toLowerCase();
       return !FORBIDDEN_METRICS.some(f => lower.includes(f));
     });
 
-    // Clamp minimum term
-    if (!aiOffer.minimumTermDays || aiOffer.minimumTermDays < 30) aiOffer.minimumTermDays = 60;
-    if (aiOffer.minimumTermDays > 90) aiOffer.minimumTermDays = 90;
+    // Filter metrics to only selected services
+    if (!hasWebsite && !hasBackend) {
+      guaranteeMetrics = guaranteeMetrics.filter(m => {
+        const lower = (m.metric || '').toLowerCase();
+        return !lower.includes('website') && !lower.includes('form submission') && !lower.includes('lead');
+      });
+    }
+    if (!hasSocial) {
+      guaranteeMetrics = guaranteeMetrics.filter(m => {
+        const lower = (m.metric || '').toLowerCase();
+        return !lower.includes('instagram') && !lower.includes('facebook') && !lower.includes('tiktok') && !lower.includes('engagement') && !lower.includes('follower');
+      });
+    }
 
     const meetingDesc = buildMeetingDescription(meetingCadence, meetingDay);
 
     const roi = custValue > 0 ? {
       avgCustomerValue: custValue,
-      introMonthly: aiOffer.introMonthly,
-      breakEvenLeads: Math.ceil(aiOffer.introMonthly / custValue),
-      headline: custValue >= aiOffer.introMonthly
-        ? `One new customer covers ${Math.floor(custValue / aiOffer.introMonthly)} month${Math.floor(custValue / aiOffer.introMonthly) !== 1 ? 's' : ''} of your intro rate.`
-        : `${Math.ceil(aiOffer.introMonthly / custValue)} new customers per month covers your full investment.`,
+      introMonthly,
+      breakEvenLeads: Math.ceil(introMonthly / custValue),
+      headline: custValue >= introMonthly
+        ? `One new customer covers ${Math.floor(custValue / introMonthly)} month${Math.floor(custValue / introMonthly) !== 1 ? 's' : ''} of your intro rate.`
+        : `${Math.ceil(introMonthly / custValue)} new customers per month covers your full investment.`,
     } : null;
 
-    const socialInScope = (aiOffer.services || []).some(s =>
-      s.id === 'social' || s.id === 'content_film' || (s.name || '').toLowerCase().includes('social')
-    );
-
-    // Compute minimum term end date
+    // Dates
     const effectiveDate = new Date();
     const termEnd = new Date(effectiveDate);
-    termEnd.setDate(termEnd.getDate() + (aiOffer.minimumTermDays || 60));
+    termEnd.setDate(termEnd.getDate() + minimumTermDays);
+    // Find first Monday on or after effective date for billing
+    const firstBillingMonday = new Date(effectiveDate);
+    const dow = firstBillingMonday.getDay();
+    const daysUntilMonday = dow === 0 ? 1 : dow === 1 ? 0 : 8 - dow;
+    firstBillingMonday.setDate(firstBillingMonday.getDate() + daysUntilMonday);
+
+    // Website scope defaults
+    const webScope = {
+      pages: parseInt(websitePages) || 5,
+      xmlSitemap: websiteXmlSitemap !== false && websiteXmlSitemap !== 'false',
+      minImages: parseInt(websiteMinImages) || 3,
+      minVideos: parseInt(websiteMinVideos) || 1,
+      leadCapture: websiteLeadCapture || 'contact_form',
+    };
+
+    // Social scope defaults
+    const socScope = {
+      samePostsPerWeek: parseInt(socialSamePostsPerWeek) || 3,
+      diffPostsPerWeek: parseInt(socialDiffPostsPerWeek) || 1,
+      platforms: socialPlatforms || (hasSocial ? 'Instagram, Facebook, TikTok' : ''),
+    };
 
     return new Response(JSON.stringify({
       success: true,
       proposal: {
-        businessName, contactName, city, businessType,
+        businessName, contactName, contactEmail: contactEmail || '', contactPhone: contactPhone || '',
+        businessAddress: businessAddress || '', city, businessType,
+        serviceWebsite: hasWebsite, serviceBackend: hasBackend, serviceSocial: hasSocial,
         offerName: aiOffer.offerName || `${businessName} Growth System`,
         offerTagline: aiOffer.offerTagline || '',
         services: aiOffer.services || [],
-        setupFee: aiOffer.setupFee,
-        introMonthly: aiOffer.introMonthly,
-        standardMonthly: aiOffer.standardMonthly,
-        minimumTermDays: aiOffer.minimumTermDays,
+        setupFee, introMonthly, standardMonthly, minimumTermDays,
+        setupPaymentStructure: setupPayment,
         minimumTermEndDate: termEnd.toISOString(),
-        guaranteeMetrics: aiOffer.guaranteeMetrics || [],
+        firstBillingMonday: firstBillingMonday.toISOString(),
+        guaranteeMetrics,
         painPoints: aiOffer.painPoints || [],
         sellingTips: aiOffer.sellingTips || [],
         nextSteps: aiOffer.nextSteps || [],
         timeline: aiOffer.timeline || [],
         valueStack: aiOffer.valueStack || '',
         roi,
-        socialInScope,
+        webScope, socScope,
         meetingCadence: meetingCadence || 'monthly_email',
         meetingDay: meetingDay || '',
         meetingDescription: meetingDesc,
@@ -142,7 +205,7 @@ export async function onRequestPost(context) {
     }), { headers });
 
   } catch (err) {
-    console.error('Proposal function error:', err.message);
+    console.error('Proposal error:', err.message);
     return new Response(JSON.stringify({ error: 'Something went wrong. Please try again.' }), { status: 500, headers });
   }
 }
@@ -153,12 +216,12 @@ function buildMeetingDescription(cadence, day) {
   const dayStr = day ? ` on ${day}s` : '';
   switch (cadence) {
     case 'weekly':
-      return `MTM and the Client shall meet once per week${dayStr}, for a maximum of one (1) hour, to review performance, discuss upcoming content, address change requests, and align on strategy. This weekly meeting is the designated channel for the Client to communicate change requests and content direction. MTM shall complete all reasonable change requests discussed and agreed upon during the meeting within seven (7) business days.`;
+      return `MTM and the Client shall meet once per week${dayStr}, for a maximum of one (1) hour, to review performance, discuss upcoming deliverables, and address change requests. This meeting is the designated channel for change requests and content direction. MTM shall complete approved change requests within seven (7) business days.`;
     case 'biweekly':
-      return `MTM and the Client shall meet once every two (2) weeks${dayStr}, for a maximum of thirty (30) minutes, to review performance, discuss content direction, and address any change requests. Between meetings, the Client may submit change requests via email, which MTM will address within seven (7) business days.`;
+      return `MTM and the Client shall meet once every two (2) weeks${dayStr}, for a maximum of thirty (30) minutes, to review performance and address change requests. Between meetings, the Client may submit requests via email. MTM shall address email requests within seven (7) business days.`;
     case 'monthly_email':
     default:
-      return `MTM shall deliver a written monthly performance report to the Client via email by the fifth (5th) business day of each calendar month, covering the prior month's metrics and activity. The Client may submit change requests via email at any time, which MTM will address within seven (7) business days.`;
+      return `MTM shall deliver a written monthly performance report to the Client via email by the fifth (5th) business day following the close of each billing cycle. The Client may submit change requests via email at any time. MTM shall address email requests within seven (7) business days.`;
   }
 }
 
@@ -167,125 +230,111 @@ function buildMeetingDescription(cadence, day) {
 async function generateGrandSlamOffer(data, apiKey) {
   if (!apiKey) return buildFallbackOffer(data);
 
-  const { businessName, contactName, city, businessType, custValue, mktSpend, painPoint, desiredOutcome, triedBefore, meetingCadence, meetingDay, discoveryNotes } = data;
+  const {
+    businessName, contactName, city, businessType,
+    hasWebsite, hasBackend, hasSocial,
+    custValue, budget, mktSpend, painPoint, desiredOutcome,
+    triedBefore, socialGoal, meetingCadence, meetingDay, discoveryNotes,
+    websitePages, websiteMinImages, websiteMinVideos, websiteLeadCapture,
+    socialSamePostsPerWeek, socialDiffPostsPerWeek,
+    currentWebsiteTraffic, currentLeadsPerMonth,
+    currentInstagramFollowers, currentFacebookFollowers, currentTiktokFollowers,
+    currentGoogleReviews, defaultMinTerm, budget: budgetCeiling,
+  } = data;
 
-  const prompt = `You are a sales strategist for More Than Momentum (MTM), an AI-powered digital growth agency. You use Alex Hormozi's Grand Slam Offer framework to create offers so good prospects feel stupid saying no.
+  const selectedServices = [];
+  if (hasWebsite) selectedServices.push('Website Design');
+  if (hasBackend) selectedServices.push('Backend & Lead Generation (GoHighLevel CRM)');
+  if (hasSocial) selectedServices.push('Social Media Management (filming, editing, posting)');
 
-THE HORMOZI VALUE EQUATION:
-Value = (Dream Outcome x Perceived Likelihood of Achievement) / (Time Delay x Effort & Sacrifice)
+  const prompt = `You are a sales strategist for More Than Momentum (MTM). You use Alex Hormozi's Grand Slam Offer framework.
 
-Your job: maximize the top (dream + certainty) and minimize the bottom (time + effort). Remove every obstacle between the prospect and their desired outcome. Stack value so the price feels insignificant.
+VALUE EQUATION: Value = (Dream Outcome x Perceived Likelihood) / (Time Delay x Effort & Sacrifice)
 
-MTM PRICING PLAYBOOK — USE THIS AS CONTEXT FOR BUILDING THE OFFER:
+MTM PRICING PLAYBOOK:
+- Two tracks: Build & Hand Off (one-time) or Ongoing Partnership (monthly)
+- Reference packages: Launch Site ($1,000), Launch System ($1,500), Stay Current ($500/mo), Content Partner ($1,500/mo), Full Momentum ($3,000+$2,500/mo)
+- These are REFERENCE POINTS. Build a CUSTOM offer using the Grand Slam framework.
+- Intro rate / standard rate model: client pays less until benchmarks hit
+- Make the offer so good they feel stupid saying no
 
-MTM operates on TWO TRACKS. Every client fits one:
+SELECTED SERVICES: ${selectedServices.join(' + ')}
+${hasWebsite && !hasBackend && !hasSocial ? 'CLIENT ONLY WANTS WEBSITE — no recurring metrics to track on backend/social. Offer structure should be: reduced setup upfront, remaining on completion, then small monthly for updates/maintenance. Performance benchmarks limited to website traffic and form submissions only.' : ''}
+${!hasSocial ? 'NO SOCIAL MEDIA — do not include any social metrics in guarantees.' : ''}
+${hasSocial ? 'SOCIAL MEDIA INCLUDED — minimum monthly is $2,500 due to manual filming/editing labor.' : ''}
 
-TRACK A — BUILD & HAND OFF (One-Time Fee)
-For owners who want a professional asset delivered, paid once, and handed to them to run. Good for technically comfortable owners or businesses with someone internal to maintain things.
-- Launch Site ($1,000 one-time): Custom website, mobile-first, up to 5 pages, contact form, one revision round. No automation, no ongoing.
-- Launch System ($1,500 one-time): Everything in Launch Site + full AI automation (lead capture, instant SMS/email follow-up, appointment booking, review requests, pipeline tracking, training walkthrough). No ongoing maintenance included.
-
-TRACK B — ONGOING PARTNERSHIP (Monthly Retainer)
-For owners who want MTM in the trenches with them monthly. This is where MTM delivers the most value and earns recurring revenue.
-- Stay Current ($500/mo, add-on to Launch System only): Ongoing system monitoring, new features added, workflow tweaks, priority support, quarterly check-ins. No content creation.
-- Content Partner ($1,500/mo): Custom website + full automation (built during onboarding) + ongoing updates + owner films raw footage, MTM edits and posts + content calendar + monthly performance report. No on-site filming.
-- Full Momentum ($3,000 setup + $2,500/mo): Everything + MTM shows up on-site to film + broadcast-quality editing + strategic content calendar + monthly strategy call + full performance dashboard. Flagship package.
-
-DECISION TREE — use the prospect's answers to lean toward the right structure:
-- "I just need a better website" → lean toward Launch Site territory, but stack automation value
-- "I want automation but no monthly bill" → Launch System territory, mention Stay Current as optional
-- "I'll film my own stuff but need help editing/posting" → Content Partner territory
-- "I need everything, I have no time" → Full Momentum territory
-
-IMPORTANT: These packages are REFERENCE POINTS, not rigid boxes. Your job is to build a CUSTOM offer that uses Hormozi's framework — the packages tell you what the market expects at different price points. You can mix, adjust, and create entirely new structures based on discovery data. The intro rate / standard rate model with performance guarantees is what makes MTM's offer a Grand Slam — the client pays less until we prove it works.
-
-OBJECTION CONTEXT — the offer should preemptively address these:
-- "Too expensive" → reframe around customer value ROI
-- "Tried agencies before" → one-time build option removes long-term risk, performance guarantees shift risk to MTM
-- "I can build my own website" → quantify time cost: 40+ hours = what they could earn running their business
-- "I want to think about it" → the offer structure (low intro rate + guarantees) IS the answer to their hesitation
-
-PROSPECT INFORMATION:
+PROSPECT:
 - Business: ${businessName} (${businessType}) in ${city}
 - Contact: ${contactName}
-- Average customer value: ${custValue > 0 ? '$' + custValue : 'Not provided'}
-- Current marketing spend: ${mktSpend > 0 ? '$' + mktSpend + '/month' : 'Not provided'}
-- Primary pain point: ${painPoint || 'Not specified'}
-- Desired outcome (what would make them sign today): ${desiredOutcome || 'Not specified'}
-- What they have tried before: ${triedBefore || 'Not specified'}
-- Meeting preference: ${meetingCadence || 'monthly_email'}${meetingDay ? ' on ' + meetingDay + 's' : ''}
-${discoveryNotes ? '- Discovery notes from call: ' + discoveryNotes : ''}
+- Customer value: ${custValue > 0 ? '$' + custValue : 'Unknown'}
+- Budget before results: ${budget > 0 ? '$' + budget : 'Unknown'}
+- Current marketing spend: ${mktSpend > 0 ? '$' + mktSpend + '/mo' : 'Unknown'}
+- Pain: ${painPoint || 'Not specified'}
+- Desired outcome: ${desiredOutcome || 'Not specified'}
+- Tried before: ${triedBefore || 'Unknown'}
+${hasSocial ? '- Social goal: ' + (socialGoal || 'Not specified') : ''}
+- Meeting: ${meetingCadence || 'monthly_email'}${meetingDay ? ' on ' + meetingDay + 's' : ''}
+${discoveryNotes ? '- Notes: ' + discoveryNotes : ''}
 
-MTM SERVICE CATALOG (select what fits — do NOT include everything, only what serves their pain):
-${SERVICE_CATALOG.map(s => `- ${s.id}: ${s.name} (${s.type}, cost basis ~$${s.costBasis})`).join('\n')}
+CURRENT METRICS (use these as baselines in benchmarks):
+${hasWebsite || hasBackend ? '- Website traffic: ' + (currentWebsiteTraffic || 'Unknown') + ' visitors/month' : ''}
+${hasBackend ? '- Leads per month: ' + (currentLeadsPerMonth || 'Unknown') : ''}
+${hasSocial ? '- Instagram: ' + (currentInstagramFollowers || 'Unknown') + ' followers' : ''}
+${hasSocial ? '- Facebook: ' + (currentFacebookFollowers || 'Unknown') + ' followers' : ''}
+${hasSocial ? '- TikTok: ' + (currentTiktokFollowers || 'Unknown') + ' followers' : ''}
+- Google reviews: ${currentGoogleReviews || 'Unknown'}
 
-PRICING STRATEGY:
-1. Hard floors: setup >= $${MIN_SETUP}, intro monthly >= $${MIN_MONTHLY_INTRO}
-2. Standard monthly should be 3-5x the intro rate
-3. Intro rate = "prove it" rate. Client pays less while MTM earns trust.
-4. Standard rate kicks in ONLY when ALL performance benchmarks are simultaneously met
-5. The math MUST work: once benchmarks hit and standard rate activates, MTM earns back the discount period within 3-4 months
-6. If prospect currently spends $${mktSpend || 0}/month on marketing, price the intro at or below that — make switching feel risk-free
-7. Use the customer value ($${custValue || 0}) to anchor ROI: "this pays for itself with X customers"
-8. Think like Hormozi: the offer should feel like a steal at the intro rate, and fair at the standard rate
+WEBSITE SCOPE (if website selected): ${websitePages || 5} pages, min ${websiteMinImages || 3} images, min ${websiteMinVideos || 1} video, lead capture: ${websiteLeadCapture || 'contact form'}
+SOCIAL SCOPE (if social selected): ${socialSamePostsPerWeek || 3} same posts/week cross-posted, ${socialDiffPostsPerWeek || 1} unique posts/week
 
-GUARANTEE METRICS (pick 3-4, ONLY from this approved list):
-${ALLOWED_METRICS.map(m => '- ' + m).join('\n')}
-NEVER guarantee: sales, revenue, profit, close rate, conversions, or anything the client controls.
-Each metric needs: name, baseline ("TBD at first month close" if unknown), target (specific number or percentage), and data source.
-Targets MUST be realistically achievable by MTM within 60-90 days.
+PRICING RULES:
+1. Min setup: $${MIN_SETUP}. Min monthly: $${hasSocial ? MIN_MONTHLY_WITH_SOCIAL : MIN_MONTHLY_NO_SOCIAL}
+2. If budget provided ($${budget || 0}), try to keep total upfront cost at or below that
+3. Standard monthly = 3-5x intro rate
+4. Setup payment: recommend half upfront + half on completion for website-only, or full upfront for ongoing partnerships. But choose what makes the offer irresistible.
+5. Default minimum term: ${defaultMinTerm} days
 
-MINIMUM TERM: Choose 30-90 days. Default to 60. Consider scope complexity and client risk tolerance. The term must give MTM enough runway to demonstrate results, but not scare the prospect. Frame it as protection for both parties — "we need X days to prove this works."
+GUARANTEE RULES:
+- ONLY metrics from this list: ${ALLOWED_METRICS.join(', ')}
+- NEVER guarantee: sales, revenue, profit, close rate, conversions, bookings, appointments, ROI
+- Use EXACT baseline numbers from current metrics above. If unknown, write "TBD at first month close"
+- Targets must be specific numbers (not just percentages): e.g. "from 500 to 750 visitors/month (+50%)"
+- Only include metrics relevant to selected services
+- 2-4 metrics maximum
 
-Return ONLY a JSON object with this structure:
+Return ONLY valid JSON:
 {
-  "offerName": "Specific, compelling name for this offer",
-  "offerTagline": "One sentence — makes them feel stupid saying no",
+  "offerName": "Compelling name",
+  "offerTagline": "One sentence — irresistible",
   "services": [
-    {
-      "id": "service_id",
-      "name": "Service name",
-      "desc": "2-3 sentences specific to their business type",
-      "valueHighlight": "Dollar or outcome value (e.g. 'Worth $2,000/month in recovered leads')"
-    }
+    { "id": "service_id", "name": "Service", "desc": "2-3 sentences specific to their business — be VERY specific about deliverables, no vague promises", "valueHighlight": "Dollar/outcome value" }
   ],
-  "setupFee": 800,
-  "introMonthly": 300,
-  "standardMonthly": 1500,
-  "minimumTermDays": 60,
+  "setupFee": 1000,
+  "introMonthly": 200,
+  "standardMonthly": 1000,
+  "minimumTermDays": ${defaultMinTerm},
+  "setupPaymentStructure": "half_upfront|full_upfront",
   "guaranteeMetrics": [
-    { "metric": "Metric Name", "baseline": "Current or TBD", "target": "Specific target", "source": "Data source" }
+    { "metric": "Metric Name", "baseline": "Current number or TBD", "target": "Exact target number with percentage", "source": "Data source" }
   ],
-  "painPoints": ["4-5 specific pain points for 'What You Are Losing Right Now' — quantify with dollars where possible, use their business type language"],
-  "sellingTips": ["4-5 internal tips for the sales person — objection handlers, pivots, hooks"],
-  "valueStack": "2-3 sentences showing total value vs intro price — make the gap massive",
-  "nextSteps": ["3-4 steps, first is signing, last is 'We start building within 48 hours'"],
-  "timeline": [
-    { "phase": "Phase name", "days": "Days X-Y", "desc": "What happens" }
-  ]
+  "painPoints": ["4-5 specific, quantified pain points"],
+  "sellingTips": ["4-5 internal sales tips"],
+  "valueStack": "2-3 sentences showing total value vs price",
+  "nextSteps": ["3-4 steps, first is signing"],
+  "timeline": [{ "phase": "Phase", "days": "Days X-Y", "desc": "What happens" }]
 }
 
-CRITICAL: Valid JSON only. No markdown. No backticks. No intro text.`;
+CRITICAL: Valid JSON only. No markdown. No backticks.`;
 
   try {
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
-        messages: [{ role: 'user', content: prompt }],
-      }),
+      headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-6', max_tokens: 2500, messages: [{ role: 'user', content: prompt }] }),
     });
-
     const result = await resp.json();
     const text = result.content?.[0]?.text || '{}';
-    const cleaned = text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
-    return JSON.parse(cleaned);
+    return JSON.parse(text.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim());
   } catch (err) {
     console.error('Claude offer error:', err.message);
     return buildFallbackOffer(data);
@@ -295,33 +344,29 @@ CRITICAL: Valid JSON only. No markdown. No backticks. No intro text.`;
 // ── FALLBACK ─────────────────────────────────────────────────────────────────
 
 function buildFallbackOffer(data) {
+  const services = [];
+  if (data.hasWebsite) services.push({ id: 'website', name: 'Website Design & Development', desc: 'Custom-built, mobile-first website with specified page count, images, and lead capture integration.', valueHighlight: 'Your digital storefront' });
+  if (data.hasBackend) services.push({ id: 'crm', name: 'GoHighLevel CRM & Lead Automation', desc: 'Configured sales pipeline, automated lead capture, and follow-up sequences via email and SMS.', valueHighlight: 'Automated lead management' });
+  if (data.hasSocial) services.push({ id: 'social', name: 'Social Media Management', desc: 'Content filming, editing, and posting across specified platforms at agreed-upon frequency.', valueHighlight: 'Professional content engine' });
+
   return {
     offerName: `${data.businessName} Growth System`,
-    offerTagline: 'Your digital infrastructure — built, managed, and guaranteed to perform.',
-    services: [
-      { id: 'website', name: 'Website Design & Development', desc: 'Professional, mobile-first website built to convert visitors into leads.', valueHighlight: 'Foundation of your online presence' },
-      { id: 'crm', name: 'GoHighLevel CRM + Lead Automation', desc: 'Full pipeline setup with automatic follow-up sequences — no lead falls through the cracks.', valueHighlight: 'Never miss a lead again' },
-      { id: 'social', name: 'Social Media Management', desc: 'Consistent posting across platforms with a monthly content calendar and strategy.', valueHighlight: 'Stay visible without lifting a finger' },
-    ],
-    setupFee: 1000, introMonthly: 500, standardMonthly: 1500, minimumTermDays: 60,
-    guaranteeMetrics: [
-      { metric: 'Monthly Website Traffic (Unique Visitors)', baseline: 'TBD at first month close', target: '+50% increase', source: 'Google Analytics GA4' },
-      { metric: 'Monthly Qualified Leads (GHL Pipeline)', baseline: 'TBD at first month close', target: '15 leads/month', source: 'GoHighLevel Pipeline Dashboard' },
-    ],
-    painPoints: [
-      'Every missed call or slow follow-up sends a customer to the competitor who answered first.',
-      'An outdated website tells prospects your business is behind before they ever call.',
-      'Without consistent social media, you are invisible to people actively searching for what you offer.',
-      'Manual follow-up means leads go cold while you are busy doing the actual work.',
-    ],
-    sellingTips: ['AI generation unavailable — use handbook talking points.'],
-    valueStack: 'The combined value of a professional website, CRM automation, and managed social media exceeds $3,000/month at market rates. You start at a fraction of that while we prove results.',
-    nextSteps: ['Sign the agreement and pick a start date.', 'Complete the brand questionnaire within 24 hours.', 'Provide account access within 48 hours.', 'We start building within 48 hours of kickoff.'],
+    offerTagline: 'Your digital infrastructure — built, managed, and performance-guaranteed.',
+    services,
+    setupFee: MIN_SETUP,
+    introMonthly: data.hasSocial ? MIN_MONTHLY_WITH_SOCIAL : MIN_MONTHLY_NO_SOCIAL,
+    standardMonthly: data.hasSocial ? 2500 : 1000,
+    minimumTermDays: data.defaultMinTerm || 60,
+    setupPaymentStructure: (data.hasWebsite && !data.hasBackend && !data.hasSocial) ? 'half_upfront' : 'full_upfront',
+    guaranteeMetrics: [],
+    painPoints: ['Every day without a system is leads walking to competitors.'],
+    sellingTips: ['AI unavailable — use handbook talking points.'],
+    valueStack: 'Combined market value of these services exceeds the standard rate.',
+    nextSteps: ['Sign the agreement.', 'Complete brand questionnaire.', 'We start within 48 hours.'],
     timeline: [
-      { phase: 'Discovery & Strategy', days: 'Days 1-2', desc: 'Brand questionnaire, competitor audit, goal-setting call.' },
-      { phase: 'Website & CRM Build', days: 'Days 3-14', desc: 'Design, development, CRM configuration, automation setup.' },
-      { phase: 'Revisions & QA', days: 'Days 15-18', desc: 'Up to 2 rounds of revisions, full QA testing.' },
-      { phase: 'Launch & Handoff', days: 'Day 21', desc: 'Site live, CRM connected, client walkthrough, growth tools kickoff.' },
+      { phase: 'Discovery & Strategy', days: 'Days 1-2', desc: 'Questionnaire, audit, planning.' },
+      { phase: 'Build', days: 'Days 3-14', desc: 'Design, development, configuration.' },
+      { phase: 'Launch', days: 'Day 21', desc: 'Go live, walkthrough, handoff.' },
     ],
   };
 }
