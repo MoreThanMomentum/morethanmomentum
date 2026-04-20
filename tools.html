@@ -362,11 +362,19 @@
       <div class="tool-card active" onclick="openPanel()">
         <div class="tool-card-icon">🔍</div>
         <div class="tool-card-header"><div class="tool-card-name">Prospect Intelligence</div><span class="tool-card-badge badge-live">Live</span></div>
-        <p class="tool-card-desc">Enter a business name and city. Get a full digital audit, gap analysis, tailored discovery questions, and the right MTM package to pitch — ready to download as a PDF.</p>
+        <p class="tool-card-desc">Enter a business name and city. Get a full digital audit, gap analysis, tailored discovery questions, and estimated metrics — ready before your call.</p>
         <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
       </div>
 
-      <!-- Tool 02 — Proposal Generator -->
+      <!-- Tool 02 — Call Intelligence (NEW) -->
+      <div class="tool-card active" onclick="openNotesPanel()">
+        <div class="tool-card-icon">🎙</div>
+        <div class="tool-card-header"><div class="tool-card-name">Call Intelligence</div><span class="tool-card-badge badge-live">Live</span></div>
+        <p class="tool-card-desc">Paste a Google Meet URL and an AI bot joins your discovery call. When it ends, get a full call summary, extracted data, and one-click to pre-fill the Proposal Generator.</p>
+        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+      </div>
+
+      <!-- Tool 03 — Proposal Generator -->
       <div class="tool-card active" onclick="openProposalPanel()">
         <div class="tool-card-icon">📝</div>
         <div class="tool-card-header"><div class="tool-card-name">Proposal Generator</div><span class="tool-card-badge badge-live">Live</span></div>
@@ -374,7 +382,7 @@
         <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
       </div>
 
-      <!-- Tool 03 — Client Report Generator -->
+      <!-- Tool 04 — Client Report Generator -->
       <div class="tool-card active" onclick="openReportPanel()">
         <div class="tool-card-icon">📊</div>
         <div class="tool-card-header"><div class="tool-card-name">Client Report Generator</div><span class="tool-card-badge badge-live">Live</span></div>
@@ -445,11 +453,65 @@
   </div>
 </div>
 
-<!-- ── REPORT PANEL (Tool 02) ───────────────────────────────────────── -->
+<!-- ── CALL INTELLIGENCE PANEL (Tool 02) ─────────────────────────── -->
+<div id="notes-panel" class="panel-overlay" onclick="handleNotesBackdrop(event)">
+  <div class="panel-inner">
+    <div class="panel-header">
+      <div><div class="panel-tag">Tool 02</div><div class="panel-title">Call Intelligence</div></div>
+      <button class="panel-close" onclick="closeNotesPanel()">✕</button>
+    </div>
+    <div class="panel-body" id="notesPanelBody">
+
+      <!-- Input -->
+      <div id="notesForm" style="display:flex;flex-direction:column;gap:14px;">
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;">
+          <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);">🎙 Start AI Notetaker</div>
+          <div style="font-size:13px;color:var(--gray);line-height:1.6;">Paste your Google Meet URL below. An AI bot named <strong style="color:var(--white);">MTM Notes</strong> will join the call, record the transcript, and automatically extract the key details when the call ends.</div>
+          <div style="display:flex;gap:8px;">
+            <input type="text" id="notesMeetUrl" class="panel-input" placeholder="https://meet.google.com/xxx-xxxx-xxx" style="flex:1;"/>
+            <button id="notesBotBtn" onclick="startNotesBot()" class="panel-run-btn" style="width:auto;padding:11px 18px;margin:0;white-space:nowrap;">Start Bot →</button>
+          </div>
+          <div id="notesBotStatus" style="font-size:12px;color:var(--gray);">Enter a Meet URL and click Start Bot. The bot appears as a participant — just run your call normally.</div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;"><div style="flex:1;height:1px;background:var(--border);"></div><span style="font-size:11px;color:var(--mid);">OR</span><div style="flex:1;height:1px;background:var(--border);"></div></div>
+
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
+          <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);">📋 Paste Transcript or Notes</div>
+          <textarea id="notesTranscript" class="panel-textarea" style="min-height:100px;" placeholder="Paste any transcript, audio-to-text output, or rough handwritten notes. AI extracts all the key fields automatically..."></textarea>
+          <button onclick="processNotesTranscript()" class="panel-run-btn" style="margin:0;">Extract from Text →</button>
+        </div>
+
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <div>
+            <div style="font-size:13px;color:var(--white);font-weight:500;">Load Previous Call</div>
+            <div style="font-size:12px;color:var(--gray);margin-top:2px;">Pull notes from the last completed call</div>
+          </div>
+          <button id="notesLoadBtn" onclick="loadNotesFromKV()" class="btn-load-call" style="flex-shrink:0;">⬇ Load Last Call</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div class="panel-loading" id="notesLoadingEl">
+        <div class="loading-spinner"></div>
+        <div class="loading-label">
+          <strong id="notesLoadingMsg">Processing transcript...</strong>
+          <span>Extracting key details from the call.</span>
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div id="notesResult" style="display:none;flex-direction:column;gap:14px;"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── REPORT PANEL (Tool 04) ───────────────────────────────────────── -->
 <div id="report-panel" class="panel-overlay" onclick="handleReportBackdrop(event)">
   <div class="panel-inner">
     <div class="panel-header">
-      <div><div class="panel-tag">Tool 03</div><div class="panel-title">Client Report Generator</div></div>
+      <div><div class="panel-tag">Tool 04</div><div class="panel-title">Client Report Generator</div></div>
       <button class="panel-close" onclick="closeReportPanel()">✕</button>
     </div>
     <div class="panel-body" id="reportPanelBody">
@@ -512,13 +574,18 @@
 <div id="proposal-panel" class="panel-overlay" onclick="handleProposalBackdrop(event)">
   <div class="panel-inner">
     <div class="panel-header">
-      <div><div class="panel-tag">Tool 02</div><div class="panel-title">Proposal Generator</div></div>
+      <div><div class="panel-tag">Tool 03</div><div class="panel-title">Proposal Generator</div></div>
       <button class="panel-close" onclick="closeProposalPanel()">✕</button>
     </div>
     <div class="panel-body" id="proposalPanelBody">
 
       <!-- Form -->
       <div class="panel-form" id="proposalForm">
+        <!-- Load from Tool 02 -->
+        <div id="propLoadBanner" style="background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <div style="font-size:13px;color:var(--gray);">Have call notes from <strong style="color:var(--white);">Tool 02</strong>?</div>
+          <button onclick="loadFromTool2()" class="btn-load-call" style="flex-shrink:0;">⬇ Load from Last Call</button>
+        </div>
         <div class="panel-field">
           <label class="panel-label" for="propBizName">Business Name</label>
           <input type="text" id="propBizName" class="panel-input" placeholder="e.g. Riverside HVAC"/>
@@ -614,27 +681,9 @@
             </select>
           </div>
         </div>
-        <!-- NOTETAKER -->
-        <div class="notetaker-bar">
-          <div class="notetaker-title">🎙 AI Notetaker (Recall.ai)</div>
-          <div class="notetaker-row">
-            <input type="text" id="meetUrl" class="notetaker-input" placeholder="Paste Google Meet URL — bot joins and records automatically"/>
-            <button class="btn-notetaker" id="startBotBtn" onclick="startRecallBot()">Start Bot</button>
-            <button class="btn-load-call" id="loadCallBtn" onclick="loadCallNotes()">⬇ Load Last Call</button>
-          </div>
-          <div class="notetaker-status" id="notetakerStatus">Enter a Meet URL to start, or load notes from a completed call.</div>
-        </div>
-
-        <!-- PASTE TRANSCRIPT FALLBACK -->
         <div class="panel-field">
-          <label class="panel-label">Paste Transcript / Raw Notes <span>(AI auto-fills form fields)</span></label>
-          <textarea id="propTranscript" class="panel-textarea" style="min-height:60px;" placeholder="Paste any call transcript, audio-to-text output, or rough notes — AI extracts all relevant fields automatically..."></textarea>
-          <button onclick="extractFromTranscript()" style="margin-top:6px;background:transparent;border:1px solid var(--border);border-radius:6px;padding:7px 12px;font-family:var(--sans);font-size:12px;color:var(--gray);cursor:pointer;" onmouseover="this.style.color='var(--white)'" onmouseout="this.style.color='var(--gray)'">Extract Fields from Text →</button>
-        </div>
-
-        <div class="panel-field">
-          <label class="panel-label" for="propNotes">Discovery Notes <span>(additional context)</span></label>
-          <textarea id="propNotes" class="panel-textarea" placeholder="e.g. Lost 3 jobs last month because no one followed up. Website from 2016. Tried hiring a social media person but they ghosted. Has 349 existing contacts in an Excel sheet..."></textarea>
+          <label class="panel-label">Discovery Notes <span>(additional context)</span></label>
+          <textarea id="propNotes" class="panel-textarea" placeholder="e.g. Lost 3 jobs last month because no one followed up. Website from 2016. Has 349 contacts in Excel. Competitor down the street has 200 Google reviews..."></textarea>
         </div>
         <div class="panel-inline-error" id="proposalErr"></div>
         <button class="panel-run-btn" id="proposalRunBtn" onclick="runProposal()">Build Grand Slam Offer →</button>
@@ -705,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bizName').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('bizCity').focus(); });
   document.getElementById('bizCity').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('bizUrl').focus(); });
   document.getElementById('bizUrl').addEventListener('keydown', e => { if (e.key === 'Enter') runProspect(); });
-  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePanel(); closeReportPanel(); closeProposalPanel(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePanel(); closeReportPanel(); closeProposalPanel(); closeNotesPanel(); } });
   checkSession();
   checkOAuthStatus();
 });
@@ -1824,6 +1873,181 @@ function generateContractPDF(p) {
 
 
 /* ══════════════════════════════════════════════
+   CALL INTELLIGENCE PANEL (Tool 02)
+══════════════════════════════════════════════ */
+function openNotesPanel() {
+  document.getElementById('notes-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => document.getElementById('notesMeetUrl').focus(), 300);
+}
+function closeNotesPanel() {
+  document.getElementById('notes-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleNotesBackdrop(e) { if (e.target === document.getElementById('notes-panel')) closeNotesPanel(); }
+
+async function startNotesBot() {
+  const url = document.getElementById('notesMeetUrl').value.trim();
+  const btn = document.getElementById('notesBotBtn');
+  const status = document.getElementById('notesBotStatus');
+  if (!url) { status.textContent = 'Paste a Google Meet URL first.'; return; }
+  if (!url.includes('meet.google.com')) { status.textContent = 'Must be a meet.google.com URL.'; return; }
+  btn.disabled = true; btn.textContent = 'Starting...';
+  status.textContent = 'Launching MTM Notes bot...';
+  try {
+    const res = await fetch('/api/create-bot', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ meetingUrl: url }) });
+    const data = await res.json();
+    btn.disabled = false; btn.textContent = 'Start Bot →';
+    if (data.success) {
+      status.innerHTML = `<span style="color:var(--green);">✅ Bot joining now. Run your call normally — when it ends, come back and click "Load Last Call" to see the extracted notes.</span>`;
+      document.getElementById('notesMeetUrl').value = '';
+    } else {
+      status.textContent = '⚠ ' + (data.error || 'Bot failed to start. Check RECALL_AI_API_KEY env var.');
+    }
+  } catch {
+    btn.disabled = false; btn.textContent = 'Start Bot →';
+    status.textContent = 'Connection error. Try again.';
+  }
+}
+
+async function processNotesTranscript() {
+  const transcript = document.getElementById('notesTranscript').value.trim();
+  if (!transcript || transcript.length < 50) { alert('Paste more text — at least a few sentences.'); return; }
+  showNotesLoading('Extracting key details from your notes...');
+  try {
+    const res = await fetch('/api/process-notes', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ event: 'manual_paste', data: { transcript: [{ speaker: 'Call', text: transcript }] } }),
+    });
+    const data = await res.json();
+    if (data.success) { await loadNotesFromKV(); }
+    else { hideNotesLoading(); alert('Extraction failed. Try again.'); }
+  } catch { hideNotesLoading(); alert('Connection error.'); }
+}
+
+async function loadNotesFromKV() {
+  showNotesLoading('Loading call notes...');
+  try {
+    const res = await fetch('/api/get-call-notes');
+    const data = await res.json();
+    hideNotesLoading();
+    if (!data.success) { alert(data.reason || 'No call notes found yet. Run a call with the bot first, or paste a transcript.'); return; }
+    renderNotesResult(data);
+  } catch { hideNotesLoading(); alert('Connection error.'); }
+}
+
+function showNotesLoading(msg) {
+  document.getElementById('notesForm').style.display = 'none';
+  document.getElementById('notesLoadingEl').classList.add('show');
+  document.getElementById('notesResult').style.display = 'none';
+  document.getElementById('notesLoadingMsg').textContent = msg || 'Processing...';
+}
+function hideNotesLoading() {
+  document.getElementById('notesLoadingEl').classList.remove('show');
+  document.getElementById('notesForm').style.display = 'flex';
+}
+
+function renderNotesResult(data) {
+  const f = data.fields || {};
+  const processedAt = data.processedAt ? new Date(data.processedAt).toLocaleString() : 'Unknown';
+
+  // Service badges
+  const si = f.serviceInterests || {};
+  const badges = [];
+  if (si.website) badges.push('🌐 Website');
+  if (si.backend) badges.push('⚙️ Backend');
+  if (si.social) badges.push('📱 Social');
+
+  // Field rows — only show fields that were extracted
+  const fieldMap = [
+    ['Business', f.businessName], ['Contact', f.contactName], ['City', f.city],
+    ['Type', f.businessType], ['Customer Value', f.avgCustomerValue ? '$' + Number(f.avgCustomerValue).toLocaleString() : null],
+    ['Budget Before Results', f.budgetBeforeResults ? '$' + Number(f.budgetBeforeResults).toLocaleString() : null],
+    ['Current Mkt Spend', f.currentMarketingSpend ? '$' + Number(f.currentMarketingSpend).toLocaleString() + '/mo' : null],
+    ['#1 Pain', f.painPoint], ['Desired Outcome', f.desiredOutcome],
+    ['Tried Before', f.triedBefore], ['Social Goal', f.socialGoal],
+    ['Meeting', f.meetingCadence],
+    ['Website Traffic', f.currentWebsiteTraffic ? fmtNum(f.currentWebsiteTraffic) + ' visitors/mo' : null],
+    ['Leads/Month', f.currentLeadsPerMonth ? fmtNum(f.currentLeadsPerMonth) : null],
+    ['Instagram', f.currentInstagramFollowers ? fmtNum(f.currentInstagramFollowers) + ' followers' : null],
+    ['Facebook', f.currentFacebookFollowers ? fmtNum(f.currentFacebookFollowers) + ' followers' : null],
+  ];
+  const fieldsHTML = fieldMap.filter(([,v]) => v != null && v !== '').map(([label, val]) => `
+    <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);">
+      <span style="font-size:11px;color:var(--gray);min-width:120px;flex-shrink:0;">${esc(label)}</span>
+      <span style="font-size:13px;color:var(--white);">${esc(String(val))}</span>
+    </div>
+  `).join('');
+
+  const result = document.getElementById('notesResult');
+  result.style.display = 'flex';
+  result.innerHTML = `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;">
+      <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">✅ Call Notes Ready</div>
+      <div style="font-size:12px;color:var(--mid);">Processed ${esc(processedAt)}</div>
+      ${badges.length ? `<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">${badges.map(b=>`<span style="font-size:11px;background:rgba(45,107,228,.12);border:1px solid rgba(45,107,228,.25);border-radius:5px;padding:3px 8px;color:var(--accent-light);">${b}</span>`).join('')}</div>` : ''}
+    </div>
+
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
+      <div style="padding:13px 18px;border-bottom:1px solid var(--border);font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);">Extracted Fields</div>
+      <div style="padding:4px 18px 12px;">${fieldsHTML || '<div style="font-size:13px;color:var(--mid);padding:10px 0;">No structured fields extracted — check discovery notes below.</div>'}</div>
+    </div>
+
+    ${f.discoveryNotes ? `
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
+      <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);margin-bottom:8px;">Additional Notes</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6;">${esc(f.discoveryNotes)}</div>
+    </div>` : ''}
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button onclick="sendToProposal()" style="flex:1;background:var(--accent);color:var(--white);border:none;border-radius:8px;padding:13px;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;">Build Proposal in Tool 03 →</button>
+      <button onclick="resetNotesPanel()" style="background:transparent;border:1px solid var(--border);color:var(--gray);border-radius:8px;padding:13px 16px;font-family:var(--sans);font-size:13px;cursor:pointer;">New Call</button>
+    </div>
+  `;
+}
+
+function resetNotesPanel() {
+  document.getElementById('notesResult').style.display = 'none';
+  document.getElementById('notesForm').style.display = 'flex';
+  document.getElementById('notesTranscript').value = '';
+  document.getElementById('notesMeetUrl').value = '';
+  document.getElementById('notesBotStatus').textContent = 'Enter a Meet URL and click Start Bot. The bot appears as a participant — just run your call normally.';
+}
+
+async function sendToProposal() {
+  // Load fields from KV and fill proposal form, then open Tool 03
+  try {
+    const res = await fetch('/api/get-call-notes');
+    const data = await res.json();
+    if (data.success && data.fields) {
+      fillProposalFormFromFields(data.fields);
+    }
+  } catch { /* still open the panel */ }
+  closeNotesPanel();
+  openProposalPanel();
+  // Scroll to top of proposal panel
+  setTimeout(() => {
+    const body = document.getElementById('proposalPanelBody');
+    if (body) body.scrollTop = 0;
+  }, 350);
+}
+
+async function loadFromTool2() {
+  try {
+    const res = await fetch('/api/get-call-notes');
+    const data = await res.json();
+    if (data.success && data.fields) {
+      fillProposalFormFromFields(data.fields);
+      const banner = document.getElementById('propLoadBanner');
+      if (banner) banner.innerHTML = `<div style="font-size:13px;color:var(--green);">✅ Loaded from Tool 02 call on ${new Date(data.processedAt).toLocaleDateString()}. Review and adjust below.</div>`;
+    } else {
+      alert('No call notes found. Run Tool 02 first.');
+    }
+  } catch { alert('Connection error.'); }
+}
+
+
+/* ══════════════════════════════════════════════
    GOOGLE OAUTH STATUS
 ══════════════════════════════════════════════ */
 function checkOAuthStatus() {
@@ -1935,113 +2159,6 @@ async function generateProspectSlides() {
     btn.textContent = '🖥 Open as Slides';
     alert('Connection error. Please try again.');
   }
-}
-
-/* ══════════════════════════════════════════════
-   RECALL.AI NOTETAKER
-══════════════════════════════════════════════ */
-async function startRecallBot() {
-  const meetUrl = document.getElementById('meetUrl').value.trim();
-  const btn = document.getElementById('startBotBtn');
-  const status = document.getElementById('notetakerStatus');
-
-  if (!meetUrl) { status.textContent = 'Enter a Google Meet URL first.'; return; }
-  if (!meetUrl.includes('meet.google.com')) { status.textContent = 'Must be a Google Meet URL (meet.google.com/...).'; return; }
-
-  btn.disabled = true;
-  btn.textContent = 'Starting...';
-  status.textContent = 'Launching MTM Notes bot...';
-
-  try {
-    const res = await fetch('/api/create-bot', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ meetingUrl: meetUrl }),
-    });
-    const data = await res.json();
-    btn.disabled = false;
-    btn.textContent = 'Start Bot';
-
-    if (data.success) {
-      status.textContent = '✅ ' + data.message;
-      status.classList.add('active');
-      document.getElementById('meetUrl').value = '';
-    } else {
-      status.textContent = '⚠ ' + (data.error || 'Failed to start bot. Check RECALL_AI_API_KEY env var.');
-      status.classList.remove('active');
-    }
-  } catch {
-    btn.disabled = false;
-    btn.textContent = 'Start Bot';
-    status.textContent = 'Connection error.';
-  }
-}
-
-async function loadCallNotes() {
-  const btn = document.getElementById('loadCallBtn');
-  const status = document.getElementById('notetakerStatus');
-  btn.disabled = true;
-  btn.textContent = '⏳ Loading...';
-  status.textContent = 'Fetching notes from last call...';
-
-  try {
-    const res = await fetch('/api/get-call-notes');
-    const data = await res.json();
-    btn.disabled = false;
-    btn.textContent = '⬇ Load Last Call';
-
-    if (!data.success) {
-      status.textContent = data.reason || 'No call notes found yet.';
-      return;
-    }
-
-    const f = data.fields || {};
-    fillProposalFormFromFields(f);
-    status.textContent = `✅ Fields loaded from call on ${new Date(data.processedAt).toLocaleDateString()}. Review and adjust before building.`;
-    status.classList.add('active');
-
-  } catch {
-    btn.disabled = false;
-    btn.textContent = '⬇ Load Last Call';
-    status.textContent = 'Connection error.';
-  }
-}
-
-/* ══════════════════════════════════════════════
-   TRANSCRIPT EXTRACTION
-══════════════════════════════════════════════ */
-let _extractTimer = null;
-function scheduleTranscriptExtract() {
-  clearTimeout(_extractTimer);
-  _extractTimer = setTimeout(extractFromTranscript, 2000);
-}
-
-async function extractFromTranscript() {
-  const transcript = document.getElementById('propTranscript')?.value?.trim();
-  if (!transcript || transcript.length < 100) return;
-  const status = document.getElementById('notetakerStatus');
-  if (status) { status.textContent = '⏳ Extracting fields from text...'; status.classList.remove('active'); }
-
-  try {
-    const res = await fetch('/api/process-notes', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        event: 'manual_paste',
-        data: { transcript: [{ speaker: 'Call', text: transcript }] },
-      }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      // Load the notes that were just stored
-      const notesRes = await fetch('/api/get-call-notes');
-      const notesData = await notesRes.json();
-      if (notesData.success) {
-        fillProposalFormFromFields(notesData.fields || {});
-        if (status) { status.textContent = '✅ Fields extracted. Review and adjust.'; status.classList.add('active'); }
-      }
-    }
-  } catch { if (status) status.textContent = 'Extraction error — fill fields manually.'; }
 }
 
 function fillProposalFormFromFields(f) {
