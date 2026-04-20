@@ -176,6 +176,35 @@ Value = (Dream Outcome x Perceived Likelihood of Achievement) / (Time Delay x Ef
 
 Your job: maximize the top (dream + certainty) and minimize the bottom (time + effort). Remove every obstacle between the prospect and their desired outcome. Stack value so the price feels insignificant.
 
+MTM PRICING PLAYBOOK — USE THIS AS CONTEXT FOR BUILDING THE OFFER:
+
+MTM operates on TWO TRACKS. Every client fits one:
+
+TRACK A — BUILD & HAND OFF (One-Time Fee)
+For owners who want a professional asset delivered, paid once, and handed to them to run. Good for technically comfortable owners or businesses with someone internal to maintain things.
+- Launch Site ($1,000 one-time): Custom website, mobile-first, up to 5 pages, contact form, one revision round. No automation, no ongoing.
+- Launch System ($1,500 one-time): Everything in Launch Site + full AI automation (lead capture, instant SMS/email follow-up, appointment booking, review requests, pipeline tracking, training walkthrough). No ongoing maintenance included.
+
+TRACK B — ONGOING PARTNERSHIP (Monthly Retainer)
+For owners who want MTM in the trenches with them monthly. This is where MTM delivers the most value and earns recurring revenue.
+- Stay Current ($500/mo, add-on to Launch System only): Ongoing system monitoring, new features added, workflow tweaks, priority support, quarterly check-ins. No content creation.
+- Content Partner ($1,500/mo): Custom website + full automation (built during onboarding) + ongoing updates + owner films raw footage, MTM edits and posts + content calendar + monthly performance report. No on-site filming.
+- Full Momentum ($3,000 setup + $2,500/mo): Everything + MTM shows up on-site to film + broadcast-quality editing + strategic content calendar + monthly strategy call + full performance dashboard. Flagship package.
+
+DECISION TREE — use the prospect's answers to lean toward the right structure:
+- "I just need a better website" → lean toward Launch Site territory, but stack automation value
+- "I want automation but no monthly bill" → Launch System territory, mention Stay Current as optional
+- "I'll film my own stuff but need help editing/posting" → Content Partner territory
+- "I need everything, I have no time" → Full Momentum territory
+
+IMPORTANT: These packages are REFERENCE POINTS, not rigid boxes. Your job is to build a CUSTOM offer that uses Hormozi's framework — the packages tell you what the market expects at different price points. You can mix, adjust, and create entirely new structures based on discovery data. The intro rate / standard rate model with performance guarantees is what makes MTM's offer a Grand Slam — the client pays less until we prove it works.
+
+OBJECTION CONTEXT — the offer should preemptively address these:
+- "Too expensive" → reframe around customer value ROI
+- "Tried agencies before" → one-time build option removes long-term risk, performance guarantees shift risk to MTM
+- "I can build my own website" → quantify time cost: 40+ hours = what they could earn running their business
+- "I want to think about it" → the offer structure (low intro rate + guarantees) IS the answer to their hesitation
+
 PROSPECT INFORMATION:
 - Business: ${businessName} (${businessType}) in ${city}
 - Contact: ${contactName}

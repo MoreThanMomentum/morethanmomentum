@@ -1,9 +1,14 @@
 /**
- * MTM Prospect Intelligence — Research Engine
+ * MTM Prospect Intelligence — Research Engine (v2)
  * Route: POST /api/prospect
  *
+ * Updated: Discovery questions now map directly to Tool 02 (Proposal Generator)
+ * input fields. The workflow: Tool 01 researches → generates targeted discovery
+ * questions → salesperson asks on the call → answers feed into Tool 02 → AI
+ * builds the Grand Slam Offer.
+ *
  * Environment Variables Required:
- *   ANTHROPIC_API_KEY — MTM's internal Anthropic API key (separate from client keys)
+ *   ANTHROPIC_API_KEY — MTM's internal Anthropic API key
  *
  * Accepts: { businessName, city, websiteUrl? }
  * Returns: { success: true, brief: { ... } }
@@ -35,7 +40,6 @@ export async function onRequestPost(context) {
       );
     }
 
-    // Build the user message
     const userMessage = websiteUrl
       ? `Research this prospect business for an MTM discovery brief:\n\nBusiness: "${businessName}"\nLocation: "${city}"\nWebsite: ${websiteUrl}\n\nSearch thoroughly and return the JSON brief.`
       : `Research this prospect business for an MTM discovery brief:\n\nBusiness: "${businessName}"\nLocation: "${city}"\n\nFind their website if one exists. Search thoroughly and return the JSON brief.`;
@@ -49,23 +53,43 @@ export async function onRequestPost(context) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 2000,
+        max_tokens: 2500,
         system: `You are a digital marketing analyst for More Than Momentum (MTM), an AI-native digital growth agency serving small and mid-size local businesses — primarily trades and local service providers.
 
-MTM's three packages:
-- Starter ($800 setup + $1,200/month): AI content calendar, 2-platform social management, 8 posts/month, basic automation
-- Growth Engine ($2,500 setup + $1,500/month): Everything in Starter + video production, advanced automation, 4 platforms, lead scoring
-- Full System ($3,500 setup + $2,500/month): Everything in Growth Engine + custom AI agents, website build/redesign, paid ads management
+MTM uses a variable pricing model based on client needs. There are no fixed packages — every proposal is custom-built from discovery call data. The salesperson uses Tool 01 (this tool) to research the prospect, then uses Tool 02 (Proposal Generator) to build a custom Grand Slam Offer based on the answers they get during the discovery call.
 
-Your job: Research the prospect business using web search and return a structured intelligence brief for MTM's sales team to use on a discovery call.
+YOUR JOB: Research the prospect and produce a brief that:
+1. Audits their current digital presence
+2. Identifies specific gaps and problems
+3. Generates the EXACT discovery questions the salesperson needs to ask during the call — these questions must directly produce the data needed for Tool 02
+4. Provides talking points to use during the conversation
+5. Recommends a general approach (not a fixed package)
+
+THE DISCOVERY QUESTIONS ARE CRITICAL. Tool 02 needs these specific data points from the call:
+- Average customer/job value in dollars
+- Current monthly marketing spend (even if $0)
+- Their #1 pain point (losing leads, bad website, no social presence, no time, bad agency experience, etc.)
+- What specific outcome would make them say yes today
+- What they have tried before (nothing, DIY social, hired agency, freelancer, ran ads, built own site)
+- Meeting/check-in preference (weekly, biweekly, or just monthly email reports)
+- Any other relevant details (existing contact lists, seasonal patterns, competitor concerns)
+
+Your discovery questions should be conversational versions of these — not "What is your average customer value?" but "When someone calls you for a job, what does that typically run? Like ballpark, what's an average ticket for you?"
+
+MTM's core capabilities:
+- Custom websites (mobile-first, conversion-focused, not templates)
+- AI-powered automation (lead capture, instant follow-up, appointment booking, pipeline tracking, review requests)
+- Social media management (filming, editing, posting, content calendars)
+- Two tracks: Build & Hand Off (one-time fee) or Ongoing Partnership (monthly retainer)
 
 Search for:
-1. Their website — platform (Wix/WordPress/Squarespace/Shopify/Custom/None), quality, mobile-friendliness, lead capture
-2. Social media — Instagram, Facebook, TikTok, LinkedIn (Active = posted in last 30 days, Inactive = account exists but dormant, None = no account found)
+1. Their website — platform, quality, mobile-friendliness, lead capture
+2. Social media — Instagram, Facebook, TikTok, LinkedIn (Active/Inactive/None)
 3. Google Business Profile — review count and rating
-4. Any obvious digital gaps or problems
+4. Competitors in the same area and niche
+5. Any obvious digital gaps or problems
 
-Return ONLY a valid raw JSON object. No markdown. No backticks. No explanation before or after. Just the JSON:
+Return ONLY a valid raw JSON object. No markdown. No backticks. No explanation. Just JSON:
 
 {
   "businessName": "exact name as found",
@@ -73,7 +97,7 @@ Return ONLY a valid raw JSON object. No markdown. No backticks. No explanation b
   "profile": {
     "websitePlatform": "Wix|WordPress|Squarespace|Shopify|Custom|None|Unknown",
     "websiteQuality": "Poor|Average|Good|None",
-    "websiteNotes": "1-2 specific sentences describing exactly what you found about their site",
+    "websiteNotes": "1-2 specific sentences about their site",
     "socialMedia": {
       "instagram": "Active|Inactive|None",
       "facebook": "Active|Inactive|None",
@@ -82,27 +106,35 @@ Return ONLY a valid raw JSON object. No markdown. No backticks. No explanation b
     },
     "googleReviews": "e.g. 47 reviews · 4.8 stars  — or  Not Found",
     "overallGrade": "A|B|C|D|F",
-    "gradeSummary": "One direct sentence explaining the grade based on what you found"
+    "gradeSummary": "One sentence explaining the grade"
   },
   "gapAnalysis": [
-    "Specific gap 1 — be concrete, e.g. No lead capture on website",
+    "Specific gap 1 — be concrete",
     "Specific gap 2",
-    "Specific gap 3"
+    "Specific gap 3",
+    "Specific gap 4"
   ],
-  "discoveryQuestions": [
-    "Question tailored to their specific situation, e.g. What happens when someone calls and you miss it?",
-    "Question 2",
-    "Question 3",
-    "Question 4"
-  ],
+  "discoveryQuestions": {
+    "customerValue": "Conversational question to find out their average job/customer value — e.g. 'When someone calls you for a job, what does that typically run?'",
+    "marketingSpend": "Question about current marketing spend — e.g. 'Are you spending anything on marketing right now? Even just boosting posts or paying for a website?'",
+    "painPoint": "Question that surfaces their #1 pain — tailored to gaps you found — e.g. 'I noticed your website doesn't have a way for people to request a quote. Where do your leads usually come from right now?'",
+    "desiredOutcome": "Question about what success looks like — e.g. 'If we could fix one thing about your online presence in the next 30 days, what would make the biggest difference for you?'",
+    "triedBefore": "Question about past marketing attempts — e.g. 'Have you ever worked with a marketing company or tried running ads? How did that go?'",
+    "meetingPreference": "Question about how involved they want to be — e.g. 'Some of our clients like a weekly check-in, others just want a monthly report. What works better for how you run things?'",
+    "additional": [
+      "1-2 extra questions specific to what you found in the research — e.g. about an existing contact list, seasonal patterns, a competitor they are losing to, etc."
+    ]
+  },
   "talkingPoints": [
-    "MTM talking point tied directly to a gap you found, e.g. Your competitor down the street has 180 Google reviews — here's how we close that gap fast.",
+    "MTM talking point tied to a gap — e.g. 'Your competitor has 180 Google reviews to your 12 — our review automation system fixes that in 60 days.'",
     "Talking point 2",
-    "Talking point 3"
+    "Talking point 3",
+    "Talking point 4"
   ],
-  "recommendedPackage": {
-    "name": "Starter|Growth Engine|Full System",
-    "rationale": "2-3 sentences explaining why this specific package fits based on what you found about this business"
+  "recommendedApproach": {
+    "track": "Build & Hand Off|Ongoing Partnership|Either — depends on call",
+    "scope": "Brief description of what you'd likely include — e.g. 'Website rebuild + CRM automation + social media management'",
+    "rationale": "2-3 sentences explaining why this approach fits based on what you found"
   }
 }`,
         messages: [
@@ -121,14 +153,13 @@ Return ONLY a valid raw JSON object. No markdown. No backticks. No explanation b
       const errText = await apiResponse.text();
       console.error('Anthropic API error:', apiResponse.status, errText);
       return new Response(
-        JSON.stringify({ error: `API error ${apiResponse.status} — check your ANTHROPIC_API_KEY in Cloudflare env vars.` }),
+        JSON.stringify({ error: `API error ${apiResponse.status} — check your ANTHROPIC_API_KEY.` }),
         { status: 500, headers }
       );
     }
 
     const apiData = await apiResponse.json();
 
-    // Extract text blocks from response (response may contain tool_use + tool_result + text)
     const textContent = apiData.content
       .filter(block => block.type === 'text')
       .map(block => block.text)
@@ -141,15 +172,12 @@ Return ONLY a valid raw JSON object. No markdown. No backticks. No explanation b
       );
     }
 
-    // Parse JSON — handle markdown fences, preamble, and postamble
     let brief;
     try {
-      // Strategy 1: strip markdown fences and parse directly
       let cleaned = textContent.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
       try {
         brief = JSON.parse(cleaned);
       } catch {
-        // Strategy 2: extract the outermost {...} block from the text
         const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
         if (!jsonMatch) throw new Error('No JSON object found in response');
         brief = JSON.parse(jsonMatch[0]);

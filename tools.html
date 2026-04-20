@@ -759,9 +759,36 @@ function renderBrief(b) {
   const socialHTML = [['Instagram','instagram'],['Facebook','facebook'],['TikTok','tiktok'],['LinkedIn','linkedin']]
     .map(([n,k]) => { const s = sm[k]||'None'; return `<div class="social-item"><span class="s-dot ${sdot(s)}"></span><span class="s-name">${n}</span><span class="s-status ${sclr(s)}">${s}</span></div>`; }).join('');
   const gaps = (b.gapAnalysis||[]).map(g=>`<div class="brief-item">${esc(g)}</div>`).join('');
-  const qs   = (b.discoveryQuestions||[]).map((q,i)=>`<div class="brief-item"><span class="brief-item-num">${i+1}.</span>${esc(q)}</div>`).join('');
   const tps  = (b.talkingPoints||[]).map(t=>`<div class="brief-item">${esc(t)}</div>`).join('');
-  const pkg  = b.recommendedPackage || {};
+  const approach = b.recommendedApproach || b.recommendedPackage || {};
+
+  // Discovery questions — handle both new object format and legacy array format
+  const dq = b.discoveryQuestions || {};
+  let discoveryHTML;
+  if (Array.isArray(dq)) {
+    // Legacy array format
+    discoveryHTML = dq.map((q,i)=>`<div class="brief-item"><span class="brief-item-num">${i+1}.</span>${esc(q)}</div>`).join('');
+  } else {
+    // New structured format — labeled questions that map to Tool 02 fields
+    const qFields = [
+      ['💰', 'Customer Value', dq.customerValue],
+      ['📊', 'Marketing Spend', dq.marketingSpend],
+      ['🎯', 'Pain Point', dq.painPoint],
+      ['✅', 'Desired Outcome', dq.desiredOutcome],
+      ['🔄', 'Tried Before', dq.triedBefore],
+      ['📅', 'Meeting Preference', dq.meetingPreference],
+    ];
+    discoveryHTML = qFields
+      .filter(([,,v]) => v)
+      .map(([icon, label, q]) => `<div class="brief-item" style="flex-direction:column;gap:3px;">
+        <span style="font-size:10px;color:var(--accent-light);text-transform:uppercase;letter-spacing:.08em;font-weight:500;">${icon} ${label} → Tool 02</span>
+        <span style="color:rgba(255,255,255,.85);">${esc(q)}</span>
+      </div>`).join('');
+    // Additional questions
+    if (dq.additional && dq.additional.length > 0) {
+      discoveryHTML += dq.additional.map(q => `<div class="brief-item">${esc(q)}</div>`).join('');
+    }
+  }
 
   document.getElementById('briefWrap').innerHTML = `
     <div class="brief-header">
@@ -785,17 +812,29 @@ function renderBrief(b) {
       <div class="brief-sec-body"><div class="brief-list">${gaps}</div></div>
     </div>
     <div class="brief-section">
-      <div class="brief-sec-head"><span class="brief-sec-icon">💬</span><span class="brief-sec-title">Discovery Questions</span></div>
-      <div class="brief-sec-body"><div class="brief-list">${qs}</div></div>
+      <div class="brief-sec-head"><span class="brief-sec-icon">💬</span><span class="brief-sec-title">Discovery Questions — Ask These on the Call</span></div>
+      <div class="brief-sec-body"><div class="brief-list">${discoveryHTML}</div></div>
     </div>
     <div class="brief-section">
       <div class="brief-sec-head"><span class="brief-sec-icon">🎯</span><span class="brief-sec-title">MTM Talking Points</span></div>
       <div class="brief-sec-body"><div class="brief-list">${tps}</div></div>
     </div>
     <div class="brief-section">
-      <div class="brief-sec-head"><span class="brief-sec-icon">📦</span><span class="brief-sec-title">Recommended Package</span></div>
+      <div class="brief-sec-head"><span class="brief-sec-icon">🧭</span><span class="brief-sec-title">Recommended Approach</span></div>
       <div class="brief-sec-body">
-        <div class="pkg-box"><div class="pkg-name">${esc(pkg.name||'')}</div><div class="pkg-rationale">${esc(pkg.rationale||'')}</div></div>
+        <div class="pkg-box">
+          ${approach.track ? `<div style="font-size:10px;color:var(--accent-light);text-transform:uppercase;letter-spacing:.1em;font-weight:500;margin-bottom:4px;">${esc(approach.track)}</div>` : ''}
+          <div class="pkg-name">${esc(approach.scope || approach.name || '')}</div>
+          <div class="pkg-rationale">${esc(approach.rationale||'')}</div>
+        </div>
+      </div>
+    </div>
+    <div class="brief-section" style="border-color:rgba(74,222,128,.25);">
+      <div class="brief-sec-head" style="border-bottom-color:rgba(74,222,128,.15);"><span class="brief-sec-icon">🔗</span><span class="brief-sec-title" style="color:var(--green);">After the Call → Tool 02</span></div>
+      <div class="brief-sec-body">
+        <div style="font-size:12px;color:var(--gray);line-height:1.6;">
+          Once you have the answers above, open <strong style="color:var(--white);">Tool 02 — Proposal Generator</strong> and enter the discovery data. The AI will build a custom Grand Slam Offer with guarantee-based pricing, a branded proposal, and a ready-to-sign contract.
+        </div>
       </div>
     </div>
     <div class="brief-actions">
@@ -884,23 +923,47 @@ function generatePDF(b) {
   (b.gapAnalysis||[]).forEach(g => { y = bulletLine(g, y, null); });
   y += 3; y = rule(y);
 
-  y = secHead('', 'Discovery Questions', y);
-  (b.discoveryQuestions||[]).forEach((q,i) => { y = bulletLine(q, y, i+1); });
+  y = secHead('', 'Discovery Questions — Ask These on the Call', y);
+  const dq = b.discoveryQuestions || {};
+  if (Array.isArray(dq)) {
+    dq.forEach((q,i) => { y = bulletLine(q, y, i+1); });
+  } else {
+    const qFields = [
+      ['CUSTOMER VALUE', dq.customerValue],
+      ['MARKETING SPEND', dq.marketingSpend],
+      ['PAIN POINT', dq.painPoint],
+      ['DESIRED OUTCOME', dq.desiredOutcome],
+      ['TRIED BEFORE', dq.triedBefore],
+      ['MEETING PREFERENCE', dq.meetingPreference],
+    ];
+    qFields.filter(([,v]) => v).forEach(([label, q], i) => {
+      maybeNewPage(14);
+      sf('bold', 7, BLUE); doc.text(`${label} → Tool 02`, ml + 2, y); y += 4;
+      sf('normal', 8.5, BLACK);
+      const lines = doc.splitTextToSize(q, cw - 6);
+      doc.text(lines, ml + 4, y); y += lines.length * 4.5 + 3;
+    });
+    if (dq.additional && dq.additional.length > 0) {
+      dq.additional.forEach(q => { y = bulletLine(q, y, null); });
+    }
+  }
   y += 3; y = rule(y);
 
   y = secHead('', 'MTM Talking Points', y);
   (b.talkingPoints||[]).forEach(t => { y = bulletLine(t, y, null); });
   y += 3; y = rule(y);
 
-  y = secHead('', 'Recommended Package', y);
-  const pkg = b.recommendedPackage || {};
+  y = secHead('', 'Recommended Approach', y);
+  const approach = b.recommendedApproach || b.recommendedPackage || {};
   maybeNewPage(30);
   doc.setFillColor(235,241,252);
-  const rl = doc.splitTextToSize(pkg.rationale||'', cw-10);
-  const bh = 10 + rl.length*4.8 + 4;
+  const rl = doc.splitTextToSize(approach.rationale||'', cw-10);
+  const bh = (approach.track ? 6 : 0) + 10 + rl.length*4.8 + 4;
   doc.roundedRect(ml, y, cw, bh, 3, 3, 'F');
-  sf('bold', 13, BLUE); doc.text(pkg.name||'', ml+5, y+8);
-  sf('normal', 8.5, [60,80,120]); doc.text(rl, ml+5, y+15); y += bh+6;
+  let ay = y + 6;
+  if (approach.track) { sf('bold', 8, [91,143,240]); doc.text(approach.track.toUpperCase(), ml+5, ay); ay += 5; }
+  sf('bold', 13, BLUE); doc.text(approach.scope || approach.name || '', ml+5, ay + 2);
+  sf('normal', 8.5, [60,80,120]); doc.text(rl, ml+5, ay + 9); y += bh+6;
 
   const np = doc.getNumberOfPages();
   for (let i=1; i<=np; i++) {
