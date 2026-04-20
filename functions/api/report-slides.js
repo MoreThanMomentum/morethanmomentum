@@ -196,6 +196,13 @@ async function createPresentation(report, token, mtmReportsFolder) {
   ];
   await doBatchUpdate(pid, contentReqs, token);
 
+  // Make presentation viewable by anyone with the link (clients don't need a Google account)
+  await fetch(`${DRIVE_BASE}/files/${pid}/permissions?sendNotificationEmail=false`, {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ role: 'reader', type: 'anyone' }),
+  });
+
   return pid;
 }
 
