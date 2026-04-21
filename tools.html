@@ -442,7 +442,7 @@
         <div class="loading-spinner"></div>
         <div class="loading-label">
           <strong id="loadingMsg">Searching the web...</strong>
-          <span>This usually takes 15–25 seconds.</span>
+          <span id="loadingSubMsg">This usually takes 20–40 seconds.</span>
         </div>
       </div>
 
@@ -790,12 +790,34 @@ async function runProspect() {
   document.getElementById('loadingEl').classList.add('show');
   document.getElementById('briefWrap').classList.remove('show');
 
+  // Reset subtitle
+  const subEl = document.getElementById('loadingSubMsg');
+  if (subEl) subEl.textContent = 'This usually takes 20–40 seconds.';
+
   let mi = 0;
   const msgTimer = setInterval(() => {
     mi = (mi + 1) % MSGS.length;
     const el = document.getElementById('loadingMsg');
     if (el) el.textContent = MSGS[mi];
   }, 4500);
+
+  // 20s — reassure the user it's still working
+  const slowTimer = setTimeout(() => {
+    const sub = document.getElementById('loadingSubMsg');
+    if (sub) {
+      sub.textContent = 'Still working — web search takes a bit longer. No need to click again.';
+      sub.style.color = 'var(--yellow)';
+    }
+  }, 20000);
+
+  // 40s — let them know it's on the final stretch
+  const verySlowTimer = setTimeout(() => {
+    const sub = document.getElementById('loadingSubMsg');
+    if (sub) {
+      sub.textContent = 'Almost there — wrapping up the analysis now...';
+      sub.style.color = 'var(--accent-light)';
+    }
+  }, 40000);
 
   try {
     const res = await fetch('/api/prospect', {
@@ -805,6 +827,8 @@ async function runProspect() {
     });
     const data = await res.json();
     clearInterval(msgTimer);
+    clearTimeout(slowTimer);
+    clearTimeout(verySlowTimer);
 
     if (!data.success || !data.brief) { showResearchError(data.error || 'Research failed. Please try again.'); return; }
     _brief = data.brief;
@@ -813,7 +837,9 @@ async function runProspect() {
     document.getElementById('briefWrap').classList.add('show');
   } catch {
     clearInterval(msgTimer);
-    showResearchError('Connection error. Please try again.');
+    clearTimeout(slowTimer);
+    clearTimeout(verySlowTimer);
+    showResearchError('Connection error. Please wait 60 seconds and try again — the AI may still be processing.');
   }
 }
 
@@ -823,6 +849,10 @@ function showResearchError(msg) {
   const errEl = document.getElementById('formErr');
   errEl.textContent = msg;
   errEl.classList.add('show');
+  // Reset subtitle for next attempt
+  const sub = document.getElementById('loadingSubMsg');
+  if (sub) { sub.textContent = 'This usually takes 20–40 seconds.'; sub.style.color = ''; }
+}
 }
 
 function resetProspect() {
