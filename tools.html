@@ -730,6 +730,7 @@ function showLogin() {
 function showDashboard() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('dashboard').classList.add('visible');
+  checkOAuthStatus();
 }
 
 async function handleLogin() {
@@ -756,7 +757,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('bizUrl').addEventListener('keydown', e => { if (e.key === 'Enter') runProspect(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closePanel(); closeReportPanel(); closeProposalPanel(); closeNotesPanel(); } });
   checkSession();
-  checkOAuthStatus();
 });
 
 /* ══════════════════════════════════════════════
@@ -1387,17 +1387,6 @@ function generateReportPDF(r) {
   const slug = (r.client.name||'client').toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const periodSlug = r.period.label.toLowerCase().replace(/\s+/g,'-');
   doc.save(`MTM-Report-${slug}-${periodSlug}.pdf`);
-}
-
-function fmtCurrency(n) {
-  if (!n && n !== 0) return '—';
-  return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-}
-function fmtNum(n) { return (n || 0).toLocaleString(); }
-function fmtDuration(sec) {
-  if (!sec) return '—';
-  const m = Math.floor(sec / 60), s = sec % 60;
-  return m > 0 ? `${m}m ${s}s` : `${s}s`;
 }
 
 
