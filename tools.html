@@ -366,11 +366,11 @@
         <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
       </div>
 
-      <!-- Tool 02 — Call Intelligence (NEW) -->
+      <!-- Tool 02 — Call Intelligence -->
       <div class="tool-card active" onclick="openNotesPanel()">
         <div class="tool-card-icon">🎙</div>
         <div class="tool-card-header"><div class="tool-card-name">Call Intelligence</div><span class="tool-card-badge badge-live">Live</span></div>
-        <p class="tool-card-desc">Paste a Google Meet URL and an AI bot joins your discovery call. When it ends, get a full call summary, extracted data, and one-click to pre-fill the Proposal Generator.</p>
+        <p class="tool-card-desc">AI notetaker auto-joins every confirmed Google Meet on your calendar. After the call, load the extracted fields and one-click to pre-fill the Proposal Generator.</p>
         <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
       </div>
 
@@ -464,31 +464,31 @@
 
       <!-- Input -->
       <div id="notesForm" style="display:flex;flex-direction:column;gap:14px;">
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;">
-          <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);">🎙 Start AI Notetaker</div>
-          <div style="font-size:13px;color:var(--gray);line-height:1.6;">Paste your Google Meet URL below. An AI bot named <strong style="color:var(--white);">MTM Notes</strong> will join the call, record the transcript, and automatically extract the key details when the call ends.</div>
-          <div style="display:flex;gap:8px;">
-            <input type="text" id="notesMeetUrl" class="panel-input" placeholder="https://meet.google.com/xxx-xxxx-xxx" style="flex:1;"/>
-            <button id="notesBotBtn" onclick="startNotesBot()" class="panel-run-btn" style="width:auto;padding:11px 18px;margin:0;white-space:nowrap;">Start Bot →</button>
+
+        <div style="background:var(--card);border:1px solid rgba(74,222,128,.15);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--green);">● Auto-Recording Active</span>
           </div>
-          <div id="notesBotStatus" style="font-size:12px;color:var(--gray);">Enter a Meet URL and click Start Bot. The bot appears as a participant — just run your call normally.</div>
+          <div style="font-size:13px;color:var(--gray);line-height:1.6;">The <strong style="color:var(--white);">More Than Momentum Notetaker</strong> bot auto-joins every confirmed Google Meet on your calendar. When a call ends, the transcript is processed and the extracted fields appear here.</div>
+        </div>
+
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+          <div>
+            <div style="font-size:14px;color:var(--white);font-weight:500;">Load Latest Call</div>
+            <div style="font-size:12px;color:var(--gray);margin-top:3px;">Pull extracted notes from your most recent completed call</div>
+          </div>
+          <button id="notesLoadBtn" onclick="loadNotesFromKV()" class="panel-run-btn" style="width:auto;padding:12px 20px;margin:0;white-space:nowrap;">⬇ Load Call →</button>
         </div>
 
         <div style="display:flex;align-items:center;gap:12px;"><div style="flex:1;height:1px;background:var(--border);"></div><span style="font-size:11px;color:var(--mid);">OR</span><div style="flex:1;height:1px;background:var(--border);"></div></div>
 
         <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
           <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);">📋 Paste Transcript or Notes</div>
-          <textarea id="notesTranscript" class="panel-textarea" style="min-height:100px;" placeholder="Paste any transcript, audio-to-text output, or rough handwritten notes. AI extracts all the key fields automatically..."></textarea>
+          <div style="font-size:12px;color:var(--gray);line-height:1.5;">For calls without the bot — paste any transcript, audio-to-text output, or rough handwritten notes.</div>
+          <textarea id="notesTranscript" class="panel-textarea" style="min-height:100px;" placeholder="Paste transcript or call notes here..."></textarea>
           <button onclick="processNotesTranscript()" class="panel-run-btn" style="margin:0;">Extract from Text →</button>
         </div>
 
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-          <div>
-            <div style="font-size:13px;color:var(--white);font-weight:500;">Load Previous Call</div>
-            <div style="font-size:12px;color:var(--gray);margin-top:2px;">Pull notes from the last completed call</div>
-          </div>
-          <button id="notesLoadBtn" onclick="loadNotesFromKV()" class="btn-load-call" style="flex-shrink:0;">⬇ Load Last Call</button>
-        </div>
       </div>
 
       <!-- Loading -->
@@ -1896,7 +1896,6 @@ function generateContractPDF(p) {
 function openNotesPanel() {
   document.getElementById('notes-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
-  setTimeout(() => document.getElementById('notesMeetUrl').focus(), 300);
 }
 function closeNotesPanel() {
   document.getElementById('notes-panel').classList.remove('open');
@@ -2028,8 +2027,6 @@ function resetNotesPanel() {
   document.getElementById('notesResult').style.display = 'none';
   document.getElementById('notesForm').style.display = 'flex';
   document.getElementById('notesTranscript').value = '';
-  document.getElementById('notesMeetUrl').value = '';
-  document.getElementById('notesBotStatus').textContent = 'Enter a Meet URL and click Start Bot. The bot appears as a participant — just run your call normally.';
 }
 
 async function sendToProposal() {
