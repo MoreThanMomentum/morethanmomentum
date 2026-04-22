@@ -62,9 +62,9 @@
 
 <!-- STATS BAND -->
 <section class="homepage-stats" style="background:#0c0c0c;">
-  <div class="hp-stat reveal"><div class="hp-stat-num">47<span>+</span></div><div class="hp-stat-label">Leads Captured — Month 1</div><div class="hp-stat-sub">SNH Golf Carts, Londonderry NH</div></div>
-  <div class="hp-stat reveal reveal-delay-1"><div class="hp-stat-num">60<span>s</span></div><div class="hp-stat-label">Avg. Lead Response Time</div><div class="hp-stat-sub">vs. industry avg of 47 hours</div></div>
-  <div class="hp-stat reveal reveal-delay-1"><div class="hp-stat-num">100<span>%</span></div><div class="hp-stat-label">You Own Everything We Build</div><div class="hp-stat-sub">Website, CRM, content — all yours</div></div>
+  <div class="hp-stat reveal"><div class="hp-stat-num">10<span>×</span></div><div class="hp-stat-label">Average Lead Volume Increase</div><div class="hp-stat-sub">After 6 months with MTM systems</div></div>
+  <div class="hp-stat reveal reveal-delay-1"><div class="hp-stat-num">60<span>s</span></div><div class="hp-stat-label">Lead Response Time</div><div class="hp-stat-sub">vs. industry average of 47 hours</div></div>
+  <div class="hp-stat reveal reveal-delay-1"><div class="hp-stat-num">100<span>%</span></div><div class="hp-stat-label">You Own Everything We Build</div><div class="hp-stat-sub">Website, CRM, content — always yours</div></div>
   <div class="hp-stat reveal reveal-delay-2"><div class="hp-stat-num">30<span>d</span></div><div class="hp-stat-label">Notice to Cancel</div><div class="hp-stat-sub">Month-to-month, no lock-in</div></div>
 </section>
 
@@ -90,43 +90,49 @@
   <div style="display:flex;justify-content:center;margin-top:3rem;"><a href="services.html" class="btn-primary" style="background:var(--black);color:var(--white);">View All Services</a></div>
 </section>
 
-<!-- SNH CASE STUDY PREVIEW -->
-<section class="hp-work">
-  <div class="services-top" style="margin-bottom:0;"><div><div class="section-tag reveal" style="color:var(--accent-light);"><span style="display:inline-block;width:1.8rem;height:1px;background:var(--accent-light);margin-right:.5rem;vertical-align:middle;"></span>Our Work</div><h2 class="services-heading reveal" style="color:var(--white);">Results that <em>speak.</em></h2></div><p class="services-note reveal" style="color:rgba(255,255,255,.35);">First client. Full build. Real results.</p></div>
-  <div class="hp-work-grid">
-    <div class="hp-case-main reveal">
-      <div class="hp-case-split">
-        <!-- BEFORE: Replace placeholder with <img src="images/snh-before.png" alt="SNH before"/> -->
-        <div class="hp-case-slot" style="background:#111;"><div class="hp-case-label before">Before</div><div class="hp-case-placeholder"><p>📷 Drop SNH Before Photo</p></div></div>
-        <!-- AFTER: Replace placeholder with <img src="images/snh-after.png" alt="SNH after MTM"/> -->
-        <div class="hp-case-slot" style="background:#0d1420;"><div class="hp-case-label after">After MTM</div><div class="hp-case-placeholder"><p style="color:rgba(91,143,240,.4);">📷 Drop SNH After Photo</p></div></div>
+<!-- ANIMATED RESULTS GRAPH -->
+<section class="hp-graph" id="resultsGraph">
+  <canvas class="particle-canvas" id="particles-graph"></canvas>
+  <div class="hp-graph-inner" style="position:relative;z-index:2;">
+    <div class="services-top" style="margin-bottom:0;">
+      <div>
+        <div class="section-tag reveal" style="color:var(--accent-light);"><span style="display:inline-block;width:1.8rem;height:1px;background:var(--accent-light);margin-right:.5rem;vertical-align:middle;"></span>Real Impact</div>
+        <h2 class="services-heading reveal" style="color:var(--white);">What the <em>system delivers.</em></h2>
       </div>
-      <div class="hp-case-info">
-        <div class="hp-case-client">SNH Golf Carts · Londonderry, NH · Veteran-Owned</div>
-        <div class="hp-case-title">Full digital infrastructure — website, AI chat, CRM automation, lead pipeline, and content strategy.</div>
-        <div class="hp-case-metrics">
-          <div class="hp-metric"><div class="hp-metric-num">47+</div><div class="hp-metric-lbl">Leads / Month</div></div>
-          <div class="hp-metric"><div class="hp-metric-num">$56k</div><div class="hp-metric-lbl">Pipeline Value</div></div>
-          <div class="hp-metric"><div class="hp-metric-num">60s</div><div class="hp-metric-lbl">Response Time</div></div>
+      <p class="services-note reveal" style="color:rgba(255,255,255,.35);">Six months. Automated follow-up. AI-powered content. This is the trajectory.</p>
+    </div>
+    <div class="hp-graph-layout">
+      <div class="hp-graph-stats reveal">
+        <div class="hp-gstat">
+          <div class="hp-gstat-num" id="gStatLeads">0<span>×</span></div>
+          <div class="hp-gstat-lbl">Lead Volume Growth</div>
         </div>
+        <div class="hp-gstat">
+          <div class="hp-gstat-num" id="gStatResponse">0<span>s</span></div>
+          <div class="hp-gstat-lbl">Avg Response Time</div>
+        </div>
+        <div class="hp-gstat">
+          <div class="hp-gstat-num" id="gStatPipeline">$0<span>k</span></div>
+          <div class="hp-gstat-lbl">Avg Pipeline Value Month 6</div>
+        </div>
+        <div class="hp-gstat">
+          <div class="hp-gstat-num" id="gStatConvert">0<span>%</span></div>
+          <div class="hp-gstat-lbl">Lead Response Rate</div>
+        </div>
+        <div class="hp-graph-legend">
+          <div class="hp-legend-item"><span class="hp-legend-dot" style="background:var(--accent);"></span>With MTM</div>
+          <div class="hp-legend-item"><span class="hp-legend-dot" style="background:rgba(255,255,255,.2);border:1px dashed rgba(255,255,255,.3);"></span>Without automation</div>
+        </div>
+      </div>
+      <div class="hp-graph-canvas-wrap reveal reveal-delay-1">
+        <div class="hp-graph-label">Monthly Lead Volume — 6-Month Trajectory</div>
+        <canvas id="resultsChart" width="600" height="280" aria-label="Animated line chart showing lead growth with MTM vs without. MTM line grows from 5 to 50+ while baseline stays flat around 5-8.">Lead growth chart: With MTM grows from 5 to over 50 leads per month by month 6. Without automation stays flat at 5-8.</canvas>
       </div>
     </div>
-    <div class="hp-case-side reveal reveal-delay-1">
-      <div class="hp-ghl">
-        <div class="hp-ghl-header">GoHighLevel Pipeline — Live Data</div>
-        <div class="hp-ghl-pipeline">
-          <div class="hp-ghl-stage"><div class="hp-ghl-stage-name">New</div><div class="hp-ghl-stage-count">12</div><div class="hp-ghl-stage-val">$0</div></div>
-          <div class="hp-ghl-stage"><div class="hp-ghl-stage-name">Contacted</div><div class="hp-ghl-stage-count">8</div><div class="hp-ghl-stage-val">$24k</div></div>
-          <div class="hp-ghl-stage"><div class="hp-ghl-stage-name">Proposal</div><div class="hp-ghl-stage-count">4</div><div class="hp-ghl-stage-val">$18k</div></div>
-          <div class="hp-ghl-stage"><div class="hp-ghl-stage-name">Won</div><div class="hp-ghl-stage-count">3</div><div class="hp-ghl-stage-val">$14k</div></div>
-        </div>
-        <!-- GHL: Replace with <img src="images/ghl-dashboard.png" alt="GHL dashboard" style="width:100%;border-radius:4px;"/> -->
-        <div class="hp-ghl-placeholder"><p>📊 Upload GHL Dashboard Screenshot</p></div>
-        <p style="font-size:.7rem;color:rgba(255,255,255,.2);line-height:1.7;border-top:1px solid #1a1a1a;padding-top:.8rem;margin-top:auto;">Automated follow-up fires within 60 seconds. Zero manual effort.</p>
-      </div>
+    <div style="display:flex;justify-content:center;margin-top:3rem;">
+      <a href="contact.html" class="hp-cta-btn" style="position:relative;overflow:hidden;"><span class="scan-light" style="background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);"></span>Get This System For Your Business</a>
     </div>
   </div>
-  <div style="display:flex;justify-content:center;margin-top:3rem;"><a href="work.html" class="btn-primary" style="background:var(--accent);color:var(--white);"><span class="scan-light" style="background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);"></span>See All Work</a></div>
 </section>
 
 <!-- PRICING TEASER -->

@@ -709,3 +709,226 @@ window.addEventListener('load', () => {
   }
 
 })();
+
+
+/* ============================================================
+   ANIMATED RESULTS CHART — homepage
+   Draws a Canvas chart that animates on scroll.
+   Two lines: "With MTM" (exponential) vs "Without" (flat).
+   ============================================================ */
+(function () {
+  const canvas = document.getElementById('resultsChart');
+  if (!canvas) return;
+
+  const ctx = canvas.getContext('2d');
+  const months = ['Mo 1','Mo 2','Mo 3','Mo 4','Mo 5','Mo 6'];
+  const withMTM  = [5, 12, 22, 34, 44, 52];   // the "10x" growth curve
+  const without  = [5, 6, 6, 7, 7, 8];         // flat baseline
+
+  // Animated counter helpers
+  function animCount(id, target, suffix, prefix, dur) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    let current = 0;
+    const steps = 60;
+    const timer = setInterval(() => {
+      current = Math.min(current + (target / steps), target);
+      el.textContent = (prefix || '') + Math.round(current) + (suffix || '');
+      if (current >= target) clearInterval(timer);
+    }, dur / steps);
+  }
+
+  let chartDrawn = false;
+  let animProgress = 0; // 0 → 1
+  let animFrame = null;
+
+  function drawChart(progress) {
+    const W = canvas.width  = canvas.parentElement.clientWidth  - 48;
+    const H = canvas.height = 280;
+
+    const pad = { top: 20, right: 30, bottom: 40, left: 40 };
+    const plotW = W - pad.left - pad.right;
+    const plotH = H - pad.top  - pad.bottom;
+
+    const maxVal = 60;
+    const pts = months.length;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // ── Grid lines ──────────────────────────────────────────
+    ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+    ctx.lineWidth = 1;
+    [0, 15, 30, 45, 60].forEach(v => {
+      const y = pad.top + plotH - (v / maxVal) * plotH;
+      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + plotW, y); ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,0.25)';
+      ctx.font = '10px DM Sans, sans-serif';
+      ctx.fillText(v, pad.left - 30, y + 4);
+    });
+
+    // ── X labels ────────────────────────────────────────────
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '10px DM Sans, sans-serif';
+    ctx.textAlign = 'center';
+    months.forEach((m, i) => {
+      const x = pad.left + (i / (pts - 1)) * plotW;
+      ctx.fillText(m, x, H - 8);
+    });
+    ctx.textAlign = 'left';
+
+    // How many points to draw based on progress
+    const drawPts = Math.max(2, Math.ceil(progress * pts));
+    const frac    = (progress * pts) - Math.floor(progress * pts);
+
+    function getPoint(data, idx) {
+      const x = pad.left + (idx / (pts - 1)) * plotW;
+      const y = pad.top  + plotH - (data[idx] / maxVal) * plotH;
+      return [x, y];
+    }
+
+    function drawLine(data, color, dashed) {
+      ctx.beginPath();
+      if (dashed) ctx.setLineDash([5, 4]);
+      else        ctx.setLineDash([]);
+
+      for (let i = 0; i < Math.min(drawPts, pts); i++) {
+        const [x, y] = getPoint(data, i);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      // Partial last segment
+      if (drawPts < pts && frac > 0) {
+        const [x0, y0] = getPoint(data, drawPts - 1);
+        const [x1, y1] = getPoint(data, Math.min(drawPts, pts - 1));
+        ctx.lineTo(x0 + (x1 - x0) * frac, y0 + (y1 - y0) * frac);
+      }
+
+      ctx.strokeStyle = color;
+      ctx.lineWidth = dashed ? 1.5 : 2.5;
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Fill under MTM line
+      if (!dashed) {
+        ctx.lineTo(pad.left + (Math.min(drawPts - 1, pts - 1) / (pts - 1)) * plotW, pad.top + plotH);
+        ctx.lineTo(pad.left, pad.top + plotH);
+        ctx.closePath();
+        const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
+        grad.addColorStop(0, 'rgba(45,107,228,0.18)');
+        grad.addColorStop(1, 'rgba(45,107,228,0)');
+        ctx.fillStyle = grad;
+        ctx.fill();
+      }
+    }
+
+    // Draw lines
+    drawLine(without, 'rgba(255,255,255,0.18)', true);
+    drawLine(withMTM, '#2D6BE4', false);
+
+    // Dots on MTM line
+    ctx.fillStyle = '#2D6BE4';
+    for (let i = 0; i < Math.min(drawPts, pts); i++) {
+      const [x, y] = getPoint(withMTM, i);
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill();
+    }
+    // Last dot label
+    if (progress >= 0.98) {
+      const [lx, ly] = getPoint(withMTM, pts - 1);
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.font = 'bold 11px DM Sans, sans-serif';
+      ctx.fillText('10×', lx + 8, ly - 6);
+    }
+  }
+
+  function startAnimation() {
+    if (chartDrawn) return;
+    chartDrawn = true;
+
+    // Animate stat counters
+    animCount('gStatLeads',    10, '×', '',  1800);
+    animCount('gStatResponse', 60, 's', '',  1200);
+    animCount('gStatPipeline', 56, 'k', '$', 2000);
+    animCount('gStatConvert',  98, '%', '',  1600);
+
+    // Animate chart
+    const start = performance.now();
+    const dur   = 2200;
+    function step(now) {
+      animProgress = Math.min((now - start) / dur, 1);
+      // Ease out cubic
+      const ease = 1 - Math.pow(1 - animProgress, 3);
+      drawChart(ease);
+      if (animProgress < 1) animFrame = requestAnimationFrame(step);
+    }
+    animFrame = requestAnimationFrame(step);
+  }
+
+  // Trigger on scroll into view
+  const graphObs = new IntersectionObserver(entries => {
+    if (entries[0].isIntersecting) {
+      graphObs.disconnect();
+      startAnimation();
+    }
+  }, { threshold: 0.25 });
+  graphObs.observe(canvas);
+
+  // Redraw on resize (keep proportions)
+  window.addEventListener('resize', () => {
+    if (chartDrawn) drawChart(1);
+  });
+})();
+
+
+/* ============================================================
+   BEFORE / AFTER IMAGE SLIDER — work page
+   Drag (mouse + touch) to reveal the "after" image.
+   ============================================================ */
+(function () {
+  const slider    = document.getElementById('baSlider');
+  const afterPane = document.getElementById('baAfterPane');
+  const divider   = document.getElementById('baDivider');
+  const handle    = document.getElementById('baHandle');
+  if (!slider || !afterPane || !divider) return;
+
+  // Add pulse hint class
+  if (handle) handle.classList.add('pulse');
+
+  let dragging = false;
+  let pct = 50; // percentage from left
+
+  function setPosition(clientX) {
+    const rect = slider.getBoundingClientRect();
+    pct = Math.min(Math.max(((clientX - rect.left) / rect.width) * 100, 2), 98);
+    afterPane.style.clipPath = `inset(0 ${100 - pct}% 0 0)`;
+    divider.style.left = pct + '%';
+  }
+
+  // Mouse events
+  slider.addEventListener('mousedown', e => {
+    dragging = true;
+    if (handle) handle.classList.remove('pulse');
+    setPosition(e.clientX);
+    e.preventDefault();
+  });
+  document.addEventListener('mousemove', e => {
+    if (!dragging) return;
+    setPosition(e.clientX);
+  });
+  document.addEventListener('mouseup', () => { dragging = false; });
+
+  // Touch events
+  slider.addEventListener('touchstart', e => {
+    dragging = true;
+    if (handle) handle.classList.remove('pulse');
+    setPosition(e.touches[0].clientX);
+    e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    setPosition(e.touches[0].clientX);
+  }, { passive: true });
+  document.addEventListener('touchend', () => { dragging = false; });
+
+  // Set initial clip (50/50)
+  afterPane.style.clipPath = 'inset(0 50% 0 0)';
+})();

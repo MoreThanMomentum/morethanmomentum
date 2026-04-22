@@ -40,53 +40,64 @@
   <div class="portfolio-top">
     <div>
       <div class="section-tag reveal">Our Work</div>
-      <h2 class="portfolio-heading reveal">Results that <em>speak.</em></h2>
+      <h2 class="portfolio-heading reveal">Content that <em>moves.</em></h2>
     </div>
-    <p class="portfolio-note reveal">Real builds. Real outcomes. And we're just getting started.</p>
+    <p class="portfolio-note reveal">Built from scratch. Designed to convert.</p>
   </div>
 
-  <!-- SNH GOLF CARTS CASE STUDY -->
-  <div class="work-case">
-    <div class="work-case-grid reveal">
-      <div class="work-case-main">
-        <div class="work-case-split">
-          <!-- BEFORE: Replace .work-case-placeholder with <img src="images/snh-before.png" alt="SNH before"/> -->
-          <div class="work-case-slot">
-            <div class="work-case-label before">Before</div>
-            <div class="work-case-placeholder"><p>📷 Upload SNH<br/>Before Screenshot</p></div>
-          </div>
-          <!-- AFTER: Replace .work-case-placeholder with <img src="images/snh-after.png" alt="SNH after MTM"/> -->
-          <div class="work-case-slot">
-            <div class="work-case-label after">After MTM</div>
-            <div class="work-case-placeholder"><p>📷 Upload SNH<br/>After Screenshot</p></div>
-          </div>
-        </div>
-        <div class="work-case-info">
-          <div class="work-case-client">SNH Golf Carts · Londonderry, NH · Veteran-Owned</div>
-          <h3 class="work-case-title">Full Digital Infrastructure Build</h3>
-          <p class="work-case-desc">Custom website with AI-powered cart finder, GoHighLevel CRM with full automation pipeline, instant lead follow-up, automated review requests, and content strategy — all deployed in under 3 weeks.</p>
-          <div class="work-case-metrics">
-            <div class="work-metric"><div class="work-metric-num">47+</div><div class="work-metric-lbl">Leads / Month</div></div>
-            <div class="work-metric"><div class="work-metric-num">$56k</div><div class="work-metric-lbl">Pipeline Value</div></div>
-            <div class="work-metric"><div class="work-metric-num">60s</div><div class="work-metric-lbl">Response Time</div></div>
+  <!-- BEFORE / AFTER WEBSITE SLIDER -->
+  <div class="ba-wrap reveal">
+    <div class="ba-header">
+      <div class="ba-header-left">
+        <div class="ba-tag">Website Redesign</div>
+        <h3 class="ba-title">Before &amp; After — <em>Drag to Compare</em></h3>
+        <p class="ba-desc">A complete digital rebuild — new brand identity, mobile-first design, AI-powered lead capture, and automation connected from day one.</p>
+      </div>
+      <div class="ba-header-right">
+        <div class="ba-result"><span class="ba-result-num">10×</span><span class="ba-result-lbl">Lead Volume</span></div>
+        <div class="ba-result"><span class="ba-result-num">60s</span><span class="ba-result-lbl">Response Time</span></div>
+        <div class="ba-result"><span class="ba-result-num">100%</span><span class="ba-result-lbl">Automated Follow-Up</span></div>
+      </div>
+    </div>
+
+    <div class="ba-slider-container" id="baSlider">
+      <!-- BEFORE IMAGE — replace div.ba-placeholder-before with: <img src="images/website-before.jpg" alt="Website before MTM"/> -->
+      <div class="ba-before-pane">
+        <div class="ba-img-label ba-lbl-before">Before</div>
+        <div class="ba-placeholder ba-placeholder-before">
+          <div class="ba-placeholder-inner">
+            <p>📷 Your before screenshot<br/><span>images/website-before.jpg</span></p>
           </div>
         </div>
       </div>
-      <div class="work-case-side">
-        <div class="work-ghl-header">GoHighLevel Pipeline — Live View</div>
-        <!-- GHL: Replace placeholder with <img src="images/ghl-dashboard.png" alt="GHL dashboard" style="width:100%;border-radius:4px;"/> -->
-        <div class="work-ghl-placeholder"><p>📊 Upload GHL<br/>Dashboard Screenshot</p></div>
-        <p style="font-size:.78rem;color:var(--gray);line-height:1.8;margin-top:1rem;">Every lead gets an instant automated follow-up — SMS + email within 60 seconds. No manual effort. Pipeline tracked in real time.</p>
-        <a href="contact.html" style="display:inline-flex;align-items:center;gap:.6rem;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--black);border-bottom:1px solid var(--black);padding-bottom:.2rem;text-decoration:none;margin-top:1.5rem;transition:gap .25s;">Get a System Like This <span>→</span></a>
+      <!-- AFTER IMAGE — replace div.ba-placeholder-after with: <img src="images/website-after.jpg" alt="Website after MTM"/> -->
+      <div class="ba-after-pane" id="baAfterPane">
+        <div class="ba-img-label ba-lbl-after">After MTM</div>
+        <div class="ba-placeholder ba-placeholder-after">
+          <div class="ba-placeholder-inner">
+            <p>📷 Your after screenshot<br/><span>images/website-after.jpg</span></p>
+          </div>
+        </div>
       </div>
+      <div class="ba-divider" id="baDivider">
+        <div class="ba-handle" id="baHandle">
+          <div class="ba-handle-icon">
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M6 4L2 10L6 16M14 4L18 10L14 16" stroke="black" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:center;margin-top:2rem;">
+      <a href="contact.html" class="btn-primary" style="background:var(--black);color:var(--white);text-decoration:none;display:inline-flex;align-items:center;gap:.8rem;">Get a Website Like This</a>
     </div>
   </div>
 
   <!-- VIDEO CAROUSEL -->
-  <div class="work-case-cta-section">
+  <div style="margin-top:5rem;padding:0 5rem;">
     <div class="section-tag reveal" style="justify-content:center;">Content We've Produced</div>
   </div>
-  <div class="video-carousel">
+  <div class="video-carousel" style="margin-top:2rem;">
     <div class="video-track" id="videoTrack">
       <!-- Videos injected by script.js -->
     </div>
@@ -96,7 +107,6 @@
     </div>
   </div>
 </section>
-
 <!-- FOOTER -->
 <footer>
   <span class="footer-logo-text">More Than Momentum</span>
