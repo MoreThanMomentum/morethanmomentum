@@ -3,49 +3,49 @@
 
   <url>
     <loc>https://morethanmomentum.com/</loc>
-    <lastmod>2026-04-18</lastmod>
-    <changefreq>monthly</changefreq>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
     <loc>https://morethanmomentum.com/about.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://morethanmomentum.com/services.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://morethanmomentum.com/pricing.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-22</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://morethanmomentum.com/work.html</loc>
-    <lastmod>2026-04-18</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://morethanmomentum.com/contact.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://morethanmomentum.com/privacy.html</loc>
-    <lastmod>2026-04-18</lastmod>
+    <lastmod>2026-04-22</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>

@@ -152,7 +152,8 @@ document.querySelectorAll('.nav-mobile-link, .nav-mobile-cta').forEach(link => {
 });
 
 
-/* --- SCROLL REVEAL --- */
+
+/* --- SCROLL REVEAL (fixed: elements in viewport on load get revealed immediately) --- */
 const revealObserver = new IntersectionObserver(entries => {
   entries.forEach((entry, i) => {
     if (entry.isIntersecting) {
@@ -162,6 +163,49 @@ const revealObserver = new IntersectionObserver(entries => {
 }, { threshold: 0.08 });
 
 document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+/* Immediately reveal elements already in viewport on page load */
+window.addEventListener('load', () => {
+  requestAnimationFrame(() => {
+    document.querySelectorAll('.reveal').forEach(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight + 50 && rect.bottom > -50) {
+        el.classList.add('visible');
+      }
+    });
+  });
+});
+
+/* --- ANIMATED COUNTERS (homepage stats) --- */
+function animateCounters() {
+  document.querySelectorAll('[data-count-target]').forEach(el => {
+    const target = parseInt(el.dataset.countTarget);
+    const prefix = el.dataset.countPrefix || '';
+    const suffix = el.dataset.countSuffix || '';
+    const duration = 1800;
+    const steps = 60;
+    const increment = target / steps;
+    let current = 0;
+    const timer = setInterval(() => {
+      current = Math.min(current + increment, target);
+      el.textContent = prefix + Math.round(current) + suffix;
+      if (current >= target) clearInterval(timer);
+    }, duration / steps);
+  });
+}
+
+const counterObserver = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      counterObserver.unobserve(e.target);
+      animateCounters();
+    }
+  });
+}, { threshold: 0.3 });
+
+const statsSection = document.querySelector('.homepage-stats');
+if (statsSection) counterObserver.observe(statsSection);
+
 
 
 /* --- CONTACT FORM (Formspree) --- */
