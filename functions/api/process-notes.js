@@ -144,11 +144,12 @@ export async function onRequestPost(context) {
 
     // ── STEP 2: TRANSCRIPT.DONE — process completed transcript ───────────
     if (event === 'transcript.done') {
-      // Recall.ai sends: payload.data.bot.id and payload.data.transcript.id
       const botId = payload.data?.bot?.id;
       const transcriptId = payload.data?.transcript?.id;
+      // Async transcription data lives at download_url inside the payload
+      const downloadUrl = payload.data?.transcript?.data?.download_url;
 
-      console.log('transcript.done | botId:', botId, '| transcriptId:', transcriptId);
+      console.log('transcript.done | botId:', botId, '| transcriptId:', transcriptId, '| hasDownloadUrl:', !!downloadUrl);
 
       if (!botId) {
         console.warn('No bot ID in transcript.done payload');
@@ -165,9 +166,17 @@ export async function onRequestPost(context) {
         }
       }
 
-      // Fetch the transcript text via bot ID
-      const transcript = await fetchTranscriptFromRecall(botId, env.RECALL_AI_API_KEY);
-      console.log('Transcript length:', transcript.length);
+      // Prefer download_url from payload (async transcript format)
+      // Fall back to bot transcript endpoint (real-time format)
+      let transcript = '';
+      if (downloadUrl) {
+        transcript = await fetchTranscriptFromDownloadUrl(downloadUrl, env.RECALL_AI_API_KEY);
+        console.log('Transcript via download_url, length:', transcript.length);
+      }
+      if (!transcript || transcript.length < 30) {
+        transcript = await fetchTranscriptFromRecall(botId, env.RECALL_AI_API_KEY);
+        console.log('Transcript via bot endpoint, length:', transcript.length);
+      }
 
       if (!transcript || transcript.length < 30) {
         console.warn('Transcript too short or empty for bot:', botId);
@@ -306,6 +315,37 @@ async function fetchMeetingTitle(botId, apiKey) {
   } catch (err) {
     console.error('fetchMeetingTitle error:', err.message);
     return null;
+  }
+}
+
+// ── FETCH TRANSCRIPT FROM DOWNLOAD URL (async transcription format) ───────────
+// Recall.ai async transcripts are served at a signed download URL.
+// Format: [{ participant: { name }, transcript: "full text", words: [...] }]
+
+async function fetchTranscriptFromDownloadUrl(downloadUrl, apiKey) {
+  if (!downloadUrl) return '';
+  try {
+    const resp = await fetch(downloadUrl, {
+      headers: { 'Authorization': `Token ${apiKey}` },
+    });
+    if (!resp.ok) {
+      console.error('Download URL fetch failed:', resp.status);
+      return '';
+    }
+    const data = await resp.json();
+    // Each item has participant.name and transcript (full text for that speaker turn)
+    if (Array.isArray(data)) {
+      return data.map(item => {
+        const speaker = item.participant?.name || 'Speaker';
+        const text = item.transcript || item.words?.map(w => w.word || w.text || '').join(' ') || '';
+        return `${speaker}: ${text}`;
+      }).filter(line => line.trim().length > 2).join('\n');
+    }
+    console.warn('Unexpected download URL format:', JSON.stringify(data).slice(0, 200));
+    return '';
+  } catch (err) {
+    console.error('fetchTranscriptFromDownloadUrl error:', err.message);
+    return '';
   }
 }
 
