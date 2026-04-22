@@ -2,21 +2,29 @@
  * MTM Call Notes Processor — Pages Function
  * Route: POST /api/process-notes
  *
- * Recall.ai webhook handler. When a Google Meet ends:
+ * Recall.ai webhook handler + manual paste endpoint.
+ *
+ * BOT FLOW (bot.done webhook):
  *   1. Recall.ai sends bot.done webhook (no transcript in payload)
- *   2. Worker uses bot ID to fetch full transcript from Recall.ai API
- *   3. Claude extracts structured Tool 02 fields from transcript
- *   4. Result stored in KV under 'session:latest_call_notes'
- *   5. Tools dashboard "Load Latest Call" button retrieves it
+ *   2. Worker fetches bot metadata from Recall.ai API (meeting title)
+ *   3. Worker fetches full transcript from Recall.ai API
+ *   4. Claude extracts structured fields from transcript
+ *   5. Call is added to rolling array (max 5) in KV under 'session:call_history'
+ *
+ * MANUAL PASTE FLOW:
+ *   1. Dashboard sends { event: 'manual_paste', data: { transcript } }
+ *   2. Claude extracts structured fields from pasted text
+ *   3. Call is added to rolling array in KV
  *
  * Environment Variables Required:
  *   RECALL_AI_API_KEY         — Recall.ai API key
  *   RECALL_AI_WEBHOOK_SECRET  — Webhook secret for signature verification (optional)
  *   ANTHROPIC_API_KEY         — MTM Anthropic key
- *   MTM_CLIENT_PROFILES       — KV namespace binding (already exists)
+ *   MTM_CLIENT_PROFILES       — KV namespace binding
  */
 
 const RECALL_API = 'https://us-west-2.recall.ai/api/v1';
+const MAX_CALLS = 5;
 
 export async function onRequestPost(context) {
   const { request, env } = context;
@@ -40,19 +48,56 @@ export async function onRequestPost(context) {
     const payload = JSON.parse(rawBody);
     const event = payload.event;
 
-    // Only process bot.done — transcript is ready at this point
+    // ── MANUAL PASTE FLOW ────────────────────────────────────────────────
+    if (event === 'manual_paste') {
+      const pastedText = payload.data?.transcript || '';
+      if (!pastedText || pastedText.length < 30) {
+        return new Response(JSON.stringify({ error: 'Transcript too short.' }), { status: 400, headers });
+      }
+
+      // Build a readable transcript string
+      let transcript = '';
+      if (typeof pastedText === 'string') {
+        transcript = pastedText;
+      } else if (Array.isArray(pastedText)) {
+        transcript = pastedText.map(seg => {
+          const speaker = seg.speaker || 'Speaker';
+          const text = seg.text || '';
+          return `${speaker}: ${text}`;
+        }).join('\n');
+      }
+
+      const fields = await extractCallFields(transcript, env.ANTHROPIC_API_KEY);
+
+      const callEntry = {
+        id: generateId(),
+        meetingTitle: 'Pasted Notes — ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        date: new Date().toISOString(),
+        botId: null,
+        fields,
+        transcript: transcript.slice(0, 3000),
+        processedAt: new Date().toISOString(),
+      };
+
+      await addCallToHistory(env.MTM_CLIENT_PROFILES, callEntry);
+      return new Response(JSON.stringify({ success: true, callId: callEntry.id, fieldsExtracted: Object.keys(fields).length }), { headers });
+    }
+
+    // ── BOT.DONE WEBHOOK FLOW ────────────────────────────────────────────
     if (event !== 'bot.done') {
       return new Response(JSON.stringify({ received: true, action: 'ignored', event }), { headers });
     }
 
-    // Extract bot ID from payload
     const botId = payload.data?.bot?.id;
     if (!botId) {
       console.warn('No bot ID in payload:', JSON.stringify(payload));
       return new Response(JSON.stringify({ received: true, action: 'ignored', reason: 'no bot id' }), { headers });
     }
 
-    // Fetch full transcript from Recall.ai API using bot ID
+    // Fetch meeting title from Recall.ai bot metadata
+    const meetingTitle = await fetchMeetingTitle(botId, env.RECALL_AI_API_KEY);
+
+    // Fetch full transcript from Recall.ai API
     const transcript = await fetchTranscriptFromRecall(botId, env.RECALL_AI_API_KEY);
 
     if (!transcript || transcript.length < 30) {
@@ -60,26 +105,90 @@ export async function onRequestPost(context) {
       return new Response(JSON.stringify({ received: true, action: 'ignored', reason: 'transcript too short or empty' }), { headers });
     }
 
-    // Extract Tool 02 fields via Claude
+    // Extract fields via Claude
     const fields = await extractCallFields(transcript, env.ANTHROPIC_API_KEY);
 
-    // Store in KV with timestamp
-    const stored = {
+    // Build call entry
+    const callEntry = {
+      id: generateId(),
+      meetingTitle: meetingTitle || 'Google Meet — ' + new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      date: new Date().toISOString(),
+      botId,
       fields,
       transcript: transcript.slice(0, 3000),
-      botId,
       processedAt: new Date().toISOString(),
     };
 
-    if (env.MTM_CLIENT_PROFILES) {
-      await env.MTM_CLIENT_PROFILES.put('session:latest_call_notes', JSON.stringify(stored));
-    }
+    await addCallToHistory(env.MTM_CLIENT_PROFILES, callEntry);
 
-    return new Response(JSON.stringify({ success: true, fieldsExtracted: Object.keys(fields).length }), { headers });
+    return new Response(JSON.stringify({ success: true, callId: callEntry.id, fieldsExtracted: Object.keys(fields).length }), { headers });
 
   } catch (err) {
     console.error('Process notes error:', err.message);
     return new Response(JSON.stringify({ error: 'Processing failed.' }), { status: 500, headers });
+  }
+}
+
+// ── ROLLING CALL HISTORY ──────────────────────────────────────────────────────
+
+async function addCallToHistory(kv, callEntry) {
+  if (!kv) {
+    console.error('MTM_CLIENT_PROFILES KV not bound');
+    return;
+  }
+
+  let history = [];
+  try {
+    const raw = await kv.get('session:call_history');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      history = Array.isArray(parsed) ? parsed : [];
+    }
+  } catch {
+    history = [];
+  }
+
+  // Add new call to the front
+  history.unshift(callEntry);
+
+  // Trim to max
+  if (history.length > MAX_CALLS) {
+    history = history.slice(0, MAX_CALLS);
+  }
+
+  await kv.put('session:call_history', JSON.stringify(history));
+}
+
+// ── FETCH MEETING TITLE FROM RECALL.AI ────────────────────────────────────────
+
+async function fetchMeetingTitle(botId, apiKey) {
+  if (!apiKey) return null;
+
+  try {
+    const resp = await fetch(`${RECALL_API}/bot/${botId}/`, {
+      headers: {
+        'Authorization': `Token ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!resp.ok) {
+      console.error('Recall.ai bot metadata fetch failed:', resp.status);
+      return null;
+    }
+
+    const bot = await resp.json();
+
+    // Calendar-created bots include event title in meeting metadata
+    const title = bot.meeting_metadata?.title
+      || bot.calendar_meeting?.title
+      || bot.meeting_metadata?.meeting_title
+      || null;
+
+    return title;
+  } catch (err) {
+    console.error('fetchMeetingTitle error:', err.message);
+    return null;
   }
 }
 
@@ -106,7 +215,6 @@ async function fetchTranscriptFromRecall(botId, apiKey) {
 
     const data = await resp.json();
 
-    // Recall.ai returns an array of transcript segments
     if (Array.isArray(data)) {
       return data.map(seg => {
         const speaker = seg.speaker || 'Speaker';
@@ -117,7 +225,6 @@ async function fetchTranscriptFromRecall(botId, apiKey) {
       }).join('\n');
     }
 
-    // Fallback: handle object with results array
     if (data.results && Array.isArray(data.results)) {
       return data.results.map(seg => {
         const speaker = seg.speaker || 'Speaker';
@@ -142,20 +249,23 @@ async function extractCallFields(transcript, apiKey) {
     return { error: 'ANTHROPIC_API_KEY not configured', rawTranscript: transcript.slice(0, 500) };
   }
 
-  const prompt = `You are analyzing a sales discovery call transcript for More Than Momentum (MTM), a digital marketing agency.
+  const prompt = `You are analyzing a meeting transcript for More Than Momentum (MTM), a digital marketing agency.
 
-Extract the following information from the transcript and return ONLY a JSON object. Use null for fields not mentioned.
+First, determine the type of call, then extract all relevant information.
 
-Required fields:
+Return ONLY a JSON object. Use null for fields not mentioned or not applicable to the call type.
+
 {
-  "businessName": "prospect's business name if mentioned",
-  "contactName": "prospect's name",
+  "callType": "discovery | check-in | review | internal | other",
+  "summary": "2-3 sentence summary of the call — key topics discussed, decisions made, and next steps",
+  "businessName": "prospect or client business name if mentioned",
+  "contactName": "prospect or client contact name",
   "city": "their city and state",
   "businessType": "type of business (HVAC, Plumbing, Gym, etc.)",
   "avgCustomerValue": "average job/customer value in dollars (number only, no $)",
   "budgetBeforeResults": "how much they're willing to spend before seeing results (number only)",
   "currentMarketingSpend": "current monthly marketing spend (number only)",
-  "painPoint": "their #1 pain — pick closest: 'Losing leads — no follow-up system' | 'Website doesn't reflect business quality' | 'No online presence at all' | 'Inconsistent or zero social media' | 'Need more leads / customers' | 'Bad experience with previous agency' | 'Don't have time to manage marketing' | 'Other'",
+  "painPoint": "their #1 pain — pick closest: 'Losing leads — no follow-up system' | 'Website doesn\\'t reflect business quality' | 'No online presence at all' | 'Inconsistent or zero social media' | 'Need more leads / customers' | 'Bad experience with previous agency' | 'Don\\'t have time to manage marketing' | 'Other'",
   "desiredOutcome": "what outcome they said would make them say yes",
   "triedBefore": "what they've tried — pick closest: 'Nothing' | 'DIY social media' | 'Hired an agency before' | 'Hired a freelancer' | 'Ran paid ads' | 'Built own website' | 'Multiple things'",
   "socialGoal": "if social media mentioned: 'leads' | 'brand' | 'both'",
@@ -170,6 +280,7 @@ Required fields:
     "backend": true/false,
     "social": true/false
   },
+  "actionItems": ["array of action items or next steps discussed during the call"],
   "discoveryNotes": "any other important context from the call (max 300 chars)"
 }
 
@@ -188,7 +299,7 @@ Return ONLY valid JSON. No markdown. No backticks. No explanation.`;
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
+        max_tokens: 1500,
         messages: [{ role: 'user', content: prompt }]
       }),
     });
@@ -216,6 +327,12 @@ function hexToBytes(hex) {
   const bytes = new Uint8Array(hex.length / 2);
   for (let i = 0; i < hex.length; i += 2) bytes[i / 2] = parseInt(hex.substr(i, 2), 16);
   return bytes;
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+
+function generateId() {
+  return 'call_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
 }
 
 export async function onRequestOptions() {

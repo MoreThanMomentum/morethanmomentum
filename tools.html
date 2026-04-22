@@ -370,7 +370,7 @@
       <div class="tool-card active" onclick="openNotesPanel()">
         <div class="tool-card-icon">🎙</div>
         <div class="tool-card-header"><div class="tool-card-name">Call Intelligence</div><span class="tool-card-badge badge-live">Live</span></div>
-        <p class="tool-card-desc">AI notetaker auto-joins every confirmed Google Meet on your calendar. After the call, load the extracted fields and one-click to pre-fill the Proposal Generator.</p>
+        <p class="tool-card-desc">Your recent calls hub. AI notetaker auto-joins every Google Meet — view your last calls, download a summary PDF, or send discovery calls straight to Tool 03.</p>
         <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
       </div>
 
@@ -462,36 +462,35 @@
     </div>
     <div class="panel-body" id="notesPanelBody">
 
-      <!-- Input -->
-      <div id="notesForm" style="display:flex;flex-direction:column;gap:14px;">
-
-        <div style="background:var(--card);border:1px solid rgba(74,222,128,.15);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--green);">● Auto-Recording Active</span>
-          </div>
-          <div style="font-size:13px;color:var(--gray);line-height:1.6;">The <strong style="color:var(--white);">More Than Momentum Notetaker</strong> bot auto-joins every confirmed Google Meet on your calendar. When a call ends, the transcript is processed and the extracted fields appear here.</div>
-        </div>
-
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
-          <div>
-            <div style="font-size:14px;color:var(--white);font-weight:500;">Load Latest Call</div>
-            <div style="font-size:12px;color:var(--gray);margin-top:3px;">Pull extracted notes from your most recent completed call</div>
-          </div>
-          <button id="notesLoadBtn" onclick="loadNotesFromKV()" class="panel-run-btn" style="width:auto;padding:12px 20px;margin:0;white-space:nowrap;">⬇ Load Call →</button>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:12px;"><div style="flex:1;height:1px;background:var(--border);"></div><span style="font-size:11px;color:var(--mid);">OR</span><div style="flex:1;height:1px;background:var(--border);"></div></div>
-
-        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
-          <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);">📋 Paste Transcript or Notes</div>
-          <div style="font-size:12px;color:var(--gray);line-height:1.5;">For calls without the bot — paste any transcript, audio-to-text output, or rough handwritten notes.</div>
-          <textarea id="notesTranscript" class="panel-textarea" style="min-height:100px;" placeholder="Paste transcript or call notes here..."></textarea>
-          <button onclick="processNotesTranscript()" class="panel-run-btn" style="margin:0;">Extract from Text →</button>
-        </div>
-
+      <!-- Auto-Recording Status -->
+      <div style="background:var(--card);border:1px solid rgba(74,222,128,.15);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--green);">● Auto-Recording Active</span>
+        <span style="font-size:12px;color:var(--gray);flex:1;">Notetaker joins every confirmed Google Meet automatically.</span>
       </div>
 
-      <!-- Loading -->
+      <!-- Recent Calls List (populated by JS) -->
+      <div id="callHistorySection" style="display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);">Recent Calls</div>
+        <div id="callHistoryList" style="display:flex;flex-direction:column;gap:10px;">
+          <div style="text-align:center;padding:28px 16px;">
+            <div class="loading-spinner" id="callHistorySpinner"></div>
+            <div style="font-size:13px;color:var(--gray);">Loading calls...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div style="display:flex;align-items:center;gap:12px;"><div style="flex:1;height:1px;background:var(--border);"></div><span style="font-size:11px;color:var(--mid);">OR</span><div style="flex:1;height:1px;background:var(--border);"></div></div>
+
+      <!-- Paste Transcript Fallback -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
+        <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);">📋 Paste Transcript or Notes</div>
+        <div style="font-size:12px;color:var(--gray);line-height:1.5;">For calls without the bot — paste any transcript, audio-to-text output, or rough handwritten notes.</div>
+        <textarea id="notesTranscript" class="panel-textarea" style="min-height:100px;" placeholder="Paste transcript or call notes here..."></textarea>
+        <button onclick="processNotesTranscript()" class="panel-run-btn" style="margin:0;">Extract from Text →</button>
+      </div>
+
+      <!-- Loading state for paste extraction -->
       <div class="panel-loading" id="notesLoadingEl">
         <div class="loading-spinner"></div>
         <div class="loading-label">
@@ -499,9 +498,6 @@
           <span>Extracting key details from the call.</span>
         </div>
       </div>
-
-      <!-- Results -->
-      <div id="notesResult" style="display:none;flex-direction:column;gap:14px;"></div>
 
     </div>
   </div>
@@ -584,7 +580,7 @@
         <!-- Load from Tool 02 -->
         <div id="propLoadBanner" style="background:rgba(74,222,128,.06);border:1px solid rgba(74,222,128,.2);border-radius:10px;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
           <div style="font-size:13px;color:var(--gray);">Have call notes from <strong style="color:var(--white);">Tool 02</strong>?</div>
-          <button onclick="loadFromTool2()" class="btn-load-call" style="flex-shrink:0;">⬇ Load from Last Call</button>
+          <button onclick="loadFromTool2()" class="btn-load-call" style="flex-shrink:0;">⬇ Load Discovery Call</button>
         </div>
         <div class="panel-field">
           <label class="panel-label" for="propBizName">Business Name</label>
@@ -1896,6 +1892,7 @@ function generateContractPDF(p) {
 function openNotesPanel() {
   document.getElementById('notes-panel').classList.add('open');
   document.body.style.overflow = 'hidden';
+  loadCallHistory();
 }
 function closeNotesPanel() {
   document.getElementById('notes-panel').classList.remove('open');
@@ -1903,144 +1900,108 @@ function closeNotesPanel() {
 }
 function handleNotesBackdrop(e) { if (e.target === document.getElementById('notes-panel')) closeNotesPanel(); }
 
-async function startNotesBot() {
-  const url = document.getElementById('notesMeetUrl').value.trim();
-  const btn = document.getElementById('notesBotBtn');
-  const status = document.getElementById('notesBotStatus');
-  if (!url) { status.textContent = 'Paste a Google Meet URL first.'; return; }
-  if (!url.includes('meet.google.com')) { status.textContent = 'Must be a meet.google.com URL.'; return; }
-  btn.disabled = true; btn.textContent = 'Starting...';
-  status.textContent = 'Launching MTM Notes bot...';
+let _callHistory = [];
+
+async function loadCallHistory() {
+  const list = document.getElementById('callHistoryList');
+  list.innerHTML = '<div style="text-align:center;padding:28px 16px;"><div class="loading-spinner"></div><div style="font-size:13px;color:var(--gray);">Loading calls...</div></div>';
+
   try {
-    const res = await fetch('/api/create-bot', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ meetingUrl: url }) });
+    const res = await fetch('/api/get-call-notes');
     const data = await res.json();
-    btn.disabled = false; btn.textContent = 'Start Bot →';
-    if (data.success) {
-      status.innerHTML = `<span style="color:var(--green);">✅ Bot joining now. Run your call normally — when it ends, come back and click "Load Last Call" to see the extracted notes.</span>`;
-      document.getElementById('notesMeetUrl').value = '';
-    } else {
-      status.textContent = '⚠ ' + (data.error || 'Bot failed to start. Check RECALL_AI_API_KEY env var.');
+
+    if (!data.success || !data.calls || data.calls.length === 0) {
+      list.innerHTML = `
+        <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:28px 20px;text-align:center;">
+          <div style="font-size:24px;margin-bottom:10px;">🎙</div>
+          <div style="font-size:14px;color:var(--white);font-weight:500;margin-bottom:4px;">No calls yet</div>
+          <div style="font-size:12px;color:var(--gray);line-height:1.5;">Schedule a Google Meet and the notetaker will join automatically. After the call, your notes will appear here.</div>
+        </div>`;
+      return;
     }
+
+    _callHistory = data.calls;
+    renderCallHistory();
   } catch {
-    btn.disabled = false; btn.textContent = 'Start Bot →';
-    status.textContent = 'Connection error. Try again.';
+    list.innerHTML = '<div style="padding:16px;font-size:13px;color:#f87171;">Connection error. Try again.</div>';
   }
+}
+
+function renderCallHistory() {
+  const list = document.getElementById('callHistoryList');
+  list.innerHTML = _callHistory.map((call, i) => {
+    const d = new Date(call.date);
+    const dateStr = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+    const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const f = call.fields || {};
+    const callType = f.callType || 'other';
+    const isDiscovery = callType === 'discovery';
+    const typeBadge = {
+      discovery: { label: 'Discovery', bg: 'rgba(45,107,228,.12)', border: 'rgba(45,107,228,.25)', color: 'var(--accent-light)' },
+      'check-in': { label: 'Check-In', bg: 'rgba(74,222,128,.1)', border: 'rgba(74,222,128,.25)', color: 'var(--green)' },
+      review: { label: 'Review', bg: 'rgba(245,197,24,.1)', border: 'rgba(245,197,24,.25)', color: 'var(--yellow)' },
+      internal: { label: 'Internal', bg: 'rgba(255,255,255,.04)', border: 'var(--border)', color: 'var(--gray)' },
+      other: { label: 'Meeting', bg: 'rgba(255,255,255,.04)', border: 'var(--border)', color: 'var(--gray)' },
+    }[callType] || { label: 'Meeting', bg: 'rgba(255,255,255,.04)', border: 'var(--border)', color: 'var(--gray)' };
+
+    const summaryHTML = f.summary ? `<div style="font-size:12px;color:var(--gray);line-height:1.5;margin-top:8px;">${esc(f.summary)}</div>` : '';
+
+    return `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:10px;transition:border-color .2s;" onmouseenter="this.style.borderColor='rgba(45,107,228,.3)'" onmouseleave="this.style.borderColor='var(--border)'">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+          <div style="flex:1;min-width:0;">
+            <div style="font-family:var(--speed);font-weight:700;font-size:16px;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(call.meetingTitle || 'Untitled Call')}</div>
+            <div style="font-size:12px;color:var(--gray);margin-top:3px;">${esc(dateStr)} · ${esc(timeStr)}</div>
+          </div>
+          <span style="font-size:10px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0;background:${typeBadge.bg};border:1px solid ${typeBadge.border};color:${typeBadge.color};">${typeBadge.label}</span>
+        </div>
+        ${summaryHTML}
+        <div style="display:flex;gap:8px;margin-top:2px;">
+          ${isDiscovery ? `<button onclick="sendCallToProposal('${esc(call.id)}')" style="flex:1;background:var(--accent);color:var(--white);border:none;border-radius:6px;padding:9px 14px;font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:background .2s;" onmouseenter="this.style.background='#2460cc'" onmouseleave="this.style.background='var(--accent)'">Build Proposal →</button>` : ''}
+          <button onclick="downloadCallPDF(${i})" style="${isDiscovery ? '' : 'flex:1;'}background:transparent;border:1px solid var(--border);color:var(--gray);border-radius:6px;padding:9px 14px;font-family:var(--sans);font-size:12px;font-weight:500;cursor:pointer;transition:border-color .2s, color .2s;" onmouseenter="this.style.borderColor='var(--gray)';this.style.color='var(--white)'" onmouseleave="this.style.borderColor='var(--border)';this.style.color='var(--gray)'">⬇ Download PDF</button>
+        </div>
+      </div>`;
+  }).join('');
 }
 
 async function processNotesTranscript() {
   const transcript = document.getElementById('notesTranscript').value.trim();
   if (!transcript || transcript.length < 50) { alert('Paste more text — at least a few sentences.'); return; }
-  showNotesLoading('Extracting key details from your notes...');
+
+  const loadEl = document.getElementById('notesLoadingEl');
+  loadEl.classList.add('show');
+  document.getElementById('notesLoadingMsg').textContent = 'Extracting key details from your notes...';
+
   try {
     const res = await fetch('/api/process-notes', {
       method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ event: 'manual_paste', data: { transcript: [{ speaker: 'Call', text: transcript }] } }),
+      body: JSON.stringify({ event: 'manual_paste', data: { transcript: transcript } }),
     });
     const data = await res.json();
-    if (data.success) { await loadNotesFromKV(); }
-    else { hideNotesLoading(); alert('Extraction failed. Try again.'); }
-  } catch { hideNotesLoading(); alert('Connection error.'); }
+    loadEl.classList.remove('show');
+
+    if (data.success) {
+      document.getElementById('notesTranscript').value = '';
+      await loadCallHistory(); // Refresh the list
+    } else {
+      alert(data.error || 'Extraction failed. Try again.');
+    }
+  } catch {
+    loadEl.classList.remove('show');
+    alert('Connection error.');
+  }
 }
 
-async function loadNotesFromKV() {
-  showNotesLoading('Loading call notes...');
+async function sendCallToProposal(callId) {
   try {
-    const res = await fetch('/api/get-call-notes');
+    const res = await fetch('/api/get-call-notes?id=' + encodeURIComponent(callId));
     const data = await res.json();
-    hideNotesLoading();
-    if (!data.success) { alert(data.reason || 'No call notes found yet. Run a call with the bot first, or paste a transcript.'); return; }
-    renderNotesResult(data);
-  } catch { hideNotesLoading(); alert('Connection error.'); }
-}
-
-function showNotesLoading(msg) {
-  document.getElementById('notesForm').style.display = 'none';
-  document.getElementById('notesLoadingEl').classList.add('show');
-  document.getElementById('notesResult').style.display = 'none';
-  document.getElementById('notesLoadingMsg').textContent = msg || 'Processing...';
-}
-function hideNotesLoading() {
-  document.getElementById('notesLoadingEl').classList.remove('show');
-  document.getElementById('notesForm').style.display = 'flex';
-}
-
-function renderNotesResult(data) {
-  const f = data.fields || {};
-  const processedAt = data.processedAt ? new Date(data.processedAt).toLocaleString() : 'Unknown';
-
-  // Service badges
-  const si = f.serviceInterests || {};
-  const badges = [];
-  if (si.website) badges.push('🌐 Website');
-  if (si.backend) badges.push('⚙️ Backend');
-  if (si.social) badges.push('📱 Social');
-
-  // Field rows — only show fields that were extracted
-  const fieldMap = [
-    ['Business', f.businessName], ['Contact', f.contactName], ['City', f.city],
-    ['Type', f.businessType], ['Customer Value', f.avgCustomerValue ? '$' + Number(f.avgCustomerValue).toLocaleString() : null],
-    ['Budget Before Results', f.budgetBeforeResults ? '$' + Number(f.budgetBeforeResults).toLocaleString() : null],
-    ['Current Mkt Spend', f.currentMarketingSpend ? '$' + Number(f.currentMarketingSpend).toLocaleString() + '/mo' : null],
-    ['#1 Pain', f.painPoint], ['Desired Outcome', f.desiredOutcome],
-    ['Tried Before', f.triedBefore], ['Social Goal', f.socialGoal],
-    ['Meeting', f.meetingCadence],
-    ['Website Traffic', f.currentWebsiteTraffic ? fmtNum(f.currentWebsiteTraffic) + ' visitors/mo' : null],
-    ['Leads/Month', f.currentLeadsPerMonth ? fmtNum(f.currentLeadsPerMonth) : null],
-    ['Instagram', f.currentInstagramFollowers ? fmtNum(f.currentInstagramFollowers) + ' followers' : null],
-    ['Facebook', f.currentFacebookFollowers ? fmtNum(f.currentFacebookFollowers) + ' followers' : null],
-  ];
-  const fieldsHTML = fieldMap.filter(([,v]) => v != null && v !== '').map(([label, val]) => `
-    <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.04);">
-      <span style="font-size:11px;color:var(--gray);min-width:120px;flex-shrink:0;">${esc(label)}</span>
-      <span style="font-size:13px;color:var(--white);">${esc(String(val))}</span>
-    </div>
-  `).join('');
-
-  const result = document.getElementById('notesResult');
-  result.style.display = 'flex';
-  result.innerHTML = `
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;">
-      <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:8px;">✅ Call Notes Ready</div>
-      <div style="font-size:12px;color:var(--mid);">Processed ${esc(processedAt)}</div>
-      ${badges.length ? `<div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">${badges.map(b=>`<span style="font-size:11px;background:rgba(45,107,228,.12);border:1px solid rgba(45,107,228,.25);border-radius:5px;padding:3px 8px;color:var(--accent-light);">${b}</span>`).join('')}</div>` : ''}
-    </div>
-
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;">
-      <div style="padding:13px 18px;border-bottom:1px solid var(--border);font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);">Extracted Fields</div>
-      <div style="padding:4px 18px 12px;">${fieldsHTML || '<div style="font-size:13px;color:var(--mid);padding:10px 0;">No structured fields extracted — check discovery notes below.</div>'}</div>
-    </div>
-
-    ${f.discoveryNotes ? `
-    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px 18px;">
-      <div style="font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);margin-bottom:8px;">Additional Notes</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.8);line-height:1.6;">${esc(f.discoveryNotes)}</div>
-    </div>` : ''}
-
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
-      <button onclick="sendToProposal()" style="flex:1;background:var(--accent);color:var(--white);border:none;border-radius:8px;padding:13px;font-family:var(--sans);font-size:14px;font-weight:500;cursor:pointer;">Build Proposal in Tool 03 →</button>
-      <button onclick="resetNotesPanel()" style="background:transparent;border:1px solid var(--border);color:var(--gray);border-radius:8px;padding:13px 16px;font-family:var(--sans);font-size:13px;cursor:pointer;">New Call</button>
-    </div>
-  `;
-}
-
-function resetNotesPanel() {
-  document.getElementById('notesResult').style.display = 'none';
-  document.getElementById('notesForm').style.display = 'flex';
-  document.getElementById('notesTranscript').value = '';
-}
-
-async function sendToProposal() {
-  // Load fields from KV and fill proposal form, then open Tool 03
-  try {
-    const res = await fetch('/api/get-call-notes');
-    const data = await res.json();
-    if (data.success && data.fields) {
-      fillProposalFormFromFields(data.fields);
+    if (data.success && data.call && data.call.fields) {
+      fillProposalFormFromFields(data.call.fields);
     }
   } catch { /* still open the panel */ }
   closeNotesPanel();
   openProposalPanel();
-  // Scroll to top of proposal panel
   setTimeout(() => {
     const body = document.getElementById('proposalPanelBody');
     if (body) body.scrollTop = 0;
@@ -2051,14 +2012,155 @@ async function loadFromTool2() {
   try {
     const res = await fetch('/api/get-call-notes');
     const data = await res.json();
-    if (data.success && data.fields) {
-      fillProposalFormFromFields(data.fields);
-      const banner = document.getElementById('propLoadBanner');
-      if (banner) banner.innerHTML = `<div style="font-size:13px;color:var(--green);">✅ Loaded from Tool 02 call on ${new Date(data.processedAt).toLocaleDateString()}. Review and adjust below.</div>`;
+    if (data.success && data.calls && data.calls.length > 0) {
+      // Find the most recent discovery call, or fall back to latest
+      const discoveryCall = data.calls.find(c => (c.fields?.callType || '') === 'discovery') || data.calls[0];
+      if (discoveryCall.fields) {
+        fillProposalFormFromFields(discoveryCall.fields);
+        const banner = document.getElementById('propLoadBanner');
+        if (banner) banner.innerHTML = `<div style="font-size:13px;color:var(--green);">✅ Loaded from "${esc(discoveryCall.meetingTitle)}" · ${new Date(discoveryCall.date).toLocaleDateString()}. Review and adjust below.</div>`;
+      } else {
+        alert('No call fields found. Run Tool 02 first.');
+      }
     } else {
       alert('No call notes found. Run Tool 02 first.');
     }
   } catch { alert('Connection error.'); }
+}
+
+/* ── CALL SUMMARY PDF ─────────────────────────────────────────── */
+function downloadCallPDF(index) {
+  const call = _callHistory[index];
+  if (!call) { alert('Call not found.'); return; }
+  if (!window.jspdf) { alert('PDF library still loading. Try again in a moment.'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+  const W = 210, H = 297, ml = 18, mr = 18, cw = W - ml - mr;
+  let y = 0;
+  const BLUE=[45,107,228], WHITE=[244,244,242], GRAY=[130,130,130], LIGHT=[225,225,222], BLACK=[12,12,12], GREEN=[74,222,128];
+  const sf = (style, size, rgb) => { doc.setFont('helvetica',style); doc.setFontSize(size); doc.setTextColor(...(rgb||BLACK)); };
+  const rule = yy => { doc.setDrawColor(...LIGHT); doc.line(ml,yy,W-mr,yy); return yy+5; };
+  function mnp(needed) { if (y + needed > H - 16) { doc.addPage(); y = 18; } }
+
+  const f = call.fields || {};
+  const d = new Date(call.date);
+  const dateStr = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+  // ── HEADER BAR ──
+  doc.setFillColor(...BLUE); doc.rect(0, 0, W, 20, 'F');
+  sf('bold', 13, WHITE); doc.text('MORE THAN MOMENTUM', ml, 9);
+  sf('normal', 7.5, [180,205,245]); doc.text('Call Intelligence Summary  ·  morethanmomentum.com', ml, 15.5);
+  y = 28;
+
+  // ── MEETING TITLE ──
+  sf('bold', 18, BLACK);
+  const titleLines = doc.splitTextToSize(call.meetingTitle || 'Untitled Call', cw);
+  doc.text(titleLines, ml, y);
+  y += titleLines.length * 8 + 2;
+
+  sf('normal', 10, GRAY); doc.text(`${dateStr}  ·  ${timeStr}`, ml, y); y += 6;
+
+  // Call type badge
+  const typeLabel = (f.callType || 'meeting').charAt(0).toUpperCase() + (f.callType || 'meeting').slice(1);
+  sf('bold', 8, BLUE); doc.text(`Call Type: ${typeLabel}`, ml, y); y += 8;
+  y = rule(y);
+
+  // ── SUMMARY ──
+  if (f.summary) {
+    mnp(20);
+    sf('bold', 10, BLUE); doc.text('SUMMARY', ml, y); y += 6;
+    sf('normal', 9, BLACK);
+    const sumLines = doc.splitTextToSize(f.summary, cw - 4);
+    mnp(sumLines.length * 4.5 + 4);
+    doc.text(sumLines, ml + 2, y); y += sumLines.length * 4.5 + 4;
+    y = rule(y);
+  }
+
+  // ── EXTRACTED FIELDS ──
+  const fieldMap = [
+    ['Business Name', f.businessName], ['Contact Name', f.contactName], ['City', f.city],
+    ['Business Type', f.businessType],
+    ['Avg Customer Value', f.avgCustomerValue ? '$' + Number(f.avgCustomerValue).toLocaleString() : null],
+    ['Budget Before Results', f.budgetBeforeResults ? '$' + Number(f.budgetBeforeResults).toLocaleString() : null],
+    ['Current Mkt Spend', f.currentMarketingSpend ? '$' + Number(f.currentMarketingSpend).toLocaleString() + '/mo' : null],
+    ['#1 Pain Point', f.painPoint], ['Desired Outcome', f.desiredOutcome],
+    ['Tried Before', f.triedBefore], ['Social Goal', f.socialGoal],
+    ['Meeting Cadence', f.meetingCadence],
+    ['Website Traffic', f.currentWebsiteTraffic ? Number(f.currentWebsiteTraffic).toLocaleString() + ' visitors/mo' : null],
+    ['Leads/Month', f.currentLeadsPerMonth ? Number(f.currentLeadsPerMonth).toLocaleString() : null],
+    ['Instagram', f.currentInstagramFollowers ? Number(f.currentInstagramFollowers).toLocaleString() + ' followers' : null],
+    ['Facebook', f.currentFacebookFollowers ? Number(f.currentFacebookFollowers).toLocaleString() + ' followers' : null],
+    ['Google Reviews', f.currentGoogleReviews ? Number(f.currentGoogleReviews).toLocaleString() : null],
+  ].filter(([,v]) => v != null && v !== '');
+
+  if (fieldMap.length > 0) {
+    mnp(14);
+    sf('bold', 10, BLUE); doc.text('EXTRACTED DETAILS', ml, y); y += 7;
+    fieldMap.forEach(([label, val]) => {
+      mnp(8);
+      sf('bold', 8, GRAY); doc.text(label, ml + 2, y);
+      sf('normal', 9, BLACK); doc.text(String(val), ml + 52, y);
+      y += 5.5;
+    });
+    y += 3;
+    y = rule(y);
+  }
+
+  // ── SERVICES OF INTEREST ──
+  const si = f.serviceInterests || {};
+  const svcs = [];
+  if (si.website) svcs.push('Website');
+  if (si.backend) svcs.push('CRM + Automation');
+  if (si.social) svcs.push('Social Media');
+  if (svcs.length > 0) {
+    mnp(14);
+    sf('bold', 10, BLUE); doc.text('SERVICES OF INTEREST', ml, y); y += 6;
+    sf('normal', 9, BLACK); doc.text(svcs.join('  ·  '), ml + 2, y); y += 7;
+    y = rule(y);
+  }
+
+  // ── ACTION ITEMS ──
+  const actions = f.actionItems || [];
+  if (actions.length > 0) {
+    mnp(14);
+    sf('bold', 10, BLUE); doc.text('ACTION ITEMS', ml, y); y += 7;
+    actions.forEach(item => {
+      mnp(10);
+      sf('bold', 8, GREEN); doc.text('✓', ml + 2, y);
+      sf('normal', 8.5, BLACK);
+      const lines = doc.splitTextToSize(String(item), cw - 14);
+      doc.text(lines, ml + 10, y);
+      y += lines.length * 4.5 + 2.5;
+    });
+    y += 2;
+    y = rule(y);
+  }
+
+  // ── DISCOVERY NOTES ──
+  if (f.discoveryNotes) {
+    mnp(18);
+    sf('bold', 10, BLUE); doc.text('ADDITIONAL NOTES', ml, y); y += 6;
+    sf('normal', 9, BLACK);
+    const noteLines = doc.splitTextToSize(f.discoveryNotes, cw - 4);
+    mnp(noteLines.length * 4.5 + 4);
+    doc.text(noteLines, ml + 2, y); y += noteLines.length * 4.5 + 4;
+  }
+
+  // ── FOOTER ALL PAGES ──
+  const np = doc.getNumberOfPages();
+  for (let i = 1; i <= np; i++) {
+    doc.setPage(i);
+    doc.setFillColor(245,245,243); doc.rect(0, H-11, W, 11, 'F');
+    sf('normal', 7, GRAY);
+    doc.text('More Than Momentum  ·  Call Intelligence Summary  ·  Confidential', ml, H-4);
+    doc.text(`${i} / ${np}`, W - mr, H - 4, { align: 'right' });
+  }
+
+  const slug = (call.meetingTitle || 'call').toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 40);
+  const dateSlug = d.toISOString().slice(0,10);
+  doc.save(`MTM-Call-${slug}-${dateSlug}.pdf`);
 }
 
 
