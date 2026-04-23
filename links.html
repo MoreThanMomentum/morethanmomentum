@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <title>More Than Momentum — Links</title>
+  <meta name="description" content="AI-Powered Digital Growth Infrastructure for Small & Mid-Size Businesses"/>
+  <!-- Prevent indexing — this is a utility page -->
+  <meta name="robots" content="noindex, nofollow"/>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet"/>
+
+  <style>
+    :root {
+      --black:        #0c0c0c;
+      --dark:         #111111;
+      --card:         #161616;
+      --border:       #222222;
+      --accent:       #2D6BE4;
+      --accent-light: #5B8FF0;
+      --white:        #f4f4f2;
+      --gray:         rgba(255,255,255,.4);
+      --speed:        'Barlow Condensed', sans-serif;
+      --sans:         'DM Sans', sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--sans);
+      font-weight: 300;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0 3rem;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ── GRID BACKGROUND ─────────────────────────────────── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(45,107,228,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(45,107,228,.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── GLOW ────────────────────────────────────────────── */
+    .glow {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(45,107,228,.18) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── WRAPPER ─────────────────────────────────────────── */
+    .wrap {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 480px;
+      padding: 0 1.25rem;
+    }
+
+    /* ── HEADER ──────────────────────────────────────────── */
+    .header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 3.5rem 0 2rem;
+      text-align: center;
+    }
+
+    .logo-wrap {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .logo-wrap::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px solid rgba(91,143,240,.4);
+    }
+
+    .logo-wrap img {
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+      filter: brightness(0) invert(1);
+    }
+
+    .brand-name {
+      font-family: var(--speed);
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -.01em;
+      color: var(--white);
+      line-height: 1;
+      margin-bottom: .4rem;
+    }
+
+    .brand-tag {
+      font-size: .72rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      margin-bottom: 1rem;
+    }
+
+    .brand-desc {
+      font-size: .85rem;
+      color: var(--gray);
+      line-height: 1.7;
+      max-width: 300px;
+    }
+
+    /* ── STATS STRIP ─────────────────────────────────────── */
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      border: 1px solid var(--border);
+      background: var(--card);
+      margin: 1.8rem 0 2.2rem;
+      overflow: hidden;
+    }
+
+    .stat {
+      flex: 1;
+      text-align: center;
+      padding: .9rem .5rem;
+      border-right: 1px solid var(--border);
+    }
+    .stat:last-child { border-right: none; }
+
+    .stat-num {
+      font-family: var(--speed);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: -.02em;
+      line-height: 1;
+    }
+    .stat-num span {
+      font-size: .85rem;
+      color: var(--accent-light);
+    }
+    .stat-lbl {
+      font-size: .58rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.3);
+      margin-top: .2rem;
+    }
+
+    /* ── SECTION LABEL ───────────────────────────────────── */
+    .section-label {
+      font-size: .62rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.2);
+      margin: 0 0 .7rem .1rem;
+    }
+
+    /* ── LINK BUTTONS ────────────────────────────────────── */
+    .links {
+      display: flex;
+      flex-direction: column;
+      gap: .65rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .link-btn {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--white);
+      text-decoration: none;
+      padding: 1rem 1.2rem;
+      transition: background .2s, border-color .2s, transform .15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .link-btn::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 2px;
+      background: var(--accent);
+      opacity: 0;
+      transition: opacity .2s;
+    }
+
+    .link-btn:active {
+      transform: scale(.98);
+      background: #1a1a1a;
+      border-color: rgba(45,107,228,.4);
+    }
+    .link-btn:active::before { opacity: 1; }
+
+    .link-btn.featured {
+      background: rgba(45,107,228,.12);
+      border-color: rgba(45,107,228,.35);
+    }
+    .link-btn.featured::before { opacity: 1; }
+
+    .link-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 1.1rem;
+    }
+    .link-btn.featured .link-icon {
+      background: rgba(45,107,228,.2);
+      border-color: rgba(45,107,228,.3);
+    }
+
+    .link-text { flex: 1; }
+
+    .link-title {
+      font-size: .88rem;
+      font-weight: 500;
+      color: var(--white);
+      letter-spacing: .01em;
+      line-height: 1;
+      margin-bottom: .18rem;
+    }
+
+    .link-sub {
+      font-size: .72rem;
+      color: rgba(255,255,255,.35);
+      letter-spacing: .02em;
+    }
+
+    .link-arrow {
+      color: rgba(255,255,255,.2);
+      font-size: .85rem;
+      transition: color .2s, transform .2s;
+    }
+    .link-btn:active .link-arrow {
+      color: var(--accent-light);
+      transform: translateX(3px);
+    }
+
+    /* ── DIVIDER ─────────────────────────────────────────── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: .4rem 0 1.2rem;
+    }
+
+    /* ── FOOTER ──────────────────────────────────────────── */
+    .footer {
+      text-align: center;
+      padding-top: 1rem;
+    }
+
+    .footer-logo {
+      font-family: var(--speed);
+      font-size: .85rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,.18);
+      text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    .footer-copy {
+      font-size: .65rem;
+      color: rgba(255,255,255,.12);
+      letter-spacing: .06em;
+      margin-top: .3rem;
+    }
+
+    /* ── ANIMATIONS ──────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .header   { animation: fadeUp .6s .05s both; }
+    .stats    { animation: fadeUp .6s .15s both; }
+    .links    { animation: fadeUp .6s .22s both; }
+    .footer   { animation: fadeUp .6s .3s both; }
+  </style>
+</head>
+<body>
+
+<div class="glow"></div>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo-wrap">
+      <img src="images/whiteguylogo.png" alt="More Than Momentum"/>
+    </div>
+    <div class="brand-name">More Than Momentum</div>
+    <div class="brand-tag">AI-Powered Digital Growth</div>
+    <p class="brand-desc">Websites that convert, automation that captures every lead, content that keeps the momentum going.</p>
+  </div>
+
+  <!-- STATS STRIP -->
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num">10<span>×</span></div>
+      <div class="stat-lbl">Lead Volume</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">60<span>s</span></div>
+      <div class="stat-lbl">Response Time</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num">100<span>%</span></div>
+      <div class="stat-lbl">You Own It</div>
+    </div>
+  </div>
+
+  <!-- PRIMARY LINKS -->
+  <div class="section-label">Get Started</div>
+  <div class="links">
+
+    <a href="https://morethanmomentum.com/contact" class="link-btn featured">
+      <div class="link-icon">📅</div>
+      <div class="link-text">
+        <div class="link-title">Book a Free Discovery Call</div>
+        <div class="link-sub">30 minutes · No pitch · No pressure</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+    <a href="https://morethanmomentum.com" class="link-btn">
+      <div class="link-icon">🌐</div>
+      <div class="link-text">
+        <div class="link-title">Our Website</div>
+        <div class="link-sub">morethanmomentum.com</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+    <a href="https://morethanmomentum.com/services" class="link-btn">
+      <div class="link-icon">⚡</div>
+      <div class="link-text">
+        <div class="link-title">View Our Services</div>
+        <div class="link-sub">Websites · Automation · Content · Social</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+    <a href="https://morethanmomentum.com/work" class="link-btn">
+      <div class="link-icon">🎯</div>
+      <div class="link-text">
+        <div class="link-title">See Our Work</div>
+        <div class="link-sub">Real results for real businesses</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+  </div>
+
+  <!-- SOCIAL LINKS -->
+  <div class="divider"></div>
+  <div class="section-label">Follow Along</div>
+  <div class="links">
+
+    <a href="https://www.instagram.com/morethanmomentum" target="_blank" rel="noopener" class="link-btn">
+      <div class="link-icon">📸</div>
+      <div class="link-text">
+        <div class="link-title">Instagram</div>
+        <div class="link-sub">@morethanmomentum</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+    <a href="https://www.linkedin.com/company/morethanmomentum" target="_blank" rel="noopener" class="link-btn">
+      <div class="link-icon">💼</div>
+      <div class="link-text">
+        <div class="link-title">LinkedIn</div>
+        <div class="link-sub">More Than Momentum</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+    <a href="https://www.facebook.com/morethanmomentum" target="_blank" rel="noopener" class="link-btn">
+      <div class="link-icon">📘</div>
+      <div class="link-text">
+        <div class="link-title">Facebook</div>
+        <div class="link-sub">More Than Momentum</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+  </div>
+
+  <!-- CONTACT LINKS -->
+  <div class="divider"></div>
+  <div class="section-label">Contact Us Directly</div>
+  <div class="links">
+
+    <a href="tel:+1YOURNUMBERHERE" class="link-btn">
+      <div class="link-icon">📞</div>
+      <div class="link-text">
+        <div class="link-title">Call Us</div>
+        <div class="link-sub">Tap to call directly</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+    <a href="mailto:team@morethanmomentum.com" class="link-btn">
+      <div class="link-icon">✉️</div>
+      <div class="link-text">
+        <div class="link-title">Email Us</div>
+        <div class="link-sub">team@morethanmomentum.com</div>
+      </div>
+      <div class="link-arrow">→</div>
+    </a>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <a href="https://morethanmomentum.com" class="footer-logo">More Than Momentum</a>
+    <div class="footer-copy">© 2026 · AI-Powered Digital Growth · Keene, NH</div>
+  </div>
+
+</div>
+
+</body>
+</html>
