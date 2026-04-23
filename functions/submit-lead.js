@@ -76,7 +76,7 @@ export async function onRequestPost(context) {
     // GHL API v2 rule: NEVER include customField arrays or
     // notes in POST body — the API rejects the entire request.
     const contactPayload = {
-      locationId: env.GHL_LOCATION_ID,
+      locationId: env.GHL_LOCATION_ID_MTM,
       firstName,
       lastName,
       email:      raw.email,
@@ -92,7 +92,7 @@ export async function onRequestPost(context) {
     const ghlRes = await fetch('https://services.leadconnectorhq.com/contacts/', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.GHL_API_KEY}`,
+        'Authorization': `Bearer ${env.GHL_API_KEY_MTM}`,
         'Version':       '2021-07-28',
         'Content-Type':  'application/json',
       },
