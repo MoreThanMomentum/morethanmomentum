@@ -1,6 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+(function() {
+  var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+              || (navigator.maxTouchPoints > 1 && window.innerWidth <= 1024);
+  var ref = document.referrer;
+  var isKnownReferral = ref && (
+    ref.includes('google.') ||
+    ref.includes('bing.')   ||
+    ref.includes('facebook.') ||
+    ref.includes('instagram.') ||
+    ref.includes('linkedin.') ||
+    ref.includes('twitter.')  ||
+    ref.includes('morethanmomentum.com')
+  );
+  if (isMobile && !isKnownReferral) {
+    window.location.replace('/links');
+  }
+})();
+</script>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   
