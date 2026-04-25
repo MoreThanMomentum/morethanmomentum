@@ -301,7 +301,108 @@
       .ga4-grid { grid-template-columns: 1fr; } .invest-grid { grid-template-columns: 1fr; }
       .guarantee-row { grid-template-columns: 1fr 1fr; }
     }
-  </style>
+
+    /* ══════════════════════════════════════════════
+       CONTENT STUDIO (Tool 05)
+    ══════════════════════════════════════════════ */
+    .cs-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin: -28px -28px 20px; padding: 0 28px; flex-shrink: 0; }
+    .cs-tab { background: transparent; border: none; border-bottom: 2px solid transparent; padding: 14px 18px; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--gray); cursor: pointer; transition: color .2s, border-color .2s; margin-bottom: -1px; white-space: nowrap; }
+    .cs-tab:hover { color: var(--white); }
+    .cs-tab.active { color: var(--white); border-bottom-color: var(--accent); }
+    .cs-pane { display: none; flex-direction: column; gap: 14px; }
+    .cs-pane.active { display: flex; }
+
+    /* Ideate */
+    .idea-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; animation: fadeUp .25s ease; }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+    .idea-meta { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .idea-badge { font-size: 10px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; padding: 3px 9px; border-radius: 4px; }
+    .idea-badge-platform { background: rgba(45,107,228,.15); color: var(--accent-light); border: 1px solid rgba(45,107,228,.25); }
+    .idea-badge-pillar  { background: rgba(245,197,24,.1);  color: var(--yellow);       border: 1px solid rgba(245,197,24,.2); }
+    .idea-badge-format  { background: rgba(74,222,128,.08); color: var(--green);         border: 1px solid rgba(74,222,128,.18); }
+    .idea-hook { font-family: var(--speed); font-weight: 700; font-size: 17px; line-height: 1.25; color: var(--white); }
+    .idea-caption { font-size: 13px; color: rgba(255,255,255,.65); line-height: 1.65; }
+    .idea-cta-line { font-size: 12px; color: var(--accent-light); font-style: italic; }
+    .idea-actions { display: flex; gap: 8px; margin-top: 2px; }
+    .btn-copy-hook { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 7px 12px; font-family: var(--sans); font-size: 12px; color: var(--gray); cursor: pointer; transition: border-color .2s, color .2s; }
+    .btn-copy-hook:hover { border-color: var(--gray); color: var(--white); }
+    .btn-save-idea { background: rgba(45,107,228,.12); border: 1px solid rgba(45,107,228,.25); border-radius: 6px; padding: 7px 14px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--accent-light); cursor: pointer; transition: background .2s; }
+    .btn-save-idea:hover { background: rgba(45,107,228,.22); }
+    .btn-save-idea.saved { background: rgba(74,222,128,.1); border-color: rgba(74,222,128,.25); color: var(--green); cursor: default; }
+    .cs-ideas-wrap { display: flex; flex-direction: column; gap: 12px; }
+    .cs-saved-section { border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px; display: flex; flex-direction: column; gap: 10px; }
+    .cs-saved-label { font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-light); }
+    .saved-idea-row { display: flex; align-items: flex-start; gap: 10px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+    .saved-idea-hook { font-size: 13px; color: var(--white); flex: 1; line-height: 1.45; }
+    .saved-idea-meta { font-size: 11px; color: var(--mid); margin-top: 3px; }
+    .btn-del-idea { background: transparent; border: none; color: var(--mid); font-size: 16px; cursor: pointer; padding: 0 4px; line-height: 1; flex-shrink: 0; transition: color .15s; }
+    .btn-del-idea:hover { color: #f87171; }
+
+    /* Schedule */
+    .sched-toggle { display: flex; gap: 0; background: var(--dark); border: 1px solid var(--border); border-radius: 8px; padding: 3px; flex-shrink: 0; align-self: flex-start; }
+    .sched-toggle-btn { background: transparent; border: none; border-radius: 5px; padding: 7px 16px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--gray); cursor: pointer; transition: background .15s, color .15s; }
+    .sched-toggle-btn.active { background: var(--card); color: var(--white); }
+    .sched-session { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .sched-session-hd { display: flex; align-items: center; gap: 10px; padding: 13px 16px; cursor: pointer; background: var(--card); transition: background .15s; user-select: none; }
+    .sched-session-hd:hover { background: #1f1f1f; }
+    .sched-day-pill { font-size: 10px; font-weight: 500; letter-spacing: .07em; text-transform: uppercase; padding: 3px 9px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; }
+    .pill-blue   { background: rgba(45,107,228,.15); color: var(--accent-light); }
+    .pill-amber  { background: rgba(245,197,24,.12); color: var(--yellow); }
+    .pill-green  { background: rgba(74,222,128,.1);  color: var(--green); }
+    .pill-purple { background: rgba(139,92,246,.12); color: #a78bfa; }
+    .sched-session-name { font-size: 14px; font-weight: 500; color: var(--white); flex: 1; }
+    .sched-session-dur  { font-size: 12px; color: var(--mid); }
+    .sched-session-prog { font-size: 12px; color: var(--gray); margin-left: auto; white-space: nowrap; }
+    .sched-chevron { font-size: 11px; color: var(--mid); transition: transform .2s; }
+    .sched-chevron.open { transform: rotate(180deg); }
+    .sched-prog-bar { height: 3px; background: var(--border); margin: 8px 16px 0; border-radius: 2px; display: none; }
+    .sched-prog-bar.visible { display: block; }
+    .sched-prog-fill { height: 3px; border-radius: 2px; background: var(--green); transition: width .3s; }
+    .sched-session-body { display: none; border-top: 1px solid var(--border); background: #0f0f0f; padding: 4px 0 8px; }
+    .sched-session-body.open { display: block; }
+    .sched-sec-label { font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--accent-light); padding: 12px 16px 6px; }
+    .sched-task { display: flex; align-items: flex-start; gap: 10px; padding: 7px 16px; cursor: pointer; transition: background .1s; border-bottom: 1px solid rgba(255,255,255,.03); }
+    .sched-task:last-child { border-bottom: none; }
+    .sched-task:hover { background: rgba(255,255,255,.02); }
+    .sched-check { width: 15px; height: 15px; min-width: 15px; border-radius: 3px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin-top: 1px; transition: all .12s; flex-shrink: 0; }
+    .sched-check.done { background: rgba(74,222,128,.15); border-color: rgba(74,222,128,.4); }
+    .sched-check.done::after { content:''; display:block; width:8px; height:4px; border-left:1.5px solid var(--green); border-bottom:1.5px solid var(--green); transform:rotate(-45deg) translate(0,-1px); }
+    .sched-task-text { font-size: 13px; color: rgba(255,255,255,.7); line-height: 1.5; flex: 1; }
+    .sched-task-text.done { text-decoration: line-through; color: var(--mid); }
+    .sched-task-tag { font-size: 10px; font-weight: 500; padding: 2px 7px; border-radius: 4px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+    .tag-c-video  { background: rgba(239,68,68,.1);   color: #f87171; }
+    .tag-c-design { background: rgba(245,197,24,.1);  color: var(--yellow); }
+    .tag-c-write  { background: rgba(45,107,228,.12); color: var(--accent-light); }
+    .tag-c-engage { background: rgba(74,222,128,.08); color: var(--green); }
+    .tag-c-plan   { background: rgba(139,92,246,.1);  color: #a78bfa; }
+    .sched-reset { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 7px 14px; font-family: var(--sans); font-size: 12px; color: var(--mid); cursor: pointer; align-self: flex-start; margin-top: 4px; transition: border-color .2s, color .2s; }
+    .sched-reset:hover { border-color: var(--gray); color: var(--gray); }
+    .sched-stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .sched-stat { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; text-align: center; }
+    .sched-stat-num { font-family: var(--speed); font-weight: 700; font-size: 22px; color: var(--white); line-height: 1; }
+    .sched-stat-lbl { font-size: 10px; color: var(--mid); margin-top: 3px; }
+
+    /* MTM Analytics */
+    .cs-analytics-setup { background: rgba(245,197,24,.05); border: 1px solid rgba(245,197,24,.2); border-radius: 10px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+    .cs-analytics-setup-title { font-family: var(--speed); font-weight: 700; font-size: 18px; color: var(--yellow); }
+    .cs-analytics-setup-body  { font-size: 13px; color: var(--gray); line-height: 1.65; }
+    .cs-curl-block { background: var(--dark); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-family: monospace; font-size: 11.5px; color: var(--accent-light); line-height: 1.7; overflow-x: auto; white-space: pre; }
+    .cs-analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .cs-metric { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+    .cs-metric.hl { border-color: rgba(45,107,228,.35); background: rgba(45,107,228,.06); }
+    .cs-metric-label { font-size: 10px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--gray); margin-bottom: 6px; }
+    .cs-metric-value { font-family: var(--speed); font-weight: 700; font-size: 28px; color: var(--white); line-height: 1; }
+    .cs-metric-value.green { color: var(--green); }
+    .cs-metric-value.blue  { color: var(--accent-light); }
+    .cs-metric-sub { font-size: 11px; color: var(--mid); margin-top: 4px; }
+    .cs-source-row { display: flex; align-items: center; gap: 10px; padding: 5px 0; }
+    .cs-source-name { font-size: 12px; color: var(--white); min-width: 110px; flex-shrink: 0; }
+    .cs-source-bar-wrap { flex: 1; background: rgba(255,255,255,.06); border-radius: 4px; height: 5px; overflow: hidden; }
+    .cs-source-bar { height: 100%; background: var(--accent); border-radius: 4px; transition: width .4s; }
+    .cs-source-pct { font-size: 11px; color: var(--gray); min-width: 32px; text-align: right; }
+    .btn-refresh-analytics { background: transparent; border: 1px solid rgba(45,107,228,.3); border-radius: 6px; padding: 8px 16px; font-family: var(--sans); font-size: 12px; font-weight: 500; color: var(--accent-light); cursor: pointer; align-self: flex-start; transition: border-color .2s, background .2s; }
+    .btn-refresh-analytics:hover { border-color: var(--accent); background: rgba(45,107,228,.08); }
+    .btn-refresh-analytics:disabled { opacity: .4; cursor: not-allowed; }
 </head>
 <body>
 
@@ -398,12 +499,12 @@
         <div class="tool-card-action">Coming Soon <span class="tool-card-action-arrow">→</span></div>
       </div>
 
-      <!-- Tool 05 — Content Brief Generator (coming soon) -->
-      <div class="tool-card coming-soon">
-        <div class="tool-card-icon">✍️</div>
-        <div class="tool-card-header"><div class="tool-card-name">Content Brief Generator</div><span class="tool-card-badge badge-soon">Soon</span></div>
-        <p class="tool-card-desc">Generate a full monthly content brief for any client — post ideas, captions, hooks, and platform strategy — built from their brand voice and content pillars.</p>
-        <div class="tool-card-action">Coming Soon <span class="tool-card-action-arrow">→</span></div>
+      <!-- Tool 05 — Content Studio -->
+      <div class="tool-card active" onclick="openContentStudio()">
+        <div class="tool-card-icon">🎬</div>
+        <div class="tool-card-header"><div class="tool-card-name">Content Studio</div><span class="tool-card-badge badge-live">Live</span></div>
+        <p class="tool-card-desc">AI-powered content ideation, batch production schedule, and MTM pipeline analytics — everything you need to plan, produce, and track MTM's own social presence.</p>
+        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
       </div>
 
     </div>
@@ -696,6 +797,196 @@
 
       <!-- Result -->
       <div class="proposal-wrap" id="proposalWrap"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ── CONTENT STUDIO PANEL (Tool 05) ──────────────────────────────── -->
+<div id="cs-panel" class="panel-overlay" onclick="handleCSBackdrop(event)">
+  <div class="panel-inner" style="max-width:680px;">
+    <div class="panel-header">
+      <div><div class="panel-tag">Tool 05</div><div class="panel-title">Content Studio</div></div>
+      <button class="panel-close" onclick="closeContentStudio()">✕</button>
+    </div>
+    <div class="panel-body" id="csPanelBody" style="padding-top:0;">
+
+      <!-- Tabs -->
+      <div class="cs-tabs">
+        <button class="cs-tab active" onclick="csTab('ideate',this)">✦ Ideate</button>
+        <button class="cs-tab"        onclick="csTab('schedule',this)">📋 Schedule</button>
+        <button class="cs-tab"        onclick="csTab('analytics',this)">📊 MTM Analytics</button>
+      </div>
+
+      <!-- ── IDEATE PANE ──────────────────────────────────── -->
+      <div class="cs-pane active" id="cs-ideate">
+
+        <div class="panel-form" id="csIdeateForm">
+          <div class="panel-field">
+            <label class="panel-label">Topic or prompt <span>(be specific or leave open)</span></label>
+            <textarea id="csPrompt" class="panel-textarea" style="min-height:72px;" placeholder="e.g. &quot;3 hooks for HVAC owners about missed leads&quot; or &quot;give me skit ideas for Pillar 3 this week&quot; or just &quot;surprise me&quot;"></textarea>
+          </div>
+          <div class="panel-row">
+            <div class="panel-field">
+              <label class="panel-label">Content Pillar</label>
+              <select id="csPillar" class="panel-input">
+                <option value="any">Any pillar</option>
+                <option value="P1">P1 — Growth Mindset</option>
+                <option value="P2">P2 — AI & Automation</option>
+                <option value="P3">P3 — Relatable Skits</option>
+                <option value="P4">P4 — Behind the Build</option>
+                <option value="P5">P5 — Local Spotlight</option>
+              </select>
+            </div>
+            <div class="panel-field">
+              <label class="panel-label">Platform</label>
+              <select id="csPlatform" class="panel-input">
+                <option value="any">Any platform</option>
+                <option value="Instagram">Instagram</option>
+                <option value="Facebook">Facebook</option>
+                <option value="LinkedIn">LinkedIn</option>
+                <option value="Google Business">Google Business</option>
+              </select>
+            </div>
+          </div>
+          <div class="panel-row">
+            <div class="panel-field">
+              <label class="panel-label">Format</label>
+              <select id="csFormat" class="panel-input">
+                <option value="any">Any format</option>
+                <option value="Reel / Skit">Reel / Skit</option>
+                <option value="Talking Head">Talking Head</option>
+                <option value="Carousel">Carousel</option>
+                <option value="Quote Graphic">Quote Graphic</option>
+                <option value="Stat Graphic">Stat Graphic</option>
+                <option value="Long-form Text">Long-form Text</option>
+                <option value="Google Business Post">Google Business Post</option>
+              </select>
+            </div>
+            <div class="panel-field">
+              <label class="panel-label">Ideas to generate</label>
+              <select id="csCount" class="panel-input">
+                <option value="3">3 ideas</option>
+                <option value="5" selected>5 ideas</option>
+              </select>
+            </div>
+          </div>
+          <div class="panel-inline-error" id="csIdeateErr"></div>
+          <button class="panel-run-btn" id="csIdeateBtn" onclick="runIdeate()">Generate Content Ideas →</button>
+        </div>
+
+        <!-- Loading -->
+        <div class="panel-loading" id="csIdeateLoading">
+          <div class="loading-spinner"></div>
+          <div class="loading-label">
+            <strong id="csIdeateLoadingMsg">Thinking like a content strategist...</strong>
+            <span>Usually 10–20 seconds.</span>
+          </div>
+        </div>
+
+        <!-- Results -->
+        <div id="csIdeasWrap" style="display:none;flex-direction:column;gap:12px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+            <div class="cs-saved-label" style="margin:0;">Generated Ideas</div>
+            <button class="btn-new" style="font-size:12px;padding:7px 12px;" onclick="resetIdeate()">New Prompt</button>
+          </div>
+          <div class="cs-ideas-wrap" id="csIdeasList"></div>
+        </div>
+
+        <!-- Saved Ideas -->
+        <div class="cs-saved-section" id="csSavedSection" style="display:none;">
+          <div class="cs-saved-label">Saved Ideas <span id="csSavedCount" style="color:var(--mid);font-weight:400;text-transform:none;letter-spacing:0;font-size:11px;"></span></div>
+          <div id="csSavedList"></div>
+          <button class="btn-new" style="font-size:12px;padding:7px 12px;align-self:flex-start;" onclick="clearAllSaved()">Clear All Saved</button>
+        </div>
+
+      </div>
+
+      <!-- ── SCHEDULE PANE ─────────────────────────────────── -->
+      <div class="cs-pane" id="cs-schedule">
+
+        <div class="sched-stat-row" id="csSchedStats"></div>
+
+        <div class="sched-toggle" id="csSchedToggle">
+          <button class="sched-toggle-btn active" onclick="csSchedView('weekly',this)">Weekly</button>
+          <button class="sched-toggle-btn"        onclick="csSchedView('monthly',this)">Monthly Batch</button>
+        </div>
+
+        <div id="csSchedSessions"></div>
+
+        <button class="sched-reset" id="csSchedResetBtn" onclick="csResetSched()">Reset this week</button>
+
+      </div>
+
+      <!-- ── ANALYTICS PANE ────────────────────────────────── -->
+      <div class="cs-pane" id="cs-analytics">
+
+        <!-- Setup state — shown when not configured -->
+        <div id="csAnalyticsSetup" class="cs-analytics-setup">
+          <div class="cs-analytics-setup-title">⚡ Connect MTM's GHL Account</div>
+          <div class="cs-analytics-setup-body">
+            This tab pulls MTM's own GoHighLevel pipeline data — leads, revenue, and open opportunities — directly from the MCP Analytics Server.<br><br>
+            <strong style="color:var(--white);">Step 1 —</strong> Get MTM's GHL API Key and Location ID from GHL Settings → Integrations → API Keys.<br><br>
+            <strong style="color:var(--white);">Step 2 —</strong> Run this curl command to register MTM on the analytics server:
+          </div>
+          <div class="cs-curl-block">curl -X POST https://mtm-mcp-server.coleblanco.workers.dev/admin/clients \
+  -H "Content-Type: application/json" \
+  -H "X-Master-Key: YOUR_MASTER_KEY" \
+  -d '{
+    "name": "More Than Momentum",
+    "ghlApiKey": "YOUR_MTM_GHL_API_KEY",
+    "ghlLocationId": "YOUR_MTM_LOCATION_ID"
+  }'</div>
+          <div class="cs-analytics-setup-body">
+            <strong style="color:var(--white);">Step 3 —</strong> Copy the <code style="background:var(--dark);padding:2px 6px;border-radius:4px;font-size:11px;">secret</code> from the response.<br><br>
+            <strong style="color:var(--white);">Step 4 —</strong> In Cloudflare → your MTM Pages project → Settings → Environment Variables, add:<br>
+            <code style="background:var(--dark);padding:2px 6px;border-radius:4px;font-size:11px;">MTM_GHL_SECRET</code> = the secret from Step 3.<br><br>
+            Redeploy (git push), then reload this tab — the analytics dashboard will appear automatically.
+          </div>
+        </div>
+
+        <!-- Data state — shown when configured -->
+        <div id="csAnalyticsData" style="display:none;flex-direction:column;gap:14px;">
+          <!-- Loading -->
+          <div class="panel-loading" id="csAnalyticsLoading" style="display:none;">
+            <div class="loading-spinner"></div>
+            <div class="loading-label"><strong>Pulling MTM pipeline data...</strong><span>Fetching live from GHL.</span></div>
+          </div>
+
+          <div id="csAnalyticsContent" style="display:flex;flex-direction:column;gap:14px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;">
+              <div>
+                <div style="font-family:var(--speed);font-weight:700;font-size:20px;" id="csAnalyticsTitle">MTM Pipeline</div>
+                <div style="font-size:12px;color:var(--gray);margin-top:2px;" id="csAnalyticsPeriod"></div>
+              </div>
+              <button class="btn-refresh-analytics" id="csRefreshBtn" onclick="loadMTMAnalytics()">↻ Refresh</button>
+            </div>
+
+            <div class="cs-analytics-grid" id="csMetricGrid"></div>
+
+            <div class="report-section" id="csSourcesSection" style="display:none;">
+              <div class="report-sec-head"><span class="report-sec-icon">📍</span><span class="report-sec-title">Lead Sources</span></div>
+              <div class="report-sec-body" id="csSourcesList"></div>
+            </div>
+
+            <div class="report-section" id="csPipelineSection" style="display:none;">
+              <div class="report-sec-head"><span class="report-sec-icon">🔄</span><span class="report-sec-title">Open Pipeline</span></div>
+              <div class="report-sec-body" id="csPipelineList"></div>
+            </div>
+
+            <div class="report-section" id="csMetaSection" style="display:none;">
+              <div class="report-sec-head"><span class="report-sec-icon">📱</span><span class="report-sec-title">Social — Facebook &amp; Instagram</span></div>
+              <div class="report-sec-body" id="csMetaList"></div>
+            </div>
+
+            <div class="report-section" id="csGA4Section" style="display:none;">
+              <div class="report-sec-head"><span class="report-sec-icon">🌐</span><span class="report-sec-title">Website — Google Analytics</span></div>
+              <div class="report-sec-body" id="csGA4List"></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
 
     </div>
   </div>
@@ -2319,7 +2610,656 @@ function fillProposalFormFromFields(f) {
 }
 
 
-</script>
+
+/* ══════════════════════════════════════════════
+   CONTENT STUDIO — Tool 05
+══════════════════════════════════════════════ */
+
+/* ── Panel open/close ── */
+function openContentStudio() {
+  document.getElementById('cs-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  renderSavedIdeas();
+  csSchedInit();
+  csAnalyticsInit();
+}
+function closeContentStudio() {
+  document.getElementById('cs-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleCSBackdrop(e) { if (e.target === document.getElementById('cs-panel')) closeContentStudio(); }
+
+/* ── Tab switching ── */
+function csTab(name, btn) {
+  document.querySelectorAll('.cs-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.cs-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('cs-' + name).classList.add('active');
+  btn.classList.add('active');
+  if (name === 'analytics') loadMTMAnalytics();
+}
+
+/* ══════════════════════════════════════════════
+   IDEATE TAB
+══════════════════════════════════════════════ */
+const CS_SAVED_KEY = 'mtm_content_ideas_v1';
+let _csIdeas = [];
+const IDEATE_MSGS = [
+  'Thinking like a content strategist...','Pulling from the playbook...','Crafting your hooks...',
+  'Writing caption drafts...','Almost there...'
+];
+
+async function runIdeate() {
+  const prompt   = document.getElementById('csPrompt').value.trim();
+  const pillar   = document.getElementById('csPillar').value;
+  const platform = document.getElementById('csPlatform').value;
+  const format   = document.getElementById('csFormat').value;
+  const count    = document.getElementById('csCount').value;
+  const errEl    = document.getElementById('csIdeateErr');
+
+  errEl.classList.remove('show');
+  if (!prompt) { errEl.textContent = 'Enter a topic, prompt, or just "surprise me".'; errEl.classList.add('show'); return; }
+
+  document.getElementById('csIdeateForm').style.display = 'none';
+  document.getElementById('csIdeateLoading').classList.add('show');
+  document.getElementById('csIdeasWrap').style.display = 'none';
+
+  let mi = 0;
+  const msgTimer = setInterval(() => {
+    mi = (mi + 1) % IDEATE_MSGS.length;
+    const el = document.getElementById('csIdeateLoadingMsg');
+    if (el) el.textContent = IDEATE_MSGS[mi];
+  }, 3000);
+
+  try {
+    const res = await fetch('/api/content-ideate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, pillar, platform, format, count: parseInt(count) })
+    });
+    const data = await res.json();
+    clearInterval(msgTimer);
+
+    if (!data.success || !data.ideas) {
+      csIdeateError(data.error || 'Generation failed. Try again.');
+      return;
+    }
+
+    _csIdeas = data.ideas;
+    renderIdeas(_csIdeas);
+    document.getElementById('csIdeateLoading').classList.remove('show');
+    document.getElementById('csIdeasWrap').style.display = 'flex';
+    renderSavedIdeas();
+
+  } catch {
+    clearInterval(msgTimer);
+    csIdeateError('Connection error. Make sure /api/content-ideate is deployed.');
+  }
+}
+
+function csIdeateError(msg) {
+  document.getElementById('csIdeateLoading').classList.remove('show');
+  document.getElementById('csIdeateForm').style.display = 'flex';
+  const errEl = document.getElementById('csIdeateErr');
+  errEl.textContent = msg;
+  errEl.classList.add('show');
+}
+
+function resetIdeate() {
+  _csIdeas = [];
+  document.getElementById('csIdeasWrap').style.display = 'none';
+  document.getElementById('csIdeasList').innerHTML = '';
+  document.getElementById('csIdeateErr').classList.remove('show');
+  document.getElementById('csIdeateForm').style.display = 'flex';
+  setTimeout(() => document.getElementById('csPrompt').focus(), 50);
+}
+
+function renderIdeas(ideas) {
+  const list = document.getElementById('csIdeasList');
+  list.innerHTML = ideas.map((idea, i) => {
+    const escaped = {
+      hook:     esc(idea.hook || ''),
+      caption:  esc(idea.captionDraft || ''),
+      cta:      esc(idea.cta || ''),
+      platform: esc(idea.platform || ''),
+      pillar:   esc(idea.pillar || ''),
+      format:   esc(idea.format || ''),
+    };
+    return `
+      <div class="idea-card" id="idea-card-${i}">
+        <div class="idea-meta">
+          <span class="idea-badge idea-badge-platform">${escaped.platform}</span>
+          <span class="idea-badge idea-badge-pillar">${escaped.pillar}</span>
+          <span class="idea-badge idea-badge-format">${escaped.format}</span>
+        </div>
+        <div class="idea-hook">${escaped.hook}</div>
+        <div class="idea-caption">${escaped.caption}</div>
+        <div class="idea-cta-line">CTA: ${escaped.cta}</div>
+        <div class="idea-actions">
+          <button class="btn-copy-hook" onclick="copyHook(${i})">Copy Hook</button>
+          <button class="btn-save-idea" id="save-btn-${i}" onclick="saveIdea(${i})">+ Save Idea</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function copyHook(i) {
+  const idea = _csIdeas[i];
+  if (!idea) return;
+  navigator.clipboard.writeText(idea.hook || '').then(() => {
+    const btn = document.querySelector(`#idea-card-${i} .btn-copy-hook`);
+    if (btn) { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy Hook'; }, 2000); }
+  });
+}
+
+function saveIdea(i) {
+  const idea = _csIdeas[i];
+  if (!idea) return;
+  const saved = getSavedIdeas();
+  saved.unshift({ ...idea, savedAt: new Date().toISOString() });
+  localStorage.setItem(CS_SAVED_KEY, JSON.stringify(saved));
+  const btn = document.getElementById('save-btn-' + i);
+  if (btn) { btn.textContent = '✓ Saved'; btn.classList.add('saved'); btn.disabled = true; }
+  renderSavedIdeas();
+}
+
+function getSavedIdeas() {
+  try { return JSON.parse(localStorage.getItem(CS_SAVED_KEY) || '[]'); } catch { return []; }
+}
+
+function renderSavedIdeas() {
+  const saved = getSavedIdeas();
+  const section = document.getElementById('csSavedSection');
+  const list    = document.getElementById('csSavedList');
+  const count   = document.getElementById('csSavedCount');
+  if (!section) return;
+  if (saved.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'flex';
+  count.textContent = `(${saved.length})`;
+  list.innerHTML = saved.map((idea, i) => `
+    <div class="saved-idea-row">
+      <div style="flex:1;">
+        <div class="saved-idea-hook">${esc(idea.hook || '')}</div>
+        <div class="saved-idea-meta">${esc(idea.platform||'')} · ${esc(idea.pillar||'')} · ${esc(idea.format||'')} · ${new Date(idea.savedAt).toLocaleDateString()}</div>
+      </div>
+      <button class="btn-del-idea" onclick="deleteSavedIdea(${i})" title="Remove">×</button>
+    </div>`).join('');
+}
+
+function deleteSavedIdea(i) {
+  const saved = getSavedIdeas();
+  saved.splice(i, 1);
+  localStorage.setItem(CS_SAVED_KEY, JSON.stringify(saved));
+  renderSavedIdeas();
+}
+
+function clearAllSaved() {
+  if (!confirm('Clear all saved ideas?')) return;
+  localStorage.removeItem(CS_SAVED_KEY);
+  renderSavedIdeas();
+}
+
+/* ══════════════════════════════════════════════
+   SCHEDULE TAB
+══════════════════════════════════════════════ */
+const CS_WEEK_KEY  = 'mtm_sched_week_v1';
+const CS_MONTH_KEY = 'mtm_sched_month_v1';
+
+const CS_WEEKLY_SESSIONS = [
+  { id:'mon', day:'Monday',    pill:'pill-purple', name:'Strategy & writing',               dur:'30 min', open:true,
+    sections:[
+      { label:'Review', tasks:[
+        {t:'Check last week\'s performance in Meta Business Suite and LinkedIn Analytics',tag:'plan'},
+        {t:'Note which format, pillar, or hook got the most reach and engagement',tag:'plan'},
+      ]},
+      { label:'Plan this week', tasks:[
+        {t:'Confirm this week\'s posts from the content calendar — lock the topics',tag:'plan'},
+        {t:'Adjust any topics based on what\'s timely or trending this week',tag:'plan'},
+      ]},
+      { label:'Write in batch', tasks:[
+        {t:'Draft all captions for the week using the formula guide — draft first, edit later',tag:'write'},
+        {t:'Write LinkedIn long-form post for Sunday (refine later)',tag:'write'},
+        {t:'Set up scheduling queue in Meta Business Suite',tag:'plan'},
+      ]},
+    ]
+  },
+  { id:'wed', day:'Wednesday', pill:'pill-amber',  name:'Film + graphics — main production', dur:'90 min', open:true,
+    sections:[
+      { label:'Filming block (45–60 min)', tasks:[
+        {t:'Set up filming space once — ring light, clean background, audio check',tag:'video'},
+        {t:'Film this week\'s Reel or skit — hook in the first 2 seconds',tag:'video'},
+        {t:'Film a second clip back-to-back while already set up — banks next week',tag:'video'},
+        {t:'Record screen-capture walkthrough if doing an AI/automation topic',tag:'video'},
+        {t:'Review clips immediately — keep the best take, move on',tag:'video'},
+      ]},
+      { label:'Edit (15 min)', tasks:[
+        {t:'Add captions/subtitles in CapCut — always on',tag:'video'},
+        {t:'Add text hook overlay on first frame — bold, readable',tag:'video'},
+        {t:'Export 1080x1920 for Reels',tag:'video'},
+      ]},
+      { label:'Graphics block (30 min)', tasks:[
+        {t:'Open Canva — load MTM brand kit (colors, fonts, logo)',tag:'design'},
+        {t:'Design this week\'s static graphic (quote card, stat post, or carousel)',tag:'design'},
+        {t:'Design one extra graphic while in flow — bank it for next week',tag:'design'},
+        {t:'Export at 1080x1080 (feed) or 1080x1350 (portrait)',tag:'design'},
+      ]},
+    ]
+  },
+  { id:'fri', day:'Friday',    pill:'pill-green',  name:'Publish + engage',                  dur:'45 min', open:false,
+    sections:[
+      { label:'Final publish review (10 min)', tasks:[
+        {t:'Confirm all scheduled posts are queued correctly in Meta Business Suite',tag:'plan'},
+        {t:'Review captions one final time — tighten the hook, check for typos',tag:'write'},
+      ]},
+      { label:'Google Business (5 min)', tasks:[
+        {t:'Write and publish this week\'s Google Business post (50–150 words + photo)',tag:'write'},
+        {t:'Include a local keyword naturally: "Londonderry NH", "Southern NH businesses"',tag:'write'},
+      ]},
+      { label:'Engagement routine (30 min)', tasks:[
+        {t:'Reply to every comment on posts this week — no exceptions',tag:'engage'},
+        {t:'Respond to all DMs and mentions within 24 hours',tag:'engage'},
+        {t:'Leave 5 genuine comments on local NH business pages',tag:'engage'},
+        {t:'Comment on 5 posts from trades or local business owners on LinkedIn',tag:'engage'},
+        {t:'Send 1–2 LinkedIn connection requests with personalized notes',tag:'engage'},
+      ]},
+    ]
+  },
+  { id:'sun', day:'Sunday',    pill:'pill-blue',   name:'LinkedIn + look ahead',             dur:'30 min', open:false,
+    sections:[
+      { label:'LinkedIn post (15 min)', tasks:[
+        {t:'Finalize and publish your LinkedIn long-form post (drafted Monday)',tag:'write'},
+        {t:'First line must hook on its own — that\'s all they see before "see more"',tag:'write'},
+        {t:'Post between 7–9pm EST Sunday for peak Monday morning reach',tag:'plan'},
+      ]},
+      { label:'Look ahead (15 min)', tasks:[
+        {t:'Glance at next week\'s calendar — confirm topics still make sense',tag:'plan'},
+        {t:'Note trending topics to weave in this week',tag:'plan'},
+        {t:'Flag if Wednesday filming needs props, setup changes, or screen content prepped',tag:'plan'},
+      ]},
+    ]
+  },
+];
+
+const CS_MONTHLY_SESSIONS = [
+  { id:'mb1', day:'Block 1', pill:'pill-blue',   name:'Review last month\'s numbers',         dur:'20 min', open:true,
+    sections:[
+      { label:'Pull analytics', tasks:[
+        {t:'Open Meta Business Suite — note reach, engagement, and top 3 posts',tag:'plan'},
+        {t:'Open LinkedIn Analytics — note impressions and profile visits',tag:'plan'},
+        {t:'Check Google Business insights — views, calls, direction requests',tag:'plan'},
+        {t:'Write down what worked and what didn\'t (2–3 sentences, be honest)',tag:'write'},
+      ]},
+    ]
+  },
+  { id:'mb2', day:'Block 2', pill:'pill-purple', name:'Build next month\'s content calendar',  dur:'25 min', open:true,
+    sections:[
+      { label:'Plan the month', tasks:[
+        {t:'Map 4 weeks × posting days onto a Google Sheet or Notion calendar',tag:'plan'},
+        {t:'Assign a pillar to every slot — aim for 40% P1 / 35% P2 / 25% P3+',tag:'plan'},
+        {t:'Write specific content concepts — not "a video", a real hook idea',tag:'plan'},
+        {t:'Flag which posts need filming (F) vs. graphics only (G)',tag:'plan'},
+        {t:'Identify your 4 Wednesday filming sessions and what you\'ll shoot each one',tag:'plan'},
+      ]},
+    ]
+  },
+  { id:'mb3', day:'Block 3', pill:'pill-amber',  name:'Batch film the whole month',            dur:'60–75 min', open:false,
+    sections:[
+      { label:'Prep', tasks:[
+        {t:'List every video clip needed this month from the calendar (4–8 clips)',tag:'plan'},
+        {t:'Write a one-line script/outline for each clip — hook, main point, CTA',tag:'write'},
+        {t:'Set up filming space once: light, backdrop, mic, phone on tripod',tag:'video'},
+      ]},
+      { label:'Film', tasks:[
+        {t:'Film all talking head / tip clips in sequence — don\'t break down between',tag:'video'},
+        {t:'Film all skit/POV clips (allow 10 min changeover if setup changes)',tag:'video'},
+        {t:'Record screen capture content in one block',tag:'video'},
+        {t:'Review every clip before moving on — bad take now = wasted editing time later',tag:'video'},
+      ]},
+      { label:'After filming', tasks:[
+        {t:'Label and organize clips by week (Week1-clip1, Week2-clip1, etc.)',tag:'plan'},
+        {t:'Rough trim on any clips that need it — don\'t fully edit yet',tag:'video'},
+      ]},
+    ]
+  },
+  { id:'mb4', day:'Block 4', pill:'pill-amber',  name:'Batch design all graphics',             dur:'30–40 min', open:false,
+    sections:[
+      { label:'In Canva', tasks:[
+        {t:'Open MTM brand kit — confirm colors, fonts, and logo are set',tag:'design'},
+        {t:'Design all quote cards for the month using the saved MTM template',tag:'design'},
+        {t:'Design all stat/hook graphics — bold type, one stat, one line of context',tag:'design'},
+        {t:'Build any carousels needed (5–7 slides, one idea per slide)',tag:'design'},
+        {t:'Export all graphics organized by week into labeled folders',tag:'design'},
+      ]},
+    ]
+  },
+  { id:'mb5', day:'Block 5', pill:'pill-blue',   name:'Write all captions for the month',      dur:'30 min', open:false,
+    sections:[
+      { label:'Caption bank', tasks:[
+        {t:'Draft a caption for every post using a formula from the playbook',tag:'write'},
+        {t:'Start with the hook — if the first line isn\'t strong, rewrite it now',tag:'write'},
+        {t:'Include a CTA in at least 50% of captions',tag:'write'},
+        {t:'Add relevant hashtag sets (5–10 per post)',tag:'write'},
+        {t:'Store all captions in a Google Doc organized by post date',tag:'write'},
+      ]},
+    ]
+  },
+  { id:'mb6', day:'Block 6', pill:'pill-green',  name:'Schedule everything possible',          dur:'15–20 min', open:false,
+    sections:[
+      { label:'Load the queue', tasks:[
+        {t:'Schedule Week 1 posts in Meta Business Suite (IG + FB together)',tag:'plan'},
+        {t:'Schedule Week 1 LinkedIn posts in Buffer',tag:'plan'},
+        {t:'Schedule Week 2 if content is fully ready — get as far ahead as possible',tag:'plan'},
+        {t:'Set calendar reminders for all Wednesday sessions and Friday checks',tag:'plan'},
+        {t:'Month is locked — weekly sessions are now execution only, not planning',tag:'plan'},
+      ]},
+    ]
+  },
+];
+
+let _csSchedView = 'weekly';
+const TAG_CLS = { video:'tag-c-video', design:'tag-c-design', write:'tag-c-write', engage:'tag-c-engage', plan:'tag-c-plan' };
+const TAG_LBL = { video:'film', design:'design', write:'write', engage:'engage', plan:'plan' };
+
+function csSchedInit() {
+  csSchedView(_csSchedView, document.querySelector('.sched-toggle-btn'));
+}
+
+function csSchedView(view, btn) {
+  _csSchedView = view;
+  document.querySelectorAll('.sched-toggle-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.getElementById('csSchedResetBtn').textContent = view === 'weekly' ? 'Reset this week' : 'Reset this month';
+  renderSchedSessions();
+}
+
+function getSchedState(view) {
+  const key = view === 'weekly' ? CS_WEEK_KEY : CS_MONTH_KEY;
+  try { return JSON.parse(localStorage.getItem(key) || '{}'); } catch { return {}; }
+}
+function saveSchedState(view, state) {
+  localStorage.setItem(view === 'weekly' ? CS_WEEK_KEY : CS_MONTH_KEY, JSON.stringify(state));
+}
+
+function renderSchedSessions() {
+  const view = _csSchedView;
+  const sessions = view === 'weekly' ? CS_WEEKLY_SESSIONS : CS_MONTHLY_SESSIONS;
+  const state = getSchedState(view);
+  const wrap = document.getElementById('csSchedSessions');
+  let totalTasks = 0, doneTasks = 0;
+
+  wrap.innerHTML = sessions.map(sess => {
+    let sDone = 0, sTotal = 0;
+    const secHtml = sess.sections.map((sec, si) => {
+      const taskHtml = sec.tasks.map((task, ti) => {
+        const key = sess.id + '-' + si + '-' + ti;
+        const done = !!state[key];
+        sDone += done ? 1 : 0; sTotal++; doneTasks += done ? 1 : 0; totalTasks++;
+        return `<div class="sched-task" onclick="toggleSchedTask('${key}','${view}')">
+          <div class="sched-check${done?' done':''}"></div>
+          <span class="sched-task-text${done?' done':''}">${esc(task.t)}</span>
+          <span class="sched-task-tag ${TAG_CLS[task.tag]||''}">${TAG_LBL[task.tag]||''}</span>
+        </div>`;
+      }).join('');
+      return `<div class="sched-sec-label">${esc(sec.label)}</div>${taskHtml}`;
+    }).join('');
+
+    const pct = sTotal ? Math.round(sDone / sTotal * 100) : 0;
+    const isOpen = sess.open || (state['__open__'+sess.id]);
+    return `<div class="sched-session">
+      <div class="sched-session-hd" onclick="toggleSchedSession('${sess.id}','${view}')">
+        <span class="sched-day-pill ${sess.pill}">${esc(sess.day)}</span>
+        <span class="sched-session-name">${esc(sess.name)}</span>
+        <span class="sched-session-dur">${esc(sess.dur)}</span>
+        <span class="sched-session-prog">${sDone}/${sTotal}</span>
+        <span class="sched-chevron${isOpen?' open':''}" id="cs-chev-${sess.id}">▼</span>
+      </div>
+      <div class="sched-prog-bar visible"><div class="sched-prog-fill" style="width:${pct}%"></div></div>
+      <div class="sched-session-body${isOpen?' open':''}" id="cs-body-${sess.id}">${secHtml}</div>
+    </div>`;
+  }).join('');
+
+  // Stats bar
+  const weekPct = totalTasks ? Math.round(doneTasks / totalTasks * 100) : 0;
+  document.getElementById('csSchedStats').innerHTML = `
+    <div class="sched-stat"><div class="sched-stat-num">${totalTasks}</div><div class="sched-stat-lbl">total tasks</div></div>
+    <div class="sched-stat"><div class="sched-stat-num">${doneTasks}</div><div class="sched-stat-lbl">completed</div></div>
+    <div class="sched-stat"><div class="sched-stat-num">${totalTasks - doneTasks}</div><div class="sched-stat-lbl">remaining</div></div>
+    <div class="sched-stat"><div class="sched-stat-num">${weekPct}%</div><div class="sched-stat-lbl">done</div></div>`;
+}
+
+function toggleSchedSession(id, view) {
+  const body = document.getElementById('cs-body-' + id);
+  const chev = document.getElementById('cs-chev-' + id);
+  const open = body.classList.contains('open');
+  body.classList.toggle('open', !open);
+  chev.classList.toggle('open', !open);
+  // Persist open state
+  const state = getSchedState(view);
+  state['__open__' + id] = !open;
+  saveSchedState(view, state);
+}
+
+function toggleSchedTask(key, view) {
+  const state = getSchedState(view);
+  state[key] = !state[key];
+  saveSchedState(view, state);
+  renderSchedSessions();
+}
+
+function csResetSched() {
+  const label = _csSchedView === 'weekly' ? 'this week' : 'this month';
+  if (!confirm('Reset all checkboxes for ' + label + '?')) return;
+  const key = _csSchedView === 'weekly' ? CS_WEEK_KEY : CS_MONTH_KEY;
+  localStorage.removeItem(key);
+  renderSchedSessions();
+}
+
+/* ══════════════════════════════════════════════
+   MTM ANALYTICS TAB
+══════════════════════════════════════════════ */
+let _mtmAnalyticsLoaded = false;
+
+function csAnalyticsInit() { /* Triggered when panel opens — analytics loads on tab click */ }
+
+async function loadMTMAnalytics() {
+  const setup   = document.getElementById('csAnalyticsSetup');
+  const dataWrap= document.getElementById('csAnalyticsData');
+  const loading = document.getElementById('csAnalyticsLoading');
+  const content = document.getElementById('csAnalyticsContent');
+  const refresh = document.getElementById('csRefreshBtn');
+
+  if (refresh) { refresh.disabled = true; refresh.textContent = '↻ Loading...'; }
+  dataWrap.style.display = 'flex';
+  loading.style.display = 'block';
+  content.style.display = 'none';
+  setup.style.display = 'none';
+
+  try {
+    const res = await fetch('/api/mtm-analytics', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ month: new Date().getMonth() + 1, year: new Date().getFullYear() })
+    });
+    const data = await res.json();
+
+    loading.style.display = 'none';
+    if (refresh) { refresh.disabled = false; refresh.textContent = '↻ Refresh'; }
+
+    if (data.notConfigured) {
+      // MTM_GHL_SECRET not set in env — show setup instructions
+      dataWrap.style.display = 'none';
+      setup.style.display = 'flex';
+      return;
+    }
+    if (!data.success) {
+      content.style.display = 'flex';
+      document.getElementById('csMetricGrid').innerHTML =
+        `<div style="grid-column:1/-1;font-size:13px;color:#f87171;padding:8px 0;">${esc(data.error||'Failed to load analytics.')}</div>`;
+      return;
+    }
+
+    renderMTMAnalytics(data);
+    content.style.display = 'flex';
+    _mtmAnalyticsLoaded = true;
+
+  } catch {
+    loading.style.display = 'none';
+    if (refresh) { refresh.disabled = false; refresh.textContent = '↻ Refresh'; }
+    dataWrap.style.display = 'none';
+    setup.style.display = 'flex';
+  }
+}
+
+function renderMTMAnalytics(data) {
+  const ghl  = data.ghl  || {};
+  const meta = data.meta || {};
+  const ga4  = data.ga4  || null;
+
+  document.getElementById('csAnalyticsTitle').textContent  = 'MTM Analytics';
+  document.getElementById('csAnalyticsPeriod').textContent = (data.period?.label || '') + ' · Live';
+
+  // ── GHL Metric Cards ───────────────────────────────────────────────
+  document.getElementById('csMetricGrid').innerHTML = `
+    <div class="cs-metric hl">
+      <div class="cs-metric-label">Total Leads</div>
+      <div class="cs-metric-value blue">${fmtNum(ghl.totalLeads)}</div>
+      <div class="cs-metric-sub">Top: ${esc(ghl.topSource||'—')}</div>
+    </div>
+    <div class="cs-metric hl">
+      <div class="cs-metric-label">Won Revenue</div>
+      <div class="cs-metric-value green">${fmtCurrency(ghl.wonRevenue)}</div>
+      <div class="cs-metric-sub">${fmtNum(ghl.wonDeals)} deal${ghl.wonDeals!==1?'s':''} closed</div>
+    </div>
+    <div class="cs-metric">
+      <div class="cs-metric-label">Open Pipeline</div>
+      <div class="cs-metric-value">${fmtCurrency(ghl.openPipelineValue)}</div>
+      <div class="cs-metric-sub">${fmtNum(ghl.openDeals)} open opportunities</div>
+    </div>
+    <div class="cs-metric">
+      <div class="cs-metric-label">Lost Deals</div>
+      <div class="cs-metric-value">${fmtNum(ghl.lostDeals)}</div>
+      <div class="cs-metric-sub">This period</div>
+    </div>`;
+
+  // ── Lead Sources ───────────────────────────────────────────────────
+  const sources = ghl.leadSources || [];
+  if (sources.length > 0) {
+    document.getElementById('csSourcesSection').style.display = 'block';
+    document.getElementById('csSourcesList').innerHTML = sources.map(s => `
+      <div class="cs-source-row">
+        <span class="cs-source-name">${esc(s.source)}</span>
+        <div class="cs-source-bar-wrap"><div class="cs-source-bar" style="width:${s.percentage||0}%"></div></div>
+        <span class="cs-source-pct">${s.percentage||0}%</span>
+      </div>`).join('');
+  }
+
+  // ── Open Pipeline ──────────────────────────────────────────────────
+  const pipeline = ghl.openOpportunities || [];
+  if (pipeline.length > 0) {
+    document.getElementById('csPipelineSection').style.display = 'block';
+    document.getElementById('csPipelineList').innerHTML = pipeline.slice(0, 8).map(op => `
+      <div class="deal-row">
+        <span class="deal-name">${esc(op.name||op.contactName||'—')}</span>
+        <span class="deal-source">${esc(op.stage||'')}</span>
+        <span class="deal-value">${fmtCurrency(op.value)}</span>
+      </div>`).join('');
+  }
+
+  // ── Meta (Facebook + Instagram) ────────────────────────────────────
+  const metaWrap = document.getElementById('csMetaSection');
+  if (meta.facebook || meta.instagram) {
+    metaWrap.style.display = 'block';
+    let metaHtml = '';
+
+    if (meta.facebook && !meta.facebook.error) {
+      const fb = meta.facebook;
+      metaHtml += `
+        <div style="margin-bottom:14px;">
+          <div class="cs-saved-label" style="margin-bottom:8px;">Facebook Page</div>
+          <div class="cs-analytics-grid">
+            <div class="cs-metric"><div class="cs-metric-label">Followers</div><div class="cs-metric-value">${fmtNum(fb.followers)}</div></div>
+            <div class="cs-metric"><div class="cs-metric-label">Reach (this month)</div><div class="cs-metric-value blue">${fmtNum(fb.reach28Days)}</div></div>
+            <div class="cs-metric"><div class="cs-metric-label">New Followers</div><div class="cs-metric-value green">+${fmtNum(fb.newFollowers28Days)}</div></div>
+            <div class="cs-metric"><div class="cs-metric-label">Engaged Users</div><div class="cs-metric-value">${fmtNum(fb.engagedUsers28Days)}</div></div>
+          </div>
+        </div>`;
+    }
+
+    if (meta.instagram && !meta.instagram.error) {
+      const ig = meta.instagram;
+      metaHtml += `
+        <div style="margin-bottom:${ig.recentPosts?.length > 0 ? '14' : '0'}px;">
+          <div class="cs-saved-label" style="margin-bottom:8px;">Instagram</div>
+          <div class="cs-analytics-grid">
+            <div class="cs-metric"><div class="cs-metric-label">Followers</div><div class="cs-metric-value">${fmtNum(ig.followers)}</div></div>
+            <div class="cs-metric"><div class="cs-metric-label">Reach (28 days)</div><div class="cs-metric-value blue">${fmtNum(ig.reach28Days)}</div></div>
+            <div class="cs-metric"><div class="cs-metric-label">Impressions</div><div class="cs-metric-value">${fmtNum(ig.impressions28Days)}</div></div>
+            <div class="cs-metric"><div class="cs-metric-label">Profile Views</div><div class="cs-metric-value">${fmtNum(ig.profileViews28Days)}</div></div>
+          </div>
+        </div>`;
+
+      if (ig.recentPosts && ig.recentPosts.length > 0) {
+        metaHtml += `
+          <div class="cs-saved-label" style="margin-bottom:8px;">Recent Posts</div>
+          ${ig.recentPosts.map(post => {
+            const d = new Date(post.timestamp);
+            const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+            return `<div class="deal-row">
+              <span class="deal-name" style="font-size:12px;">${dateStr} · ${esc(post.type||'IMAGE')}</span>
+              <span class="deal-source">❤ ${fmtNum(post.likes)}</span>
+              <span class="deal-source">💬 ${fmtNum(post.comments)}</span>
+              ${post.url ? `<a href="${esc(post.url)}" target="_blank" style="font-size:11px;color:var(--accent-light);text-decoration:none;">View →</a>` : ''}
+            </div>`;
+          }).join('')}`;
+      }
+    }
+
+    document.getElementById('csMetaList').innerHTML = metaHtml;
+  } else {
+    // Meta not configured — show a quiet setup nudge, not an error
+    metaWrap.style.display = 'block';
+    document.getElementById('csMetaList').innerHTML = `
+      <div style="font-size:12px;color:var(--mid);font-style:italic;padding:4px 0;">
+        Facebook &amp; Instagram data not connected.
+        Add <code style="background:var(--dark);padding:1px 5px;border-radius:3px;font-size:11px;">MTM_META_PAGE_TOKEN</code>,
+        <code style="background:var(--dark);padding:1px 5px;border-radius:3px;font-size:11px;">MTM_META_PAGE_ID</code>, and
+        <code style="background:var(--dark);padding:1px 5px;border-radius:3px;font-size:11px;">MTM_META_IG_USER_ID</code>
+        to your Cloudflare env vars to enable this section. Setup guide is in the function file.
+      </div>`;
+  }
+
+  // ── GA4 ────────────────────────────────────────────────────────────
+  const ga4Wrap = document.getElementById('csGA4Section');
+  if (ga4 && !ga4.error) {
+    ga4Wrap.style.display = 'block';
+    const channels = ga4.trafficChannels || [];
+    document.getElementById('csGA4List').innerHTML = `
+      <div class="cs-analytics-grid" style="margin-bottom:12px;">
+        <div class="cs-metric"><div class="cs-metric-label">Sessions</div><div class="cs-metric-value">${fmtNum(ga4.sessions)}</div></div>
+        <div class="cs-metric"><div class="cs-metric-label">Users</div><div class="cs-metric-value">${fmtNum(ga4.users)}</div></div>
+        <div class="cs-metric"><div class="cs-metric-label">Bounce Rate</div><div class="cs-metric-value">${ga4.bounceRate??'—'}%</div></div>
+        <div class="cs-metric"><div class="cs-metric-label">Avg Session</div><div class="cs-metric-value">${fmtDuration(ga4.avgSessionDurationSec)}</div></div>
+      </div>
+      ${channels.length > 0 ? `
+        <div class="cs-saved-label" style="margin-bottom:8px;">Traffic Channels</div>
+        ${channels.map(ch => {
+          const pct = ga4.sessions > 0 ? Math.round((ch.sessions / ga4.sessions) * 100) : 0;
+          return `<div class="cs-source-row">
+            <span class="cs-source-name">${esc(ch.channel)}</span>
+            <div class="cs-source-bar-wrap"><div class="cs-source-bar" style="width:${pct}%"></div></div>
+            <span class="cs-source-pct">${pct}%</span>
+          </div>`;
+        }).join('')}` : ''}`;
+  } else {
+    ga4Wrap.style.display = 'block';
+    document.getElementById('csGA4List').innerHTML = `
+      <div style="font-size:12px;color:var(--mid);font-style:italic;padding:4px 0;">
+        GA4 data not connected. Add <code style="background:var(--dark);padding:1px 5px;border-radius:3px;font-size:11px;">MTM_GA4_PROPERTY_ID</code>
+        to your Cloudflare env vars and make sure Google is connected (header button).
+      </div>`;
+  }
+}
+
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </body>
