@@ -31,6 +31,8 @@
 
 export async function onRequestPost(context) {
   const { request, env } = context;
+  const t0 = Date.now();
+  const ts = () => `[+${((Date.now() - t0) / 1000).toFixed(1)}s]`;
 
   const headers = {
     'Content-Type': 'application/json',
@@ -40,6 +42,7 @@ export async function onRequestPost(context) {
   try {
     const body = await request.json();
     const { businessName, city, websiteUrl, tone } = body;
+    console.log(`${ts()} [wgen] request received: business="${businessName}" city="${city}" url="${websiteUrl || ''}" tone="${tone || ''}"`);
 
     if (!businessName || !city) {
       return new Response(
@@ -57,19 +60,26 @@ export async function onRequestPost(context) {
 
     // ─── STAGE A — RESEARCH ─────────────────────────────────────────
     // Web-search Claude to build the structured template that drives generation.
+    console.log(`${ts()} [wgen] STAGE A research START`);
     const research = await runResearch({
       businessName, city, websiteUrl,
       toneOverride: tone,
       apiKey: env.ANTHROPIC_API_KEY,
+      log: (msg) => console.log(`${ts()} [wgen][A] ${msg}`),
     });
+    console.log(`${ts()} [wgen] STAGE A research DONE — services=${research.services?.length || 0} confidence=${research.researchNotes?.researchConfidence || 'n/a'}`);
 
     // ─── STAGE B — GENERATION ───────────────────────────────────────
     // Hand the research blob to Claude with the multi-file generation prompt.
+    console.log(`${ts()} [wgen] STAGE B generation START`);
     const files = await runGeneration({
       research,
       apiKey: env.ANTHROPIC_API_KEY,
+      log: (msg) => console.log(`${ts()} [wgen][B] ${msg}`),
     });
+    console.log(`${ts()} [wgen] STAGE B generation DONE — files=${Object.keys(files).length} totalBytes=${Object.values(files).reduce((n, c) => n + c.length, 0)}`);
 
+    console.log(`${ts()} [wgen] returning success response`);
     return new Response(
       JSON.stringify({
         success: true,
@@ -82,7 +92,7 @@ export async function onRequestPost(context) {
     );
 
   } catch (err) {
-    console.error('Website generator error:', err.message, err.stack?.slice(0, 500));
+    console.error(`${ts()} [wgen] ERROR:`, err.message, err.stack?.slice(0, 500));
     return new Response(
       JSON.stringify({ error: err.message || 'Something went wrong. Please try again.' }),
       { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
@@ -102,7 +112,7 @@ export async function onRequestOptions() {
 
 // ─── STAGE A — RESEARCH CALL ──────────────────────────────────────────────────
 
-async function runResearch({ businessName, city, websiteUrl, toneOverride, apiKey }) {
+async function runResearch({ businessName, city, websiteUrl, toneOverride, apiKey, log = () => {} }) {
   const userMessage = websiteUrl
     ? `Research this business and produce the structured JSON template:\n\nBusiness: "${businessName}"\nLocation: "${city}"\nWebsite: ${websiteUrl}\n\nSearch their existing site, Google Business profile, and any active social presence. Extract real services, real prices if listed publicly, real brand colors, real review language. Return ONLY the JSON.`
     : `Research this business and produce the structured JSON template:\n\nBusiness: "${businessName}"\nLocation: "${city}"\n\nFind their existing website if one exists. Search Google Business profile, Yelp, Facebook, Instagram. Extract real services, real prices if listed publicly, brand colors from any visual assets you can find, review language. If they have no web presence at all, infer reasonable defaults from the industry + location. Return ONLY the JSON.`;
@@ -183,6 +193,7 @@ CRITICAL: Your ENTIRE response must be a single valid JSON object. Start with { 
 
 Aim for 4-6 services, 3-4 testimonials, 4-5 FAQs. If you can't find real data for a section, fill in industry-typical defaults but flag researchConfidence accordingly.`;
 
+  log('fetch -> api.anthropic.com (research)');
   const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -210,6 +221,7 @@ Aim for 4-6 services, 3-4 testimonials, 4-5 FAQs. If you can't find real data fo
       ]
     })
   });
+  log(`anthropic response status=${apiResponse.status}`);
 
   if (!apiResponse.ok) {
     const errText = await apiResponse.text();
@@ -220,6 +232,7 @@ Aim for 4-6 services, 3-4 testimonials, 4-5 FAQs. If you can't find real data fo
   }
 
   const apiData = await apiResponse.json();
+  log(`response parsed; usage=${JSON.stringify(apiData.usage || {})}`);
 
   const textContent = apiData.content
     .filter(block => block.type === 'text')
@@ -250,8 +263,9 @@ Aim for 4-6 services, 3-4 testimonials, 4-5 FAQs. If you can't find real data fo
 
 // ─── STAGE B — GENERATION CALL ────────────────────────────────────────────────
 
-async function runGeneration({ research, apiKey }) {
+async function runGeneration({ research, apiKey, log = () => {} }) {
   const prompt = buildGenerationPrompt(research);
+  log(`prompt built; chars=${prompt.length}`);
 
   // Brief pause between Stage A and Stage B. Stage A finishes with
   // accumulated web_search results in the input-token-per-minute budget;
@@ -259,6 +273,7 @@ async function runGeneration({ research, apiKey }) {
   // collisions on the 30K/min Tier 1 cap.
   await new Promise(r => setTimeout(r, 1500));
 
+  log('fetch -> api.anthropic.com (generation, max_tokens=32000)');
   const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -280,6 +295,7 @@ async function runGeneration({ research, apiKey }) {
       ] }],
     })
   });
+  log(`anthropic response status=${apiResponse.status}`);
 
   if (!apiResponse.ok) {
     const errText = await apiResponse.text();
@@ -290,6 +306,7 @@ async function runGeneration({ research, apiKey }) {
   }
 
   const apiData = await apiResponse.json();
+  log(`response parsed; stop_reason=${apiData.stop_reason} usage=${JSON.stringify(apiData.usage || {})}`);
 
   const stopReason = apiData.stop_reason;
   if (stopReason === 'max_tokens') {
@@ -304,12 +321,15 @@ async function runGeneration({ research, apiKey }) {
   if (!textContent) {
     throw new Error('Generation stage returned no text content.');
   }
+  log(`raw text chars=${textContent.length}`);
 
   // Parse the multi-file output.
   const files = extractFiles(textContent);
+  log(`extracted files=${Object.keys(files).join(',')}`);
 
   // Validate the critical files exist and have the placeholder contract intact.
   validateFiles(files, research);
+  log('validation passed');
 
   return files;
 }
