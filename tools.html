@@ -1016,6 +1016,13 @@
   .wgen-tone-opt { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 9px 6px; font-family: var(--sans); font-size: 12px; color: var(--gray); cursor: pointer; text-align: center; transition: all .15s; user-select: none; }
   .wgen-tone-opt:hover { border-color: var(--gray); color: var(--white); }
   .wgen-tone-opt.selected { background: rgba(45,107,228,.12); border-color: var(--accent); color: var(--accent-light); }
+  /* Site-type pills — same visual language as tone, broader-purpose row */
+  .wgen-stype-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .wgen-stype-opt { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 11px 6px; font-family: var(--sans); font-size: 12px; color: var(--gray); cursor: pointer; text-align: center; transition: all .15s; user-select: none; line-height: 1.3; }
+  .wgen-stype-opt:hover { border-color: var(--gray); color: var(--white); }
+  .wgen-stype-opt.selected { background: rgba(45,107,228,.12); border-color: var(--accent); color: var(--accent-light); }
+  .wgen-stype-opt .wgen-stype-sub { display: block; font-size: 10px; color: var(--gray); margin-top: 2px; opacity: .8; }
+  .wgen-stype-opt.selected .wgen-stype-sub { color: var(--accent-light); opacity: .85; }
   .wgen-result-wrap { display: none; flex-direction: column; gap: 14px; }
   .wgen-result-wrap.show { display: flex; }
   .wgen-result-header { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
@@ -1072,6 +1079,17 @@
         <div class="panel-field">
           <label class="panel-label" for="wgenUrl">Existing Website URL <span>(optional — sharpens accuracy)</span></label>
           <input type="text" id="wgenUrl" class="panel-input" placeholder="e.g. https://riversidehvac.com"/>
+        </div>
+        <div class="panel-field">
+          <label class="panel-label">Site Type <span>(picks the structural template)</span></label>
+          <div class="wgen-stype-row" id="wgenSiteTypeRow">
+            <div class="wgen-stype-opt" data-stype="brochure">Brochure<span class="wgen-stype-sub">general SMB site</span></div>
+            <div class="wgen-stype-opt" data-stype="service-business">Service<span class="wgen-stype-sub">trades, booking-led</span></div>
+            <div class="wgen-stype-opt" data-stype="inventory">Inventory<span class="wgen-stype-sub">dealer / catalog</span></div>
+            <div class="wgen-stype-opt" data-stype="restaurant">Restaurant<span class="wgen-stype-sub">menu + reservations</span></div>
+            <div class="wgen-stype-opt" data-stype="real-estate">Real Estate<span class="wgen-stype-sub">listings + agents</span></div>
+            <div class="wgen-stype-opt" data-stype="portfolio">Portfolio<span class="wgen-stype-sub">creative / freelance</span></div>
+          </div>
         </div>
         <div class="panel-field">
           <label class="panel-label">Brand Tone <span>(optional — let AI decide if blank)</span></label>
@@ -3425,6 +3443,7 @@ function renderMTMAnalytics(data) {
 
 let _wgenLastResult = null;        // holds the most recent { businessName, slug, files, research }
 let _wgenSelectedTone = '';        // empty string = let AI decide
+let _wgenSelectedSiteType = 'brochure'; // structural template choice — passed to backend; defaults to brochure
 
 function openWebsiteGenPanel() {
   const panel = document.getElementById('wgen-panel');
@@ -3456,24 +3475,45 @@ function resetWgenPanel() {
   document.querySelectorAll('#wgenToneRow .wgen-tone-opt').forEach(el => {
     el.classList.toggle('selected', el.dataset.tone === '');
   });
+  // Reset site-type selector to default (brochure)
+  _wgenSelectedSiteType = 'brochure';
+  document.querySelectorAll('#wgenSiteTypeRow .wgen-stype-opt').forEach(el => {
+    el.classList.toggle('selected', el.dataset.stype === 'brochure');
+  });
   _wgenLastResult = null;
 }
 
-// Wire up tone selector
+// Wire up tone + site-type selectors
 document.addEventListener('DOMContentLoaded', () => {
   const toneRow = document.getElementById('wgenToneRow');
-  if (!toneRow) return;
-  toneRow.addEventListener('click', (e) => {
-    const opt = e.target.closest('.wgen-tone-opt');
-    if (!opt) return;
-    _wgenSelectedTone = opt.dataset.tone || '';
-    document.querySelectorAll('#wgenToneRow .wgen-tone-opt').forEach(el => {
-      el.classList.toggle('selected', el === opt);
+  if (toneRow) {
+    toneRow.addEventListener('click', (e) => {
+      const opt = e.target.closest('.wgen-tone-opt');
+      if (!opt) return;
+      _wgenSelectedTone = opt.dataset.tone || '';
+      document.querySelectorAll('#wgenToneRow .wgen-tone-opt').forEach(el => {
+        el.classList.toggle('selected', el === opt);
+      });
     });
-  });
-  // Default-select "Auto"
-  const autoOpt = toneRow.querySelector('[data-tone=""]');
-  if (autoOpt) autoOpt.classList.add('selected');
+    // Default-select "Auto"
+    const autoOpt = toneRow.querySelector('[data-tone=""]');
+    if (autoOpt) autoOpt.classList.add('selected');
+  }
+
+  const stypeRow = document.getElementById('wgenSiteTypeRow');
+  if (stypeRow) {
+    stypeRow.addEventListener('click', (e) => {
+      const opt = e.target.closest('.wgen-stype-opt');
+      if (!opt) return;
+      _wgenSelectedSiteType = opt.dataset.stype || 'brochure';
+      document.querySelectorAll('#wgenSiteTypeRow .wgen-stype-opt').forEach(el => {
+        el.classList.toggle('selected', el === opt);
+      });
+    });
+    // Default-select "Brochure"
+    const defaultOpt = stypeRow.querySelector('[data-stype="brochure"]');
+    if (defaultOpt) defaultOpt.classList.add('selected');
+  }
 });
 
 async function runWebsiteGen() {
@@ -3497,22 +3537,15 @@ async function runWebsiteGen() {
   document.getElementById('wgenResult').classList.remove('show');
   document.getElementById('wgenError').style.display = 'none';
 
-  // Animate the progress steps. Backend doesn't stream, so this is best-effort
-  // sequencing — research finishes faster than generation, and generation is
-  // the long pole. Steps roll forward on a timer; the actual API call drives
-  // when we land at "complete".
+  // Initial step = research active. The rest of the progress is now driven
+  // by REAL stream events from the backend — no setTimeout fakery.
   setWgenStep('research', 'active');
+  setWgenStep('template', '');
+  setWgenStep('generate', '');
+  setWgenStep('bundle', '');
   document.getElementById('wgenLoadingSub').textContent = 'Researching business via web search…';
-  setTimeout(() => {
-    setWgenStep('research', 'done');
-    setWgenStep('template', 'active');
-    document.getElementById('wgenLoadingSub').textContent = 'Normalizing into template…';
-  }, 8000);
-  setTimeout(() => {
-    setWgenStep('template', 'done');
-    setWgenStep('generate', 'active');
-    document.getElementById('wgenLoadingSub').textContent = 'Generating multi-page HTML — this is the long part…';
-  }, 18000);
+
+  let finalData = null;
 
   try {
     const res = await fetch('/api/website-generate', {
@@ -3522,26 +3555,66 @@ async function runWebsiteGen() {
         businessName, city,
         websiteUrl: websiteUrl || undefined,
         tone: _wgenSelectedTone || undefined,
+        siteType: _wgenSelectedSiteType || 'brochure',
       })
     });
-    const data = await res.json();
 
-    if (!res.ok || !data.success) {
-      throw new Error(data.error || `Server returned ${res.status}`);
+    // If the server bailed before opening the stream (e.g. validation 400 or
+    // env-misconfig 500), the body will still be JSON. Detect that and surface
+    // the message cleanly.
+    if (!res.ok) {
+      let msg = `Server returned ${res.status}`;
+      try {
+        const errJson = await res.json();
+        if (errJson?.error) msg = errJson.error;
+      } catch {}
+      throw new Error(msg);
     }
 
-    // Cache for download
-    _wgenLastResult = data;
+    if (!res.body) {
+      throw new Error('Server returned no response body.');
+    }
 
-    // Roll the rest of the progress visual to done
-    setWgenStep('generate', 'done');
-    setWgenStep('bundle', 'active');
+    // ── NDJSON stream reader ──────────────────────────────────────────────
+    // Read line-delimited JSON events from the Pages Function. Each event
+    // either updates the progress UI or carries the final payload.
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = '';
 
-    // Tiny pause so the user sees the bundle step land
-    await new Promise(r => setTimeout(r, 300));
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || ''; // keep the last partial line for next read
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed) continue;
+        let evt;
+        try { evt = JSON.parse(trimmed); } catch { continue; }
+        handleWgenEvent(evt, (data) => { finalData = data; });
+      }
+    }
+
+    // Drain any final partial line in the buffer (server should always end
+    // with a newline, but be defensive).
+    if (buffer.trim()) {
+      try {
+        const evt = JSON.parse(buffer.trim());
+        handleWgenEvent(evt, (data) => { finalData = data; });
+      } catch {}
+    }
+
+    if (!finalData) {
+      throw new Error('Stream ended without a complete event. Backend likely crashed mid-flight.');
+    }
+
+    _wgenLastResult = finalData;
     setWgenStep('bundle', 'done');
-
-    renderWgenResult(data);
+    renderWgenResult(finalData);
 
   } catch (err) {
     console.error('Website generator error:', err);
@@ -3552,6 +3625,48 @@ async function runWebsiteGen() {
     errBox.style.display = 'block';
     // Bring back the form so the user can retry without closing the panel
     document.getElementById('wgenForm').style.display = 'flex';
+  }
+}
+
+// Drives the progress UI from server-side stream events. The `onComplete`
+// callback fires when we receive the terminal `complete` event so the caller
+// can capture the final payload.
+function handleWgenEvent(evt, onComplete) {
+  const sub = document.getElementById('wgenLoadingSub');
+  switch (evt.event) {
+    case 'received':
+      // No UI change needed; this just confirms the function got the request.
+      break;
+    case 'research_start':
+      setWgenStep('research', 'active');
+      if (sub) sub.textContent = 'Researching business via web search…';
+      break;
+    case 'research_done':
+      setWgenStep('research', 'done');
+      setWgenStep('template', 'done'); // template stage is part of research result
+      setWgenStep('generate', 'active');
+      if (sub) sub.textContent = 'Generating multi-page HTML…';
+      break;
+    case 'generate_start':
+      setWgenStep('generate', 'active');
+      if (sub) sub.textContent = 'Generating multi-page HTML — this is the long part…';
+      break;
+    case 'generate_progress':
+      // Show streaming char count so the user has unambiguous "it's still working" signal.
+      if (sub) sub.textContent = `Generating multi-page HTML… (${(evt.chars || 0).toLocaleString()} chars streamed)`;
+      break;
+    case 'complete':
+      setWgenStep('generate', 'done');
+      setWgenStep('bundle', 'active');
+      if (sub) sub.textContent = 'Bundling files…';
+      onComplete(evt);
+      break;
+    case 'error':
+      // Throw so the surrounding try/catch surfaces it.
+      throw new Error(evt.message || 'Server reported an error.');
+    default:
+      // Unknown event — ignore. Forward-compat for new event types.
+      break;
   }
 }
 

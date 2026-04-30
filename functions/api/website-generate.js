@@ -2,31 +2,39 @@
  * MTM Website Generator — Pre-call Demo Site Builder
  * Route: POST /api/website-generate
  *
+ * STREAMING NDJSON response. The function returns a ReadableStream the moment
+ * it's invoked, then pushes line-delimited JSON events as work progresses.
+ * This is required because the synchronous "do everything, return one blob"
+ * shape exceeded Cloudflare's 100s edge wall-clock and triggered HTTP 524.
+ * Streaming keeps the connection healthy by emitting bytes continuously.
+ *
  * Two-stage Claude flow:
  *   Stage A (research) — web_search-enabled Claude call extracts a normalized
  *     business profile (services, branding hints, tone, pricing if public,
  *     review-language samples, location context, etc.) from Google + the
- *     prospect's existing website + their socials.
+ *     prospect's existing website + their socials. Single non-streaming call
+ *     because web_search tool use isn't useful to surface mid-flight.
  *   Stage B (generation) — Claude Sonnet 4.6 produces a multi-page MTM
- *     template (index/services/about/contact + shared CSS/JS + README +
- *     Cloudflare Pages config) using the research as input. GHL contact
- *     form / booking calendar locations are left as placeholder comments
- *     for the manual Phase 2 injection step that runs after a client signs.
+ *     template using `stream: true`. Text deltas are accumulated server-side
+ *     and a heartbeat is pushed to the client every ~500 chars so the
+ *     connection stays alive AND the user sees real progress.
  *
- * Response shape: { success: true, businessName, files: { [path]: contents }, research }
+ * NDJSON event protocol (each line is a complete JSON object):
+ *   {"event":"received", ...}                  — request validated, work starts
+ *   {"event":"research_start"}                 — Stage A kicked off
+ *   {"event":"research_done", "research":{...}} — Stage A returned
+ *   {"event":"generate_start"}                  — Stage B kicked off
+ *   {"event":"generate_progress", "chars":N}    — Stage B text-delta heartbeat
+ *   {"event":"complete", "businessName", "slug", "files", "research"}
+ *   {"event":"error", "message"}               — terminal; client should fail
  *
- * The frontend zips `files` client-side via JSZip and triggers the browser
- * download, so this Worker's response stays JSON and we don't fight Pages
- * Functions about binary streaming.
+ * Forward-compat: the JSON template emitted by Stage A still matches the
+ * schema accepted by colby-side/website-generator-worker — so the same
+ * research blob can drive either the ZIP-download path (this file) or a
+ * preview-subdomain deploy path later.
  *
  * Environment variables:
  *   ANTHROPIC_API_KEY — same one the prospect/proposal/report tools use
- *
- * Forward-compat note: the JSON template the research stage emits matches
- * the schema the colby-side website-generator-worker accepts. So when the
- * full demo-hosting flow lands later, the same research stage can feed
- * either path (download-as-zip OR deploy-to-preview-subdomain) without a
- * rewrite.
  */
 
 export async function onRequestPost(context) {
@@ -34,70 +42,110 @@ export async function onRequestPost(context) {
   const t0 = Date.now();
   const ts = () => `[+${((Date.now() - t0) / 1000).toFixed(1)}s]`;
 
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
+  // Parse + validate body up front so we can still return clean 4xx responses
+  // for malformed input (the streaming path can only emit error EVENTS once
+  // it's started, which is worse UX for "you forgot a field").
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonResponse({ error: 'Invalid JSON body.' }, 400);
+  }
+
+  const { businessName, city, websiteUrl, tone, siteType } = body;
+
+  if (!businessName || !city) {
+    return jsonResponse({ error: 'Business name and city are required.' }, 400);
+  }
+  if (!env.ANTHROPIC_API_KEY) {
+    return jsonResponse({ error: 'API key not configured. Add ANTHROPIC_API_KEY to environment variables.' }, 500);
+  }
+
+  const normalizedSiteType = normalizeSiteType(siteType);
+
+  // ─── STREAMING SETUP ────────────────────────────────────────────────────
+  // TransformStream gives us a {readable, writable} pair. We hand `readable`
+  // back as the Response body immediately and write events to `writable` from
+  // the async runner below. The fetch() call above has already completed by
+  // the time this Response is returned — the runner runs concurrently while
+  // the client consumes the stream.
+  const { readable, writable } = new TransformStream();
+  const writer = writable.getWriter();
+  const encoder = new TextEncoder();
+  const send = async (obj) => {
+    try {
+      await writer.write(encoder.encode(JSON.stringify(obj) + '\n'));
+    } catch (e) {
+      // Client disconnected mid-stream — log and stop. Don't throw, the
+      // runner needs to cleanly close the writer in finally.
+      console.error(`${ts()} [wgen] writer.write failed (client likely disconnected):`, e.message);
+    }
   };
 
-  try {
-    const body = await request.json();
-    const { businessName, city, websiteUrl, tone } = body;
-    console.log(`${ts()} [wgen] request received: business="${businessName}" city="${city}" url="${websiteUrl || ''}" tone="${tone || ''}"`);
+  // Kick off the async runner. Do NOT await it — we want the Response to
+  // start streaming immediately.
+  (async () => {
+    try {
+      console.log(`${ts()} [wgen] request received: business="${businessName}" city="${city}" url="${websiteUrl || ''}" tone="${tone || ''}" siteType="${normalizedSiteType}"`);
+      await send({ event: 'received', businessName, city, siteType: normalizedSiteType });
 
-    if (!businessName || !city) {
-      return new Response(
-        JSON.stringify({ error: 'Business name and city are required.' }),
-        { status: 400, headers }
-      );
-    }
+      // ─── STAGE A — RESEARCH ────────────────────────────────────────────
+      console.log(`${ts()} [wgen] STAGE A research START`);
+      await send({ event: 'research_start' });
+      const research = await runResearch({
+        businessName, city, websiteUrl,
+        toneOverride: tone,
+        siteType: normalizedSiteType,
+        apiKey: env.ANTHROPIC_API_KEY,
+        log: (msg) => console.log(`${ts()} [wgen][A] ${msg}`),
+      });
+      console.log(`${ts()} [wgen] STAGE A research DONE — services=${research.services?.length || 0} confidence=${research.researchNotes?.researchConfidence || 'n/a'}`);
+      await send({ event: 'research_done', research });
 
-    if (!env.ANTHROPIC_API_KEY) {
-      return new Response(
-        JSON.stringify({ error: 'API key not configured. Add ANTHROPIC_API_KEY to environment variables.' }),
-        { status: 500, headers }
-      );
-    }
+      // ─── STAGE B — GENERATION (STREAMING) ──────────────────────────────
+      console.log(`${ts()} [wgen] STAGE B generation START`);
+      await send({ event: 'generate_start' });
+      const files = await runGenerationStreaming({
+        research,
+        siteType: normalizedSiteType,
+        apiKey: env.ANTHROPIC_API_KEY,
+        onProgress: async (chars) => {
+          // Keep the connection warm with a regular heartbeat. Sampling
+          // approximately every 500 chars keeps the stream chatty enough to
+          // pass any intermediary idle timeout while not flooding the client.
+          await send({ event: 'generate_progress', chars });
+        },
+        log: (msg) => console.log(`${ts()} [wgen][B] ${msg}`),
+      });
+      console.log(`${ts()} [wgen] STAGE B generation DONE — files=${Object.keys(files).length} totalBytes=${Object.values(files).reduce((n, c) => n + c.length, 0)}`);
 
-    // ─── STAGE A — RESEARCH ─────────────────────────────────────────
-    // Web-search Claude to build the structured template that drives generation.
-    console.log(`${ts()} [wgen] STAGE A research START`);
-    const research = await runResearch({
-      businessName, city, websiteUrl,
-      toneOverride: tone,
-      apiKey: env.ANTHROPIC_API_KEY,
-      log: (msg) => console.log(`${ts()} [wgen][A] ${msg}`),
-    });
-    console.log(`${ts()} [wgen] STAGE A research DONE — services=${research.services?.length || 0} confidence=${research.researchNotes?.researchConfidence || 'n/a'}`);
-
-    // ─── STAGE B — GENERATION ───────────────────────────────────────
-    // Hand the research blob to Claude with the multi-file generation prompt.
-    console.log(`${ts()} [wgen] STAGE B generation START`);
-    const files = await runGeneration({
-      research,
-      apiKey: env.ANTHROPIC_API_KEY,
-      log: (msg) => console.log(`${ts()} [wgen][B] ${msg}`),
-    });
-    console.log(`${ts()} [wgen] STAGE B generation DONE — files=${Object.keys(files).length} totalBytes=${Object.values(files).reduce((n, c) => n + c.length, 0)}`);
-
-    console.log(`${ts()} [wgen] returning success response`);
-    return new Response(
-      JSON.stringify({
-        success: true,
+      console.log(`${ts()} [wgen] sending complete event`);
+      await send({
+        event: 'complete',
         businessName: research.business.name,
         slug: slugify(research.business.name),
         files,
         research,
-      }),
-      { headers }
-    );
+      });
+    } catch (err) {
+      console.error(`${ts()} [wgen] ERROR:`, err.message, err.stack?.slice(0, 500));
+      await send({ event: 'error', message: err.message || 'Something went wrong.' });
+    } finally {
+      try { await writer.close(); } catch {}
+    }
+  })();
 
-  } catch (err) {
-    console.error(`${ts()} [wgen] ERROR:`, err.message, err.stack?.slice(0, 500));
-    return new Response(
-      JSON.stringify({ error: err.message || 'Something went wrong. Please try again.' }),
-      { status: 500, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } }
-    );
-  }
+  return new Response(readable, {
+    status: 200,
+    headers: {
+      'Content-Type': 'application/x-ndjson',
+      'Access-Control-Allow-Origin': '*',
+      'Cache-Control': 'no-cache, no-transform',
+      // Disable proxy buffering — important so each NDJSON line arrives at
+      // the client immediately rather than getting batched.
+      'X-Accel-Buffering': 'no',
+    },
+  });
 }
 
 export async function onRequestOptions() {
@@ -110,9 +158,58 @@ export async function onRequestOptions() {
   });
 }
 
+function jsonResponse(payload, status = 200) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+  });
+}
+
+// ─── SITE TYPE NORMALIZATION ──────────────────────────────────────────────────
+
+const SUPPORTED_SITE_TYPES = new Set([
+  'brochure',
+  'service-business',
+  'inventory',
+  'restaurant',
+  'real-estate',
+  'portfolio',
+]);
+
+function normalizeSiteType(raw) {
+  if (!raw) return 'brochure';
+  const v = String(raw).toLowerCase().trim();
+  return SUPPORTED_SITE_TYPES.has(v) ? v : 'brochure';
+}
+
+function siteTypeHint(siteType) {
+  // Short hint text injected into both research and generation prompts.
+  // Once Cole's template library lands these will be replaced by full
+  // template definitions, but for now a clear directional hint is enough
+  // to bias Claude's structural decisions.
+  switch (siteType) {
+    case 'service-business':
+      return 'Site type: SERVICE BUSINESS (HVAC, plumbing, roofing, landscaping, cleaning, similar trades). Emphasize booking, service-area coverage, emergency/24-7 if applicable, and trust signals (license, insurance, years in business, reviews). Standard 4-page structure (Home, Services, About, Contact) but lead with a clear service-area + booking CTA on Home.';
+    case 'inventory':
+      return 'Site type: INVENTORY / DEALER (golf carts, vehicles, equipment, products with stock). The Services page should be reframed as an Inventory or Browse page with a placeholder grid for individual product listings (each card: image placeholder, model name, price, "View details" link). Add a clear "Sell or trade-in" CTA on Home and a financing-info section if relevant. Keep the contact/booking placeholders intact for the Phase 2 GHL embed.';
+    case 'restaurant':
+      return 'Site type: RESTAURANT / FOOD SERVICE. Replace the Services page with a Menu page (sections: appetizers, mains, drinks, desserts) with placeholder rows for items. The Home hero should emphasize cuisine type, location, hours, and reservations. Replace the booking placeholder section with a reservation prompt — same comment marker so the Phase 2 GHL booking embed still drops in cleanly.';
+    case 'real-estate':
+      return 'Site type: REAL ESTATE / AGENT. The Services page should be reframed as a Listings page with placeholder cards for individual properties (each: image placeholder, price, beds/baths/sqft, "View listing" link). Add an Agent Bio section to the About page. Keep contact + booking placeholders intact — Phase 2 swaps in GHL forms.';
+    case 'portfolio':
+      return 'Site type: PORTFOLIO / CREATIVE. The Services page should be reframed as Work or Projects, with placeholder cards for case-study items (each: image placeholder, title, client, brief description, link). Tone leans expressive; whitespace is heavier; typography hierarchy is the visual workhorse. Keep contact placeholder intact.';
+    case 'brochure':
+    default:
+      return 'Site type: BROCHURE (general small-business marketing site). Standard 4-page structure (Home, Services, About, Contact) with the GHL contact form + booking embed placeholders on the Contact page. This is the default catch-all when no specialized template applies.';
+  }
+}
+
 // ─── STAGE A — RESEARCH CALL ──────────────────────────────────────────────────
 
-async function runResearch({ businessName, city, websiteUrl, toneOverride, apiKey, log = () => {} }) {
+async function runResearch({ businessName, city, websiteUrl, toneOverride, siteType, apiKey, log = () => {} }) {
   const userMessage = websiteUrl
     ? `Research this business and produce the structured JSON template:\n\nBusiness: "${businessName}"\nLocation: "${city}"\nWebsite: ${websiteUrl}\n\nSearch their existing site, Google Business profile, and any active social presence. Extract real services, real prices if listed publicly, real brand colors, real review language. Return ONLY the JSON.`
     : `Research this business and produce the structured JSON template:\n\nBusiness: "${businessName}"\nLocation: "${city}"\n\nFind their existing website if one exists. Search Google Business profile, Yelp, Facebook, Instagram. Extract real services, real prices if listed publicly, brand colors from any visual assets you can find, review language. If they have no web presence at all, infer reasonable defaults from the industry + location. Return ONLY the JSON.`;
@@ -120,6 +217,8 @@ async function runResearch({ businessName, city, websiteUrl, toneOverride, apiKe
   const systemPrompt = `You are the research engine behind More Than Momentum's pre-call website generator. Your job: take a target business, do thorough web research, and emit a normalized JSON template that drives the website generator.
 
 Quality standard: this template determines whether the generated site looks like "you already understand my business" (closes deals) or "this is AI slop with my name on it" (doesn't). Pull real services with real prices when they're publicly listed. Pull brand colors from logos or existing site CSS when accessible. Sample voice from review responses. Don't invent specifics that you can verify — but DO infer reasonable industry defaults when the business has no web presence to scrape.
+
+${siteTypeHint(siteType)}
 
 Tone selection rule: pick ONE of professional|friendly|luxury|authoritative|casual based on what the existing brand actually feels like. Trade businesses (HVAC, plumbing, roofing, landscaping) usually land on friendly or authoritative. Premium retail / service (golf carts, custom homes, financial advisors) lands on luxury or professional. Default to friendly when ambiguous.${toneOverride ? `\n\nTONE OVERRIDE FROM USER: "${toneOverride}" — use exactly this tone, ignore your own inference.` : ''}
 
@@ -204,10 +303,8 @@ Aim for 4-6 services, 3-4 testimonials, 4-5 FAQs. If you can't find real data fo
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 8000,
-      // Use prompt caching on the (large, static) system prompt so the input
-      // tokens for it only count once per 5-min window — huge ITPM relief
-      // when this tool runs back-to-back with Stage B or other tools that
-      // share API budget.
+      // Prompt caching on the (large, static) system prompt — input tokens for
+      // it count once per 5-min window, big ITPM relief.
       system: [
         { type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }
       ],
@@ -226,7 +323,7 @@ Aim for 4-6 services, 3-4 testimonials, 4-5 FAQs. If you can't find real data fo
   if (!apiResponse.ok) {
     const errText = await apiResponse.text();
     if (apiResponse.status === 429) {
-      throw new Error(`Anthropic API rate limit hit during research. Wait 60 seconds and try again. (Tier 1 caps Sonnet at 30K input tokens/min — research + generation together can come close on token-heavy businesses.)`);
+      throw new Error(`Anthropic API rate limit hit during research. Wait 60 seconds and try again. (Tier 1 caps Sonnet at 30K input tokens/min.)`);
     }
     throw new Error(`Research stage failed: ${apiResponse.status} ${errText.slice(0, 300)}`);
   }
@@ -243,37 +340,35 @@ Aim for 4-6 services, 3-4 testimonials, 4-5 FAQs. If you can't find real data fo
     throw new Error('Research stage returned no text content. Try again.');
   }
 
-  // Same parsing strategy as prospect.js — multiple fallbacks for fenced output,
-  // preamble text, and truncation.
   const research = robustJsonParse(textContent);
   if (!research) {
     throw new Error(`Research stage returned unparseable JSON. First 300 chars: ${textContent.slice(0, 300)}`);
   }
 
-  // Sanity-fill anything missing so generation never breaks on undefined access.
+  // Sanity-fill missing fields so generation never breaks on undefined access.
   research.business = research.business || {};
   research.branding = research.branding || {};
   research.services = research.services || [];
   research.content = research.content || {};
   research.automation = research.automation || { enableContactForm: true, enableBooking: true, enableChatWidget: false };
+  research.researchNotes = research.researchNotes || {};
+  research.researchNotes.siteType = siteType; // forward-compat: stamp the chosen type into the audit trail
   research.slug = research.slug || slugify(research.business.name || businessName);
 
   return research;
 }
 
-// ─── STAGE B — GENERATION CALL ────────────────────────────────────────────────
+// ─── STAGE B — STREAMING GENERATION CALL ──────────────────────────────────────
 
-async function runGeneration({ research, apiKey, log = () => {} }) {
-  const prompt = buildGenerationPrompt(research);
+async function runGenerationStreaming({ research, siteType, apiKey, onProgress = async () => {}, log = () => {} }) {
+  const prompt = buildGenerationPrompt(research, siteType);
   log(`prompt built; chars=${prompt.length}`);
 
-  // Brief pause between Stage A and Stage B. Stage A finishes with
-  // accumulated web_search results in the input-token-per-minute budget;
-  // a small gap gives the 60s ITPM window a head start and reduces
-  // collisions on the 30K/min Tier 1 cap.
+  // Brief pause between Stage A and Stage B — gives the 60s ITPM window a
+  // head start before stacking another large input-token call onto it.
   await new Promise(r => setTimeout(r, 1500));
 
-  log('fetch -> api.anthropic.com (generation, max_tokens=32000)');
+  log('fetch -> api.anthropic.com (generation, stream:true, max_tokens=32000)');
   const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -283,62 +378,94 @@ async function runGeneration({ research, apiKey, log = () => {} }) {
     },
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
-      // Multi-file generation across 4 HTML pages + CSS + JS + README runs
-      // ~12-18K output tokens. 32000 gives comfortable headroom; matches the
-      // colby-side website-generator-worker's setting.
       max_tokens: 32000,
-      // Cache the prompt — every regen for the same research will hit the
-      // cache. Even single runs benefit because the long static instruction
-      // block doesn't count against ITPM on the second-of-second retries.
+      stream: true,
       messages: [{ role: 'user', content: [
         { type: 'text', text: prompt, cache_control: { type: 'ephemeral' } }
       ] }],
     })
   });
-  log(`anthropic response status=${apiResponse.status}`);
+  log(`anthropic stream response status=${apiResponse.status}`);
 
   if (!apiResponse.ok) {
     const errText = await apiResponse.text();
     if (apiResponse.status === 429) {
-      throw new Error(`Anthropic API rate limit hit during generation. Wait 60 seconds and try again. The research stage already succeeded — the rate-limit window will clear soon.`);
+      throw new Error(`Anthropic API rate limit hit during generation. Wait 60 seconds and try again.`);
     }
     throw new Error(`Generation stage failed: ${apiResponse.status} ${errText.slice(0, 300)}`);
   }
 
-  const apiData = await apiResponse.json();
-  log(`response parsed; stop_reason=${apiData.stop_reason} usage=${JSON.stringify(apiData.usage || {})}`);
+  // ─── SSE PARSING ─────────────────────────────────────────────────────────
+  // Anthropic SSE format: each event is `event: <name>\ndata: <json>\n\n`.
+  // We only need the `data:` lines. Text deltas live at delta.text on
+  // `content_block_delta` events whose delta.type === 'text_delta'. Stop
+  // reason arrives via `message_delta.delta.stop_reason`.
+  //
+  // Gotcha noted in COLE_BRIEFING.md §7.3: text is in `event.delta.text`,
+  // NOT `event.delta.content` — easy mis-parse.
+  const reader = apiResponse.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  let fullText = '';
+  let stopReason = null;
+  let lastHeartbeatChars = 0;
 
-  const stopReason = apiData.stop_reason;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    // Split buffer on newlines, keep the last (possibly incomplete) line in the buffer
+    const lines = buffer.split('\n');
+    buffer = lines.pop() || '';
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed.startsWith('data:')) continue;
+      const dataStr = trimmed.slice(5).trim();
+      if (!dataStr || dataStr === '[DONE]') continue;
+
+      let evt;
+      try { evt = JSON.parse(dataStr); } catch { continue; }
+
+      if (evt.type === 'content_block_delta' && evt.delta?.type === 'text_delta' && typeof evt.delta.text === 'string') {
+        fullText += evt.delta.text;
+        // Heartbeat sampling — every ~500 chars push a progress event back to the
+        // client. This is what keeps the Cloudflare edge from idling-out on the
+        // long Stage B generation, AND drives the user-visible progress UI.
+        if (fullText.length - lastHeartbeatChars >= 500) {
+          lastHeartbeatChars = fullText.length;
+          await onProgress(fullText.length);
+        }
+      } else if (evt.type === 'message_delta' && evt.delta?.stop_reason) {
+        stopReason = evt.delta.stop_reason;
+      }
+    }
+  }
+  log(`stream complete; chars=${fullText.length} stop_reason=${stopReason}`);
+
   if (stopReason === 'max_tokens') {
     throw new Error('Generation hit max_tokens — output is truncated. Retry, or simplify the input.');
   }
-
-  const textContent = apiData.content
-    .filter(block => block.type === 'text')
-    .map(block => block.text)
-    .join('');
-
-  if (!textContent) {
+  if (!fullText) {
     throw new Error('Generation stage returned no text content.');
   }
-  log(`raw text chars=${textContent.length}`);
 
-  // Parse the multi-file output.
-  const files = extractFiles(textContent);
+  // Final progress beat so the UI lands at the actual final char count.
+  await onProgress(fullText.length);
+
+  const files = extractFiles(fullText);
   log(`extracted files=${Object.keys(files).join(',')}`);
 
-  // Validate the critical files exist and have the placeholder contract intact.
   validateFiles(files, research);
   log('validation passed');
 
   return files;
 }
 
-function buildGenerationPrompt(research) {
+function buildGenerationPrompt(research, siteType) {
   const { business, branding, services, content, automation } = research;
 
-  // Pre-format the things Claude needs verbatim — this keeps the prompt
-  // shorter and avoids re-asking Claude to do trivial string assembly.
   const hoursLine = business.hours
     ? Object.entries(business.hours).map(([d, t]) => `${d}: ${t}`).join(' · ')
     : 'Mon-Fri 8am-5pm';
@@ -352,6 +479,8 @@ function buildGenerationPrompt(research) {
   const faqsBlock = (content.faqs || []).map(f => `Q: ${f.question}\nA: ${f.answer}`).join('\n\n');
 
   return `You are building a multi-page website for ${business.name}, a ${business.industry} business in ${business.location?.city || ''}, ${business.location?.state || ''}.
+
+${siteTypeHint(siteType)}
 
 ═══════════════════════════════════════════════════════════════════════════════
 BUSINESS PROFILE
@@ -417,7 +546,7 @@ files. The very first byte of your response must be the first marker.
 ===FILE: index.html===
 <full HTML for the home page>
 ===FILE: services.html===
-<full HTML for the services page>
+<full HTML for the services / inventory / menu / listings / work page — adapt name to site type but keep filename as services.html for routing simplicity>
 ===FILE: about.html===
 <full HTML for the about page>
 ===FILE: contact.html===
@@ -446,6 +575,8 @@ HTML REQUIREMENTS — APPLY TO ALL FOUR PAGES
        Services → services.html
        About → about.html
        Contact → contact.html
+   (The "Services" nav label may be relabeled to match the site type — e.g.
+   "Inventory", "Menu", "Listings", "Work" — but the filename stays services.html.)
 4. The nav also includes one prominent CTA button. The CTA goes to contact.html.
 5. <body> includes <script src="script.js" defer></script> at the end.
 6. Mobile-first responsive. Hamburger menu on small screens.
@@ -462,17 +593,17 @@ PAGE-SPECIFIC REQUIREMENTS
 
 INDEX.HTML (home)
 - Hero section with the tagline, a sub-headline, and a primary CTA to contact.html
-- Featured services strip — show the top 3 services as cards with the icons
+- Featured strip — show the top 3 services / products / menu items / listings as cards with the icons
 - "Why us" section — show 3-4 benefits as feature cards
 - Brief about teaser — 1 paragraph + a "Read more" link to about.html
 - Testimonials block (if testimonials are listed above) — at least 2 quotes
 - Closing CTA section linking to contact.html
 
-SERVICES.HTML
+SERVICES.HTML (or Inventory / Menu / Listings / Work — content adapts to site type)
 - Page intro / value statement
-- Full grid of every service listed above. Each card: icon, name, description,
-  price (if provided), and an "Inquire" link to contact.html#form (which goes
-  to the contact page's form section).
+- Full grid of every service / product / menu item / listing listed above. Each card
+  includes icon, name, description, price (if provided), and an "Inquire" / "View"
+  link to contact.html#form.
 - Bottom CTA back to contact
 
 ABOUT.HTML
@@ -561,18 +692,14 @@ GO. Output the eight files now, marker-delimited, no preamble.`;
 }
 
 function extractFiles(text) {
-  // Split on the FILE marker. The marker syntax is ===FILE: path===
-  // We accept whitespace flex around the equals signs. The terminal marker is ===END===.
-
   const files = {};
   const fileMarker = /^===FILE:\s*([^=\n]+?)\s*===\s*$/gm;
 
-  // First, slice off anything before the very first marker (defensive — Claude
-  // sometimes adds a brief preamble despite instructions).
+  // Slice off anything before the first marker (defensive — Claude sometimes
+  // adds a brief preamble despite instructions).
   const firstMarkerIdx = text.search(/^===FILE:/m);
   const trimmed = firstMarkerIdx === -1 ? text : text.slice(firstMarkerIdx);
 
-  // Now collect (path, startIdx) pairs.
   const matches = [];
   let m;
   fileMarker.lastIndex = 0;
@@ -584,17 +711,11 @@ function extractFiles(text) {
     throw new Error('Generation output had no FILE markers. Claude likely ignored the format directive. First 300 chars: ' + text.slice(0, 300));
   }
 
-  // For each marker, the file content runs from the end of this marker to the
-  // start of the next marker (or to ===END=== / EOF for the last one).
   for (let i = 0; i < matches.length; i++) {
     const start = matches[i].markerEnd;
-    const next = i + 1 < matches.length ? matches[i + 1].markerEnd - matches[i + 1].path.length - 12 /* '===FILE: ===' */ : null;
-
-    // Cleaner: just find the next marker line by searching from `start`.
     const remainder = trimmed.slice(start);
     const nextMarkerIdx = remainder.search(/^===(?:FILE:|END===)/m);
     const content = nextMarkerIdx === -1 ? remainder : remainder.slice(0, nextMarkerIdx);
-
     files[matches[i].path] = content.replace(/^\n+/, '').replace(/\n+$/, '\n');
   }
 
@@ -609,7 +730,6 @@ function validateFiles(files, research) {
     }
   }
 
-  // Critical contract: GHL placeholders must be intact in contact.html.
   if (!files['contact.html'].includes('<!-- CONTACT_FORM_PLACEHOLDER -->')) {
     throw new Error('contact.html is missing the <!-- CONTACT_FORM_PLACEHOLDER --> comment. This breaks the Phase 2 GHL injection contract.');
   }
@@ -617,7 +737,6 @@ function validateFiles(files, research) {
     throw new Error('contact.html is missing the <!-- BOOKING_CALENDAR_PLACEHOLDER --> comment. This breaks the Phase 2 GHL booking embed.');
   }
 
-  // Quick HTML structural check on each page.
   for (const path of ['index.html', 'services.html', 'about.html', 'contact.html']) {
     const html = files[path];
     if (!html.includes('</body>') || !html.includes('</html>')) {
@@ -631,17 +750,14 @@ function validateFiles(files, research) {
 function robustJsonParse(text) {
   const raw = text.trim();
 
-  // Strategy 1: strip markdown fences and parse directly.
   let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
   try { return JSON.parse(cleaned); } catch {}
 
-  // Strategy 2: find the outermost { ... } and parse that.
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
   if (start !== -1 && end !== -1 && end > start) {
     try { return JSON.parse(cleaned.slice(start, end + 1)); } catch {}
 
-    // Strategy 3: try appending closing braces (truncation recovery).
     const partial = cleaned.slice(start, end + 1);
     for (let extra = 1; extra <= 5; extra++) {
       try { return JSON.parse(partial + '}'.repeat(extra)); } catch {}
