@@ -516,6 +516,14 @@
         <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
       </div>
 
+      <!-- Tool 06 — Website Generator -->
+      <div class="tool-card active" onclick="openWebsiteGenPanel()">
+        <div class="tool-card-icon">🌐</div>
+        <div class="tool-card-header"><div class="tool-card-name">Website Generator</div><span class="tool-card-badge badge-live">Live</span></div>
+        <p class="tool-card-desc">Enter a prospect's name and city. AI researches their business via Google + socials + their existing site, then generates a complete multi-page MTM-template website — downloadable as a ZIP, ready for Cloudflare Pages. GHL embeds left blank for Phase 2.</p>
+        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+      </div>
+
     </div>
   </main>
 </div>
@@ -1000,6 +1008,149 @@
     </div>
   </div>
 </div>
+
+<!-- ── WEBSITE GENERATOR PANEL (Tool 06) ──────────────────────────────── -->
+<style>
+  /* Website Generator — panel-scoped UI */
+  .wgen-tone-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .wgen-tone-opt { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 9px 6px; font-family: var(--sans); font-size: 12px; color: var(--gray); cursor: pointer; text-align: center; transition: all .15s; user-select: none; }
+  .wgen-tone-opt:hover { border-color: var(--gray); color: var(--white); }
+  .wgen-tone-opt.selected { background: rgba(45,107,228,.12); border-color: var(--accent); color: var(--accent-light); }
+  .wgen-result-wrap { display: none; flex-direction: column; gap: 14px; }
+  .wgen-result-wrap.show { display: flex; }
+  .wgen-result-header { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; }
+  .wgen-result-name { font-family: var(--speed); font-weight: 700; font-size: 22px; }
+  .wgen-result-slug { font-size: 12px; color: var(--gray); margin-top: 2px; font-family: monospace; }
+  .wgen-result-confidence { display: inline-block; margin-top: 8px; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; letter-spacing: .04em; }
+  .wgen-conf-high { background: rgba(74,222,128,.12); border: 1px solid rgba(74,222,128,.3); color: var(--green); }
+  .wgen-conf-medium { background: rgba(245,197,24,.12); border: 1px solid rgba(245,197,24,.3); color: var(--yellow); }
+  .wgen-conf-low { background: rgba(249,115,22,.12); border: 1px solid rgba(249,115,22,.3); color: #fb923c; }
+  .wgen-section { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .wgen-sec-head { padding: 12px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .wgen-sec-title { font-size: 10px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-light); }
+  .wgen-sec-count { font-size: 11px; color: var(--mid); }
+  .wgen-sec-body { padding: 8px 12px; }
+  .wgen-file-row { display: flex; align-items: center; gap: 10px; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,.04); font-size: 13px; }
+  .wgen-file-row:last-child { border-bottom: none; }
+  .wgen-file-icon { font-size: 13px; width: 16px; flex-shrink: 0; }
+  .wgen-file-name { font-family: monospace; font-size: 12px; color: var(--white); flex: 1; }
+  .wgen-file-size { font-size: 11px; color: var(--mid); flex-shrink: 0; }
+  .wgen-research-row { display: flex; gap: 10px; padding: 6px 6px; font-size: 12px; }
+  .wgen-research-key { color: var(--gray); min-width: 100px; flex-shrink: 0; }
+  .wgen-research-val { color: var(--white); flex: 1; }
+  .wgen-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .wgen-btn-zip { flex: 1; background: var(--accent); color: var(--white); border: none; border-radius: 8px; padding: 14px; font-family: var(--sans); font-size: 14px; font-weight: 500; cursor: pointer; transition: background .2s; }
+  .wgen-btn-zip:hover { background: #2460cc; }
+  .wgen-btn-regen { background: transparent; border: 1px solid var(--border); color: var(--gray); border-radius: 8px; padding: 14px 18px; font-family: var(--sans); font-size: 13px; cursor: pointer; transition: border-color .2s, color .2s; }
+  .wgen-btn-regen:hover { border-color: var(--gray); color: var(--white); }
+  .wgen-progress-list { font-size: 12px; color: var(--gray); line-height: 1.7; margin-top: 12px; padding: 10px 14px; background: rgba(255,255,255,.02); border-left: 2px solid var(--accent); border-radius: 4px; text-align: left; }
+  .wgen-progress-list div { opacity: .4; transition: opacity .25s; }
+  .wgen-progress-list div.active { opacity: 1; color: var(--white); }
+  .wgen-progress-list div.done { opacity: .7; color: var(--accent-light); }
+  .wgen-phase2-note { background: rgba(245,197,24,.06); border: 1px solid rgba(245,197,24,.2); border-radius: 8px; padding: 12px 14px; font-size: 12px; color: var(--gray); line-height: 1.55; }
+  .wgen-phase2-note strong { color: var(--yellow); display: block; margin-bottom: 4px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; font-size: 10px; }
+</style>
+
+<div id="wgen-panel" class="panel-overlay" onclick="handleWgenBackdrop(event)">
+  <div class="panel-inner">
+    <div class="panel-header">
+      <div><div class="panel-tag">Tool 06</div><div class="panel-title">Website Generator</div></div>
+      <button class="panel-close" onclick="closeWgenPanel()">✕</button>
+    </div>
+    <div class="panel-body" id="wgenBody">
+
+      <!-- Form -->
+      <div class="panel-form" id="wgenForm">
+        <div class="panel-field">
+          <label class="panel-label" for="wgenName">Business Name</label>
+          <input type="text" id="wgenName" class="panel-input" placeholder="e.g. Riverside HVAC"/>
+        </div>
+        <div class="panel-field">
+          <label class="panel-label" for="wgenCity">City &amp; State</label>
+          <input type="text" id="wgenCity" class="panel-input" placeholder="e.g. Manchester, NH"/>
+        </div>
+        <div class="panel-field">
+          <label class="panel-label" for="wgenUrl">Existing Website URL <span>(optional — sharpens accuracy)</span></label>
+          <input type="text" id="wgenUrl" class="panel-input" placeholder="e.g. https://riversidehvac.com"/>
+        </div>
+        <div class="panel-field">
+          <label class="panel-label">Brand Tone <span>(optional — let AI decide if blank)</span></label>
+          <div class="wgen-tone-row" id="wgenToneRow">
+            <div class="wgen-tone-opt" data-tone="">Auto</div>
+            <div class="wgen-tone-opt" data-tone="professional">Professional</div>
+            <div class="wgen-tone-opt" data-tone="friendly">Friendly</div>
+            <div class="wgen-tone-opt" data-tone="luxury">Luxury</div>
+            <div class="wgen-tone-opt" data-tone="authoritative">Authoritative</div>
+            <div class="wgen-tone-opt" data-tone="casual">Casual</div>
+          </div>
+        </div>
+        <div class="panel-inline-error" id="wgenFormErr"></div>
+        <button class="panel-run-btn" id="wgenRunBtn" onclick="runWebsiteGen()">Generate Website →</button>
+      </div>
+
+      <!-- Loading -->
+      <div class="panel-loading" id="wgenLoading">
+        <div class="loading-spinner"></div>
+        <div class="loading-label">
+          <strong>Building the site…</strong>
+          <span id="wgenLoadingSub">Researching the business via web search</span>
+        </div>
+        <div class="wgen-progress-list" id="wgenProgressList">
+          <div data-step="research">→ Researching business via Google + socials</div>
+          <div data-step="template">→ Normalizing into template (services, branding, voice)</div>
+          <div data-step="generate">→ Generating multi-page HTML (index, services, about, contact)</div>
+          <div data-step="bundle">→ Bundling files into a downloadable ZIP</div>
+        </div>
+      </div>
+
+      <!-- Result -->
+      <div class="wgen-result-wrap" id="wgenResult">
+        <div class="wgen-result-header">
+          <div class="wgen-result-name" id="wgenResName">Business Name</div>
+          <div class="wgen-result-slug" id="wgenResSlug">slug</div>
+          <div class="wgen-result-confidence" id="wgenResConf">Research confidence: high</div>
+        </div>
+
+        <div class="wgen-section">
+          <div class="wgen-sec-head">
+            <div class="wgen-sec-title">Research summary</div>
+          </div>
+          <div class="wgen-sec-body" id="wgenResearchBody"></div>
+        </div>
+
+        <div class="wgen-section">
+          <div class="wgen-sec-head">
+            <div class="wgen-sec-title">Files in bundle</div>
+            <div class="wgen-sec-count" id="wgenFileCount">0 files</div>
+          </div>
+          <div class="wgen-sec-body" id="wgenFilesBody"></div>
+        </div>
+
+        <div class="wgen-phase2-note">
+          <strong>Phase 2 — what gets filled in after they sign</strong>
+          The contact form and booking calendar are left as placeholder comments
+          (<code>&lt;!-- CONTACT_FORM_PLACEHOLDER --&gt;</code> and
+          <code>&lt;!-- BOOKING_CALENDAR_PLACEHOLDER --&gt;</code>) inside
+          <code>contact.html</code>. After the client pays, swap the comments for
+          their GoHighLevel form and calendar embed iframes — full instructions
+          are in the bundled <code>README.md</code>.
+        </div>
+
+        <div class="wgen-actions">
+          <button class="wgen-btn-zip" id="wgenDownloadBtn" onclick="downloadWebsiteZip()">⬇ Download ZIP</button>
+          <button class="wgen-btn-regen" onclick="resetWgenPanel()">Generate Another</button>
+        </div>
+      </div>
+
+      <!-- Error -->
+      <div class="panel-inline-error" id="wgenError" style="display:none;"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JSZip — used for client-side ZIP packaging of the generated bundle -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
 /* ══════════════════════════════════════════════
@@ -3265,6 +3416,255 @@ function renderMTMAnalytics(data) {
         GA4 data not connected. Add <code style="background:var(--dark);padding:1px 5px;border-radius:3px;font-size:11px;">MTM_GA4_PROPERTY_ID</code>
         to your Cloudflare env vars and make sure Google is connected (header button).
       </div>`;
+  }
+}
+
+/* ══════════════════════════════════════════════
+   TOOL 06 — WEBSITE GENERATOR
+══════════════════════════════════════════════ */
+
+let _wgenLastResult = null;        // holds the most recent { businessName, slug, files, research }
+let _wgenSelectedTone = '';        // empty string = let AI decide
+
+function openWebsiteGenPanel() {
+  const panel = document.getElementById('wgen-panel');
+  resetWgenPanel();
+  panel.classList.add('open');
+  setTimeout(() => document.getElementById('wgenName').focus(), 100);
+}
+
+function closeWgenPanel() {
+  document.getElementById('wgen-panel').classList.remove('open');
+}
+
+function handleWgenBackdrop(e) {
+  if (e.target.id === 'wgen-panel') closeWgenPanel();
+}
+
+function resetWgenPanel() {
+  document.getElementById('wgenForm').style.display = 'flex';
+  document.getElementById('wgenLoading').classList.remove('show');
+  document.getElementById('wgenLoading').style.display = 'none';
+  document.getElementById('wgenResult').classList.remove('show');
+  document.getElementById('wgenError').style.display = 'none';
+  document.getElementById('wgenFormErr').classList.remove('show');
+  document.getElementById('wgenName').value = '';
+  document.getElementById('wgenCity').value = '';
+  document.getElementById('wgenUrl').value = '';
+  // Reset tone selector
+  _wgenSelectedTone = '';
+  document.querySelectorAll('#wgenToneRow .wgen-tone-opt').forEach(el => {
+    el.classList.toggle('selected', el.dataset.tone === '');
+  });
+  _wgenLastResult = null;
+}
+
+// Wire up tone selector
+document.addEventListener('DOMContentLoaded', () => {
+  const toneRow = document.getElementById('wgenToneRow');
+  if (!toneRow) return;
+  toneRow.addEventListener('click', (e) => {
+    const opt = e.target.closest('.wgen-tone-opt');
+    if (!opt) return;
+    _wgenSelectedTone = opt.dataset.tone || '';
+    document.querySelectorAll('#wgenToneRow .wgen-tone-opt').forEach(el => {
+      el.classList.toggle('selected', el === opt);
+    });
+  });
+  // Default-select "Auto"
+  const autoOpt = toneRow.querySelector('[data-tone=""]');
+  if (autoOpt) autoOpt.classList.add('selected');
+});
+
+async function runWebsiteGen() {
+  const businessName = document.getElementById('wgenName').value.trim();
+  const city = document.getElementById('wgenCity').value.trim();
+  const websiteUrl = document.getElementById('wgenUrl').value.trim();
+  const errEl = document.getElementById('wgenFormErr');
+
+  if (!businessName || !city) {
+    errEl.textContent = 'Business name and city are both required.';
+    errEl.classList.add('show');
+    return;
+  }
+  errEl.classList.remove('show');
+
+  // Switch UI to loading state
+  document.getElementById('wgenForm').style.display = 'none';
+  const loading = document.getElementById('wgenLoading');
+  loading.style.display = 'block';
+  loading.classList.add('show');
+  document.getElementById('wgenResult').classList.remove('show');
+  document.getElementById('wgenError').style.display = 'none';
+
+  // Animate the progress steps. Backend doesn't stream, so this is best-effort
+  // sequencing — research finishes faster than generation, and generation is
+  // the long pole. Steps roll forward on a timer; the actual API call drives
+  // when we land at "complete".
+  setWgenStep('research', 'active');
+  document.getElementById('wgenLoadingSub').textContent = 'Researching business via web search…';
+  setTimeout(() => {
+    setWgenStep('research', 'done');
+    setWgenStep('template', 'active');
+    document.getElementById('wgenLoadingSub').textContent = 'Normalizing into template…';
+  }, 8000);
+  setTimeout(() => {
+    setWgenStep('template', 'done');
+    setWgenStep('generate', 'active');
+    document.getElementById('wgenLoadingSub').textContent = 'Generating multi-page HTML — this is the long part…';
+  }, 18000);
+
+  try {
+    const res = await fetch('/api/website-generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        businessName, city,
+        websiteUrl: websiteUrl || undefined,
+        tone: _wgenSelectedTone || undefined,
+      })
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      throw new Error(data.error || `Server returned ${res.status}`);
+    }
+
+    // Cache for download
+    _wgenLastResult = data;
+
+    // Roll the rest of the progress visual to done
+    setWgenStep('generate', 'done');
+    setWgenStep('bundle', 'active');
+
+    // Tiny pause so the user sees the bundle step land
+    await new Promise(r => setTimeout(r, 300));
+    setWgenStep('bundle', 'done');
+
+    renderWgenResult(data);
+
+  } catch (err) {
+    console.error('Website generator error:', err);
+    loading.classList.remove('show');
+    loading.style.display = 'none';
+    const errBox = document.getElementById('wgenError');
+    errBox.textContent = 'Failed: ' + (err.message || 'unknown error') + ' — try again, or adjust the inputs.';
+    errBox.style.display = 'block';
+    // Bring back the form so the user can retry without closing the panel
+    document.getElementById('wgenForm').style.display = 'flex';
+  }
+}
+
+function setWgenStep(stepName, state) {
+  const list = document.getElementById('wgenProgressList');
+  if (!list) return;
+  const el = list.querySelector(`[data-step="${stepName}"]`);
+  if (!el) return;
+  el.classList.remove('active', 'done');
+  if (state === 'active') el.classList.add('active');
+  if (state === 'done') el.classList.add('done');
+}
+
+function renderWgenResult(data) {
+  document.getElementById('wgenLoading').classList.remove('show');
+  document.getElementById('wgenLoading').style.display = 'none';
+
+  document.getElementById('wgenResName').textContent = data.businessName || 'Generated';
+  document.getElementById('wgenResSlug').textContent = data.slug + '.preview.morethanmomentum.com';
+
+  // Confidence badge
+  const conf = (data.research?.researchNotes?.researchConfidence || 'medium').toLowerCase();
+  const confEl = document.getElementById('wgenResConf');
+  confEl.className = 'wgen-result-confidence wgen-conf-' + (['high','medium','low'].includes(conf) ? conf : 'medium');
+  confEl.textContent = 'Research confidence: ' + conf;
+
+  // Research summary
+  const r = data.research || {};
+  const notes = r.researchNotes || {};
+  const social = notes.socialPresence || {};
+  const researchRows = [
+    ['Industry', r.business?.industry || '—'],
+    ['Service area', r.business?.location?.serviceArea || '—'],
+    ['Existing site', notes.websiteFound || 'none'],
+    ['Platform', notes.websitePlatform || 'Unknown'],
+    ['Reviews', notes.reviewSnapshot || 'Not Found'],
+    ['Social', `IG: ${social.instagram || '—'} · FB: ${social.facebook || '—'}`],
+    ['Tone', r.branding?.tone || '—'],
+    ['Services', (r.services || []).length + ' services in template'],
+  ];
+  document.getElementById('wgenResearchBody').innerHTML = researchRows.map(([k, v]) =>
+    `<div class="wgen-research-row"><span class="wgen-research-key">${esc(k)}</span><span class="wgen-research-val">${esc(v)}</span></div>`
+  ).join('');
+
+  // File list
+  const files = data.files || {};
+  const fileEntries = Object.entries(files);
+  document.getElementById('wgenFileCount').textContent = fileEntries.length + ' file' + (fileEntries.length === 1 ? '' : 's');
+
+  const iconFor = (path) => {
+    if (path.endsWith('.html')) return '🟧';
+    if (path.endsWith('.css'))  return '🟦';
+    if (path.endsWith('.js'))   return '🟨';
+    if (path.endsWith('.md'))   return '📄';
+    if (path === '_redirects')  return '⚙️';
+    return '📁';
+  };
+  document.getElementById('wgenFilesBody').innerHTML = fileEntries.map(([path, content]) => {
+    const sizeKb = (new Blob([content]).size / 1024).toFixed(1);
+    return `<div class="wgen-file-row"><span class="wgen-file-icon">${iconFor(path)}</span><span class="wgen-file-name">${esc(path)}</span><span class="wgen-file-size">${sizeKb} KB</span></div>`;
+  }).join('');
+
+  document.getElementById('wgenResult').classList.add('show');
+}
+
+async function downloadWebsiteZip() {
+  if (!_wgenLastResult) return;
+  const btn = document.getElementById('wgenDownloadBtn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Building ZIP…';
+
+  try {
+    if (typeof JSZip === 'undefined') {
+      throw new Error('JSZip not loaded — refresh the page and try again.');
+    }
+    const zip = new JSZip();
+    const slug = _wgenLastResult.slug || 'website';
+
+    // Top-level folder inside the zip so the extract is clean.
+    const root = zip.folder(slug);
+
+    // Add every generated file
+    for (const [path, content] of Object.entries(_wgenLastResult.files || {})) {
+      root.file(path, content);
+    }
+
+    // Add an empty /images/ folder so the user has a clear drop zone
+    root.folder('images');
+
+    // Bonus: include the raw research JSON so they can audit / re-run
+    root.file('research.json', JSON.stringify(_wgenLastResult.research || {}, null, 2));
+
+    const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
+
+    // Browser-side download
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = slug + '-website.zip';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    btn.textContent = '✓ Downloaded';
+    setTimeout(() => { btn.textContent = originalText; btn.disabled = false; }, 2000);
+
+  } catch (err) {
+    console.error('ZIP build failed:', err);
+    btn.textContent = originalText;
+    btn.disabled = false;
+    alert('Could not build ZIP: ' + err.message);
   }
 }
 
