@@ -1,0 +1,2025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{BUSINESS_NAME}} — Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/mobile.css">
+  <!-- ── DESKTOP-ONLY GATE ──
+       Inventory editing is intentionally desktop-only. Touch devices and
+       narrow viewports redirect home before any UI renders. Run this in
+       <head> so we redirect before paint, not after layout. -->
+  <script>
+    (function() {
+      var isFinePointer = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+      var hasMouseHover = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+      var isWideEnough  = window.innerWidth >= 900;
+      if (!isFinePointer || !hasMouseHover || !isWideEnough) {
+        window.location.replace('/index.html');
+      }
+    })();
+  </script>
+  <style>
+    :root {
+      --navy: {{PRIMARY_COLOR}};
+      --navy-light: {{PRIMARY_COLOR_LIGHT}};
+      --navy-dark: {{PRIMARY_COLOR_DARK}};
+      --gold: {{ACCENT_COLOR}};
+      --gold-light: {{ACCENT_COLOR_LIGHT}};
+      --gold-dark: {{ACCENT_COLOR_DARK}};
+      --white: #ffffff;
+      --gray-50: #f8f9fb;
+      --gray-100: #f0f2f5;
+      --gray-200: #e2e6ec;
+      --gray-400: #9aa3b0;
+      --gray-600: #5a6475;
+      --charcoal: #1A1A1A;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --sold: #6366f1;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background: var(--gray-50);
+      color: var(--charcoal);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN SCREEN ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--navy-dark) 0%, var(--navy) 50%, var(--navy-light) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    #login-screen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 60px,
+        rgba(201,168,76,0.03) 60px,
+        rgba(201,168,76,0.03) 61px
+      );
+    }
+
+    .login-card {
+      background: var(--white);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+
+    .login-logo {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 28px;
+      color: var(--navy);
+      margin-bottom: 4px;
+      letter-spacing: -0.5px;
+    }
+
+    .login-logo span { color: var(--gold); }
+
+    .login-subtitle {
+      font-size: 13px;
+      color: var(--gray-400);
+      margin-bottom: 36px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .login-label {
+      display: block;
+      text-align: left;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--gray-600);
+      margin-bottom: 8px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .login-input {
+      width: 100%;
+      padding: 14px 16px;
+      border: 2px solid var(--gray-200);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: 'Open Sans', sans-serif;
+      transition: border-color 0.2s;
+      outline: none;
+      margin-bottom: 24px;
+    }
+
+    .login-input:focus { border-color: var(--gold); }
+
+    .login-btn {
+      width: 100%;
+      padding: 15px;
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      border-radius: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+      letter-spacing: 0.5px;
+    }
+
+    .login-btn:hover { background: var(--navy-light); }
+    .login-btn:active { transform: scale(0.99); }
+
+    .login-error {
+      margin-top: 16px;
+      padding: 12px;
+      background: #fef2f2;
+      color: var(--danger);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      display: none;
+    }
+
+    /* ── ADMIN DASHBOARD ── */
+    #admin-screen { display: none; }
+
+    .topbar {
+      background: var(--navy);
+      padding: 0 32px;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.2);
+    }
+
+    .topbar-logo {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 20px;
+      color: var(--white);
+      letter-spacing: -0.3px;
+    }
+
+    .topbar-logo span { color: var(--gold); }
+
+    .topbar-badge {
+      font-size: 11px;
+      background: rgba(201,168,76,0.2);
+      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.3);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+
+    .logout-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.7);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'Open Sans', sans-serif;
+      transition: all 0.2s;
+    }
+
+    .logout-btn:hover { border-color: rgba(255,255,255,0.5); color: white; }
+
+    .main-content { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+    .page-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .page-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 26px;
+      color: var(--navy);
+    }
+
+    .page-desc { font-size: 14px; color: var(--gray-400); margin-top: 4px; }
+
+    .save-all-btn {
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .save-all-btn:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(201,168,76,0.4); }
+    .save-all-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* Status bar */
+    .status-bar {
+      background: var(--white);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 28px;
+      display: flex;
+      gap: 32px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      flex-wrap: wrap;
+    }
+
+    .stat-item { display: flex; flex-direction: column; gap: 4px; }
+    .stat-value { font-family: 'Montserrat', sans-serif; font-weight: 800; font-size: 24px; color: var(--navy); }
+    .stat-label { font-size: 12px; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+    .stat-value.gold { color: var(--gold); }
+    .stat-value.green { color: var(--success); }
+    .stat-value.purple { color: var(--sold); }
+
+    /* Filter tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .filter-tab {
+      padding: 8px 18px;
+      border-radius: 8px;
+      border: 2px solid var(--gray-200);
+      background: var(--white);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--gray-600);
+      transition: all 0.2s;
+    }
+
+    .filter-tab:hover { border-color: var(--navy); color: var(--navy); }
+    .filter-tab.active { background: var(--navy); border-color: var(--navy); color: var(--white); }
+
+    /* Cart grid */
+    .cart-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .cart-card {
+      background: var(--white);
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 2px solid transparent;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .cart-card:hover { border-color: var(--gray-200); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+    .cart-card.modified { border-color: var(--gold); }
+
+    .cart-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+
+    .cart-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+      line-height: 1.3;
+    }
+
+    .cart-seats {
+      font-size: 12px;
+      color: var(--gray-400);
+      font-weight: 500;
+      margin-top: 3px;
+    }
+
+    .cart-feature {
+      font-size: 12px;
+      color: var(--gray-600);
+      margin-bottom: 18px;
+      line-height: 1.4;
+    }
+
+    /* Status badge */
+    .status-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    .status-badge.available { background: #dcfce7; color: #16a34a; }
+    .status-badge.sold { background: #ede9fe; color: #7c3aed; }
+    .status-badge.coming-soon { background: #fef3c7; color: #d97706; }
+
+    /* Field rows */
+    .field-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+
+    .field-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--gray-400);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .price-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .price-symbol {
+      position: absolute;
+      left: 12px;
+      font-weight: 700;
+      color: var(--gray-600);
+      font-size: 15px;
+    }
+
+    .price-input {
+      width: 100%;
+      padding: 11px 12px 11px 28px;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      color: var(--navy);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .price-input:focus { border-color: var(--gold); }
+
+    .status-select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: 'Open Sans', sans-serif;
+      color: var(--charcoal);
+      outline: none;
+      transition: border-color 0.2s;
+      cursor: pointer;
+      appearance: none;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239aa3b0' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center;
+      background-color: var(--white);
+    }
+
+    .status-select:focus { border-color: var(--gold); }
+
+    .modified-dot {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 8px;
+      height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      display: none;
+    }
+
+    .cart-card.modified .modified-dot { display: block; }
+
+    /* Toast notification */
+    #toast {
+      position: fixed;
+      bottom: 32px;
+      right: 32px;
+      background: var(--navy);
+      color: var(--white);
+      padding: 16px 24px;
+      border-radius: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    #toast.show { transform: translateY(0); opacity: 1; }
+    #toast.success { border-left: 4px solid var(--success); }
+    #toast.error { border-left: 4px solid var(--danger); }
+    #toast.loading { border-left: 4px solid var(--gold); }
+
+    /* Spinner */
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Save indicator */
+    .save-note {
+      font-size: 12px;
+      color: var(--gray-400);
+      text-align: center;
+      margin-top: 40px;
+      padding-bottom: 40px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 600px) {
+      .topbar { padding: 0 16px; }
+      .main-content { padding: 24px 16px; }
+      .status-bar { gap: 20px; }
+      .cart-grid { grid-template-columns: 1fr; }
+    }
+
+    .delete-btn {
+      width: 100%;
+      margin-top: 12px;
+      padding: 10px;
+      background: transparent;
+      border: 1.5px solid #fca5a5;
+      color: #ef4444;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Open Sans', sans-serif;
+    }
+    .delete-btn:hover { background: #fef2f2; }
+
+    .add-cart-btn {
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-bottom: 24px;
+    }
+    .add-cart-btn:hover { background: var(--navy-light); }
+
+    #add-cart-form {
+      display: none;
+      background: var(--white);
+      border-radius: 14px;
+      padding: 28px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      border: 2px solid var(--gold);
+      margin-bottom: 28px;
+    }
+    .add-form-title {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--navy);
+      margin-bottom: 20px;
+    }
+    .add-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    @media (max-width: 600px) { .add-form-grid { grid-template-columns: 1fr; } }
+    .add-form-input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Open Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .add-form-input:focus { border-color: var(--gold); }
+    .add-form-select {
+      width: 100%;
+      padding: 11px 12px;
+      border: 2px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: 'Open Sans', sans-serif;
+      outline: none;
+      cursor: pointer;
+      background: white;
+    }
+    .add-form-select:focus { border-color: var(--gold); }
+    .add-form-actions { display: flex; gap: 12px; margin-top: 16px; }
+    .add-form-submit {
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .add-form-submit:hover { background: var(--gold-light); }
+    .add-form-cancel {
+      background: transparent;
+      border: 2px solid var(--gray-200);
+      color: var(--gray-600);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-family: 'Open Sans', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+
+    /* ── Featured Toggle ── */
+    .featured-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 12px;
+      border: 1.5px solid var(--gray-200);
+      border-radius: 8px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: var(--white);
+    }
+    .featured-toggle:hover { border-color: var(--gold); }
+    .featured-toggle.is-featured {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.08);
+    }
+    .featured-toggle-label {
+      font-size: 12px; font-weight: 700;
+      font-family: 'Open Sans', sans-serif;
+      color: var(--gray-600);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .featured-toggle.is-featured .featured-toggle-label { color: var(--gold-dark); }
+    .featured-star { font-size: 16px; transition: transform 0.2s; }
+    .featured-toggle.is-featured .featured-star { transform: scale(1.2); }
+    .featured-pill {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+      text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
+      background: var(--gold); color: var(--navy);
+    }
+    .featured-toggle:not(.is-featured) .featured-pill { display: none; }
+    .featured-max-msg {
+      font-size: 11px; color: var(--danger); text-align: center;
+      margin-bottom: 10px; display: none; font-weight: 600;
+    }
+
+    /* ── FEATURE EDITOR ── */
+    .feature-editor { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .feature-row { display: flex; align-items: center; gap: 6px; }
+    .feature-input {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--white);
+      transition: border-color 0.2s;
+    }
+    .feature-input:focus { outline: none; border-color: var(--gold); }
+    .feature-remove-btn {
+      background: none;
+      border: 1px solid var(--gray-200);
+      border-radius: 6px;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 15px;
+      padding: 4px 8px;
+      line-height: 1;
+      transition: background 0.15s;
+    }
+    .feature-remove-btn:hover { background: #fee2e2; border-color: var(--danger); }
+    .feature-add-btn {
+      align-self: flex-start;
+      background: none;
+      border: 1px dashed var(--gray-400);
+      border-radius: 8px;
+      color: var(--gray-600);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      margin-top: 2px;
+      transition: all 0.15s;
+    }
+    .feature-add-btn:hover { border-color: var(--gold); color: var(--gold-dark); }
+    .feature-limit-msg { font-size: 11px; color: var(--gray-400); font-style: italic; margin-top: 2px; }
+
+    /* ── Description Editor ── */
+    .desc-toggle-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--navy-light); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 14px;
+      font-size: 12px; font-weight: 600; color: var(--gray-200);
+      cursor: pointer; transition: border-color 0.2s, color 0.2s;
+    }
+    .desc-toggle-btn:hover { border-color: var(--gold); color: var(--gold); }
+    .desc-editor-wrap { margin-top: 6px; }
+    .desc-textarea {
+      width: 100%; min-height: 100px;
+      background: var(--navy-light); border: 1px solid var(--border);
+      border-radius: 8px; padding: 10px 12px;
+      font-size: 12px; color: var(--gray-100); line-height: 1.6;
+      resize: vertical; font-family: inherit;
+      transition: border-color 0.2s;
+      box-sizing: border-box;
+    }
+    .desc-textarea:focus { outline: none; border-color: var(--gold); }
+    .desc-textarea::placeholder { color: var(--gray-500); }
+    .desc-counter-row {
+      display: flex; align-items: center; gap: 6px;
+      margin-top: 5px; font-size: 11px; color: var(--gray-400);
+    }
+    .desc-wordcount { font-weight: 700; color: var(--gray-200); }
+    .desc-counter-warn { color: #d97706; font-weight: 600; }
+
+    /* ── COLOR CHECKBOXES ── */
+    .color-check-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .color-check-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--charcoal);
+      cursor: pointer;
+      background: var(--gray-100);
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      padding: 5px 10px;
+      transition: border-color 0.15s;
+    }
+    .color-check-label:hover { border-color: var(--gold); }
+    .color-check-label input { accent-color: var(--navy); cursor: pointer; }
+    .color-check-label.is-checked { background: #e8f0fe; border-color: var(--navy); font-weight: 600; }
+    .no-colors-msg { font-size: 12px; color: var(--gray-400); font-style: italic; }
+
+    /* ── FILTER MANAGER ── */
+    .filter-manager {
+      background: var(--white);
+      border-radius: 16px;
+      border: 1px solid var(--gray-200);
+      padding: 28px;
+      margin-top: 32px;
+    }
+    .filter-manager-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .filter-manager-desc {
+      font-size: 13px;
+      color: var(--gray-600);
+      margin-bottom: 24px;
+    }
+    .filter-manager-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .filter-card {
+      background: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      border-radius: 12px;
+      padding: 18px;
+    }
+    .filter-card-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+      min-height: 32px;
+    }
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--navy);
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+    }
+    .filter-chip-remove {
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.7);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+    }
+    .filter-chip-remove:hover { color: var(--white); }
+    .filter-add-row {
+      display: flex;
+      gap: 8px;
+    }
+    .filter-add-input {
+      flex: 1;
+      padding: 7px 10px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--white);
+    }
+    .filter-add-input:focus { outline: none; border-color: var(--gold); }
+    .filter-add-btn {
+      background: var(--gold);
+      color: var(--navy);
+      border: none;
+      border-radius: 8px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 0 12px;
+      line-height: 1;
+    }
+    .filter-add-btn:hover { background: var(--gold-light); }
+
+    /* ── PHOTO MANAGER ── */
+    .photo-manager { display: flex; flex-direction: column; gap: 6px; }
+    .photo-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .photo-thumb {
+      width: 44px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 5px;
+      flex-shrink: 0;
+      border: 1px solid var(--gray-200);
+      background: var(--gray-100);
+    }
+    .photo-url-input {
+      flex: 1;
+      padding: 6px 10px;
+      border: 1px solid var(--gray-200);
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: inherit;
+      background: var(--white);
+      min-width: 0;
+      transition: border-color 0.2s;
+    }
+    .photo-url-input:focus { outline: none; border-color: var(--gold); }
+    .photo-remove-btn {
+      background: none;
+      border: 1px solid var(--gray-200);
+      border-radius: 6px;
+      color: var(--danger);
+      cursor: pointer;
+      font-size: 15px;
+      padding: 4px 8px;
+      flex-shrink: 0;
+      line-height: 1;
+      transition: background 0.15s;
+    }
+    .photo-remove-btn:hover { background: #fee2e2; border-color: var(--danger); }
+    .photo-add-row {
+      display: flex;
+      gap: 7px;
+      margin-top: 4px;
+    }
+    .photo-add-input {
+      flex: 1;
+      padding: 7px 10px;
+      border: 1px dashed var(--gray-400);
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: inherit;
+      background: var(--white);
+      min-width: 0;
+      transition: border-color 0.2s;
+    }
+    .photo-add-input:focus { outline: none; border-color: var(--gold); }
+    .photo-add-btn {
+      background: var(--navy);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      padding: 6px 13px;
+      flex-shrink: 0;
+      font-family: 'Montserrat', sans-serif;
+      transition: background 0.15s;
+    }
+    .photo-add-btn:hover { background: var(--navy-light); }
+    .photo-hint {
+      font-size: 11px;
+      color: var(--gray-400);
+      font-style: italic;
+      margin-top: 3px;
+    }
+    .photo-limit-msg { font-size: 11px; color: var(--gold-dark); font-style: italic; }
+
+  </style>
+</head>
+<body>
+
+<!-- ── LOGIN ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo"><span>{{LOGO_PRIMARY_TEXT}}</span> {{LOGO_SECONDARY_TEXT}}</div>
+    <div class="login-subtitle">Inventory Manager</div>
+
+    <label class="login-label" for="password">Admin Password</label>
+    <input class="login-input" type="password" id="password" placeholder="Enter password" autocomplete="current-password" />
+
+    <button class="login-btn" onclick="handleLogin()">Sign In →</button>
+    <div class="login-error" id="login-error">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- ── ADMIN DASHBOARD ── -->
+<div id="admin-screen">
+  <nav class="topbar">
+    <div class="topbar-logo"><span>{{LOGO_PRIMARY_TEXT}}</span> {{LOGO_SECONDARY_TEXT}}</div>
+    <div class="topbar-right">
+      <span class="topbar-badge">Inventory Manager</span>
+      <button class="logout-btn" onclick="handleLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="page-header">
+      <div>
+        <div class="page-title">Cart Inventory</div>
+        <div class="page-desc">Update prices and availability. Changes go live within 60 seconds.</div>
+      </div>
+      <button class="save-all-btn" id="save-btn" onclick="saveChanges()">
+        💾 Save All Changes
+      </button>
+    </div>
+
+    <!-- Stats -->
+    <div class="status-bar">
+      <div class="stat-item">
+        <div class="stat-value" id="stat-total">—</div>
+        <div class="stat-label">Total Carts</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value green" id="stat-available">—</div>
+        <div class="stat-label">Available</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value purple" id="stat-sold">—</div>
+        <div class="stat-label">Sold</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value gold" id="stat-soon">—</div>
+        <div class="stat-label">Coming Soon</div>
+      </div>
+    </div>
+
+    <!-- Add New Cart -->
+    <button class="add-cart-btn" onclick="toggleAddForm()">+ Add New Cart</button>
+
+    <div id="add-cart-form">
+      <div class="add-form-title">Add New Cart to Inventory</div>
+      <div class="add-form-grid">
+        <div>
+          <div class="field-label" style="margin-bottom:6px;">Cart Name *</div>
+          <input id="new-name" class="add-form-input" type="text" placeholder="e.g. {{ITEM_PLACEHOLDER_EXAMPLE}}" />
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:6px;">Make</div>
+          <select id="new-make" class="add-form-select">
+            <option value="dach">Dach</option>
+            <option value="teko">Teko</option>
+          </select>
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:6px;">Series / Brand Line</div>
+          <input id="new-series" class="add-form-input" type="text" placeholder="e.g. Dach Vehicles" />
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:6px;">Seats</div>
+          <select id="new-seats" class="add-form-select">
+            <option value="2">2 Seats</option>
+            <option value="4" selected>4 Seats</option>
+            <option value="6">6 Seats</option>
+            <option value="8">8 Seats</option>
+          </select>
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:6px;">Starting Price ($)</div>
+          <input id="new-price" class="add-form-input" type="number" placeholder="9000" min="0" />
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:6px;">Quantity in Stock</div>
+          <input id="new-quantity" class="add-form-input" type="number" placeholder="1" min="0" />
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:6px;">Status</div>
+          <select id="new-status" class="add-form-select">
+            <option value="available">Available</option>
+            <option value="coming-soon">Coming Soon</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-label" style="margin-bottom:6px;">Available Colors</div>
+      <div id="new-color-checkboxes" class="color-check-group" style="margin-bottom:14px;"></div>
+      <div class="field-label" style="margin-bottom:6px;">First Photo URL <span style="font-weight:400;color:var(--gray-400);">(optional)</span></div>
+      <input id="new-photo" class="add-form-input" type="url" placeholder="https://... paste image link" style="margin-bottom:4px;" />
+      <div style="font-size:11px;color:var(--gray-400);font-style:italic;margin-bottom:0;">💡 Landscape · 800×600px min · Well-lit · You can add up to 7 more photos after saving the cart.</div>
+      <div class="add-form-actions">
+        <button class="add-form-submit" onclick="addCart()">Add to Inventory</button>
+        <button class="add-form-cancel" onclick="toggleAddForm()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterCarts('all', this)">All Carts</button>
+      <button class="filter-tab" onclick="filterCarts('available', this)">Available</button>
+      <button class="filter-tab" onclick="filterCarts('sold', this)">Sold</button>
+      <button class="filter-tab" onclick="filterCarts('coming-soon', this)">Coming Soon</button>
+    </div>
+
+    <!-- Cart Grid -->
+    <div class="cart-grid" id="cart-grid"></div>
+
+    <div class="save-note">
+      💡 After saving, your website updates automatically within about 60 seconds.
+    </div>
+
+    <!-- ── FILTER MANAGER ── -->
+    <div class="filter-manager">
+      <div class="filter-manager-title">🎛️ Shop Filter Manager</div>
+      <div class="filter-manager-desc">Add or remove filter options that appear on the shop page. Changes save with the Save All Changes button above.</div>
+      <div class="filter-manager-grid">
+
+        <div class="filter-card">
+          <div class="filter-card-title">Makes</div>
+          <div class="filter-chips" id="fm-makes"></div>
+          <div class="filter-add-row">
+            <input class="filter-add-input" id="fm-makes-label" placeholder="Label (e.g. EVolution)" />
+            <button class="filter-add-btn" onclick="addFilterItem('makes')">+</button>
+          </div>
+        </div>
+
+        <div class="filter-card">
+          <div class="filter-card-title">Seat Options</div>
+          <div class="filter-chips" id="fm-seats"></div>
+          <div class="filter-add-row">
+            <input class="filter-add-input" id="fm-seats-label" placeholder="Label (e.g. 2 Seats)" />
+            <button class="filter-add-btn" onclick="addFilterItem('seats')">+</button>
+          </div>
+        </div>
+
+        <div class="filter-card">
+          <div class="filter-card-title">Colors</div>
+          <div class="filter-chips" id="fm-colors"></div>
+          <div class="filter-add-row">
+            <input class="filter-add-input" id="fm-colors-label" placeholder="Label (e.g. Green)" />
+            <button class="filter-add-btn" onclick="addFilterItem('colors')">+</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════
+         ACCESSORIES SECTION
+    ════════════════════════════════════════════════ -->
+    <div style="margin-top:2.5rem;padding-top:2.5rem;border-top:2px solid var(--border);"></div>
+    <div class="page-header">
+      <div>
+        <div class="page-title">🔧 Accessories &amp; Add-Ons</div>
+        <div class="page-desc">Manage accessories shown below the cart inventory on the shop page.</div>
+      </div>
+    </div>
+
+    <div class="status-bar">
+      <div class="stat-item"><div class="stat-value" id="acc-stat-total">—</div><div class="stat-label">Total</div></div>
+      <div class="stat-item"><div class="stat-value green" id="acc-stat-available">—</div><div class="stat-label">Available</div></div>
+      <div class="stat-item"><div class="stat-value gold" id="acc-stat-soon">—</div><div class="stat-label">Coming Soon</div></div>
+      <div class="stat-item"><div class="stat-value purple" id="acc-stat-soldout">—</div><div class="stat-label">Sold Out</div></div>
+    </div>
+
+    <button class="add-cart-btn" onclick="toggleAddAccessoryForm()"
+            style="background:var(--gold);color:var(--navy);">+ Add New Accessory</button>
+
+    <div id="add-accessory-form" class="add-cart-form" style="display:none;">
+      <div class="add-form-title">Add New Accessory</div>
+      <div class="add-form-grid">
+        <div>
+          <div class="field-label" style="margin-bottom:6px;">Accessory Name *</div>
+          <input id="acc-new-name" class="add-form-input" type="text" placeholder="e.g. Lithium Battery Kit" />
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:6px;">Price ($)</div>
+          <input id="acc-new-price" class="add-form-input" type="number" placeholder="299" min="0" />
+        </div>
+        <div>
+          <div class="field-label" style="margin-bottom:6px;">Status</div>
+          <select id="acc-new-status" class="add-form-select">
+            <option value="available">Available</option>
+            <option value="coming-soon">Coming Soon</option>
+            <option value="sold-out">Sold Out</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-label" style="margin-bottom:6px;margin-top:4px;">Features <span style="font-weight:400;color:var(--gray-400);">(up to 4)</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        <input id="acc-feat-1" class="add-form-input" type="text" placeholder="Feature 1 (e.g. 48V Lithium)" />
+        <input id="acc-feat-2" class="add-form-input" type="text" placeholder="Feature 2" />
+        <input id="acc-feat-3" class="add-form-input" type="text" placeholder="Feature 3" />
+        <input id="acc-feat-4" class="add-form-input" type="text" placeholder="Feature 4" />
+      </div>
+      <div class="field-label" style="margin-bottom:6px;">First Photo URL <span style="font-weight:400;color:var(--gray-400);">(optional — or upload below)</span></div>
+      <input id="acc-new-photo" class="add-form-input" type="url" placeholder="https://..." style="margin-bottom:4px;" />
+      <div class="add-form-actions">
+        <button class="add-form-submit" onclick="addAccessory()">Add Accessory</button>
+        <button class="add-form-cancel" onclick="toggleAddAccessoryForm()">Cancel</button>
+      </div>
+    </div>
+
+    <div class="filter-tabs" style="margin-top:1.25rem;">
+      <button class="filter-tab active" onclick="filterAccessories('all', this)">All</button>
+      <button class="filter-tab" onclick="filterAccessories('available', this)">Available</button>
+      <button class="filter-tab" onclick="filterAccessories('coming-soon', this)">Coming Soon</button>
+      <button class="filter-tab" onclick="filterAccessories('sold-out', this)">Sold Out</button>
+    </div>
+
+    <div class="cart-grid" id="accessories-admin-grid"></div>
+
+    <div class="save-note" style="margin-top:1.5rem;">
+      <strong>Remember:</strong> Hit <em>Save All Changes</em> above to make any accessory changes go live.
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  // ── CONFIG ──
+  // Password is checked here. For a production upgrade, move this to the server side.
+  const ADMIN_PASSWORD = 'SNHAdmin2025!';
+
+  // ── STATE ──
+  let inventory = [];
+  let originalInventory = [];
+  let filters = { makes: [], seats: [], colors: [] };
+  let currentFilter = 'all';
+
+  // ── ACCESSORIES STATE ──
+  let accessories = [];
+  let originalAccessories = [];
+  let currentAccFilter = 'all';
+
+  // ── LOGIN ──
+  function handleLogin() {
+    const pw = document.getElementById('password').value;
+    if (pw === ADMIN_PASSWORD) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('admin-screen').style.display = 'block';
+      loadInventory();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('password').value = '';
+    }
+  }
+
+  document.getElementById('password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  function handleLogout() {
+    document.getElementById('admin-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    document.getElementById('password').value = '';
+    inventory = [];
+  }
+
+  // ── LOAD INVENTORY ──
+  async function loadInventory() {
+    try {
+      const res = await fetch('/inventory.json?v=' + Date.now());
+      const data = await res.json();
+      // Normalize: migrate legacy photoUrl → photos array
+      inventory = data.carts.map(c => {
+        const photos = Array.isArray(c.photos) ? c.photos : (c.photoUrl ? [c.photoUrl] : []);
+        return { ...c, photos };
+      });
+      originalInventory = inventory.map(c => ({ ...c, photos: [...c.photos] }));
+      filters = data.filters || { makes: [], seats: [], colors: [] };
+      // Load accessories
+      accessories = (data.accessories || []).map(a => {
+        const photos = Array.isArray(a.photos) ? a.photos : (a.photoUrl ? [a.photoUrl] : []);
+        return { ...a, photos };
+      });
+      originalAccessories = accessories.map(a => ({ ...a, photos: [...a.photos] }));
+      renderGrid();
+      updateStats();
+      renderFilterManager();
+      populateAddFormDropdowns();
+      renderAccessoriesGrid();
+      updateAccStats();
+    } catch (e) {
+      showToast('Could not load inventory. Check connection.', 'error');
+    }
+  }
+
+  // ── RENDER GRID ──
+  function renderGrid() {
+    const grid = document.getElementById('cart-grid');
+    const filtered = currentFilter === 'all'
+      ? inventory
+      : inventory.filter(c => c.status === currentFilter);
+
+    grid.innerHTML = filtered.map(cart => {
+      const orig = originalInventory.find(o => o.id === cart.id);
+      const isModified = orig && (orig.price !== cart.price || orig.status !== cart.status || JSON.stringify(orig.photos) !== JSON.stringify(cart.photos) || orig.featured !== cart.featured || orig.quantity !== cart.quantity || JSON.stringify(orig.colors) !== JSON.stringify(cart.colors) || JSON.stringify(orig.features) !== JSON.stringify(cart.features));
+      const isNew = !orig;
+      const photos = Array.isArray(cart.photos) ? cart.photos.filter(Boolean) : [];
+      const firstPhoto = photos[0] || '';
+      const photoPreviewHtml = firstPhoto
+        ? `<div style="position:relative;margin-bottom:14px;">
+             <img src="${firstPhoto}" alt="${cart.name}" style="width:100%;height:140px;object-fit:cover;border-radius:8px;" onerror="this.style.opacity='0.2'">
+             ${photos.length > 1 ? `<span style="position:absolute;bottom:8px;right:10px;background:rgba(0,0,0,0.65);color:#fff;font-size:11px;padding:2px 8px;border-radius:20px;">📷 ${photos.length} photos</span>` : ''}
+           </div>`
+        : '';
+
+      const photoRowsHtml = photos.map((url, pi) => `
+        <div class="photo-row" id="photo-row-${cart.id}-${pi}">
+          <img src="${url}" class="photo-thumb" onerror="this.style.opacity='0.2'" />
+          <input class="photo-url-input" type="url" value="${url}"
+            onchange="updatePhoto('${cart.id}', ${pi}, this.value.trim())"
+            placeholder="https://..." />
+          <button class="photo-remove-btn" onclick="removePhoto('${cart.id}', ${pi})" title="Remove photo">×</button>
+        </div>`).join('');
+
+      const photoAddHtml = photos.length < 8
+        ? `<div class="photo-add-row">
+             <input class="photo-add-input" id="photo-add-${cart.id}" type="url" placeholder="Paste image URL or upload a file…" />
+             <button class="photo-add-btn" onclick="addPhoto('${cart.id}')">+ Add URL</button>
+             <input type="file" id="photo-file-${cart.id}" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadPhoto('${cart.id}', this)" />
+             <button class="photo-add-btn" style="background:var(--gold);color:var(--navy);" onclick="document.getElementById('photo-file-${cart.id}').click()">📁 Upload</button>
+           </div>
+           <div class="photo-hint">💡 Landscape · 800×600px min · Well-lit · Plain background</div>`
+        : `<div class="photo-limit-msg">✅ Max 8 photos reached.</div>`;
+
+      return `
+        <div class="cart-card ${isModified || isNew ? 'modified' : ''}" id="card-${cart.id}">
+          <div class="modified-dot"></div>
+     <div class="featured-max-msg" id="feat-max-msg-${cart.id}" style="display:none;">Max 3 featured carts already selected.</div>
+          <button type="button"
+            class="featured-toggle ${cart.featured ? 'is-featured' : ''}"
+            onclick="toggleFeatured('${cart.id}')">
+            <span class="featured-toggle-label">
+              <span class="featured-star">${cart.featured ? '⭐' : '☆'}</span>
+              Feature on Homepage
+            </span>
+            <span class="featured-pill">Featured</span>
+          </button>
+          <div class="cart-card-header">
+            <div>
+              <div class="cart-name">${cart.name}</div>
+              <div class="cart-seats">${Array.isArray(cart.seats) ? cart.seats.join(' / ') : cart.seats} Seats</div>
+            </div>
+            <span class="status-badge ${cart.status}">${formatStatus(cart.status)}</span>
+          </div>
+          <div class="field-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+            <div class="field-label">Seats</div>
+            ${(filters.seats || []).length === 0
+              ? `<span class="no-colors-msg">No seat options set yet — add them in Filter Manager below.</span>`
+              : `<div class="color-check-group">${(filters.seats || []).map(s => {
+                  const cartSeats = Array.isArray(cart.seats) ? cart.seats.map(String) : [String(cart.seats)];
+                  const checked = cartSeats.includes(String(s.value));
+                  return `<label class="color-check-label ${checked ? 'is-checked' : ''}" id="seat-lbl-${cart.id}-${s.value}">
+                    <input type="checkbox" value="${s.value}" ${checked ? 'checked' : ''}
+                      onchange="toggleCartSeats('${cart.id}', '${s.value}', this.checked)" />
+                    ${s.label}
+                  </label>`;
+                }).join('')}</div>`
+            }
+          </div>
+          ${photoPreviewHtml}
+          <div class="field-row">
+            <div class="field-label">Photos <span style="font-weight:400;color:var(--gray-400);">(up to 8)</span></div>
+            <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 12px;margin-bottom:10px;font-size:12px;color:#92400e;line-height:1.6;">
+              📱 <strong>Heads up, {{OWNER_FIRST}}:</strong> Photos must be on the device you're using right now.<br>
+              At the lot with your iPhone? Either open this page on your phone, or AirDrop/text the photos to your laptop first.
+            </div>
+            <div class="photo-manager" id="photos-${cart.id}">
+              ${photoRowsHtml}
+              ${photoAddHtml}
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Quantity in Stock</div>
+            <input class="price-input" type="number" value="${cart.quantity ?? 1}" min="0"
+              onchange="updateCart('${cart.id}', 'quantity', parseInt(this.value) || 0)"
+              style="padding-left:12px;" />
+          </div>
+          <div class="field-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+            <div class="field-label">Available Colors</div>
+            ${(filters.colors || []).length === 0
+              ? `<span class="no-colors-msg">No colors set yet — add them in Filter Manager below.</span>`
+              : `<div class="color-check-group">${(filters.colors || []).map(c => {
+                  const cartColors = Array.isArray(cart.colors) ? cart.colors : (cart.color ? [cart.color] : []);
+                  const checked = cartColors.includes(c.value);
+                  return `<label class="color-check-label ${checked ? 'is-checked' : ''}" id="lbl-${cart.id}-${c.value}">
+                    <input type="checkbox" value="${c.value}" ${checked ? 'checked' : ''}
+                      onchange="toggleCartColor('${cart.id}', '${c.value}', this.checked)" />
+                    ${c.label}
+                  </label>`;
+                }).join('')}</div>`
+            }
+          </div>
+          <div class="field-row">
+            <div class="field-label">Price</div>
+            <div class="price-input-wrap">
+              <span class="price-symbol">$</span>
+              <input class="price-input" type="number" value="${cart.price}" min="0"
+                onchange="updateCart('${cart.id}', 'price', parseInt(this.value) || 0)"
+                ${cart.status === 'coming-soon' ? 'placeholder="TBD"' : ''} />
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-label">Status</div>
+            <select class="status-select" onchange="updateCart('${cart.id}', 'status', this.value)">
+              <option value="available" ${cart.status === 'available' ? 'selected' : ''}>Available</option>
+              <option value="sold" ${cart.status === 'sold' ? 'selected' : ''}>Sold</option>
+              <option value="coming-soon" ${cart.status === 'coming-soon' ? 'selected' : ''}>Coming Soon</option>
+            </select>
+          </div>
+
+          <div class="field-row" style="flex-direction:column;align-items:flex-start;gap:6px;">
+            <button class="desc-toggle-btn" onclick="toggleDescEditor('${cart.id}')">
+              📝 Cart Description <span id="desc-toggle-icon-${cart.id}" style="font-size:0.7rem;">▾</span>
+            </button>
+            <div class="desc-editor-wrap" id="desc-editor-${cart.id}" style="display:none;width:100%;">
+              <textarea
+                class="desc-textarea"
+                id="desc-input-${cart.id}"
+                maxlength="3000"
+                oninput="handleDescInput('${cart.id}', this)"
+                placeholder="Copy into Chatgpt: give me bullet point details on _____ golf cart for my golf cart website"
+              >${cart.description || ''}</textarea>
+              <div class="desc-counter-row">
+                <span id="desc-wordcount-${cart.id}" class="desc-wordcount">${(cart.description || '').trim().split(/\s+/).filter(Boolean).length}</span>
+                <span class="desc-counter-slash">/ 300 words</span>
+                <span id="desc-counter-warn-${cart.id}" class="desc-counter-warn" style="display:none;">⚠️ 300 word limit reached</span>
+              </div>
+            </div>
+          </div>
+          <button class="delete-btn" onclick="deleteCart('${cart.id}')">Remove This Cart</button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function formatStatus(s) {
+    return s === 'coming-soon' ? 'Coming Soon' : s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
+  // ── TOGGLE FEATURED ──
+  function toggleFeatured(id) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart) return;
+    const featuredCount = inventory.filter(c => c.featured).length;
+    if (!cart.featured && featuredCount >= 3) {
+      showToast('Max 3 featured carts. Un-feature another cart first.', 'error');
+      return;
+    }
+    cart.featured = !cart.featured;
+    renderGrid();
+    updateStats();
+    showToast(
+      cart.featured ? '⭐ Featured! Save to make it live.' : 'Removed from featured. Save to update.',
+      'success'
+    );
+  }
+
+  // ── DELETE CART ──
+  function deleteCart(id) {
+    if (!confirm('Remove this cart from inventory? This cannot be undone until you save.')) return;
+    inventory = inventory.filter(c => c.id !== id);
+    renderGrid();
+    updateStats();
+    showToast('Cart removed. Hit Save All Changes to make it live.', 'success');
+  }
+
+  // ── ADD CART ──
+  function toggleAddForm() {
+    const form = document.getElementById('add-cart-form');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function addCart() {
+    const name     = document.getElementById('new-name').value.trim();
+    const make     = document.getElementById('new-make').value;
+    const series   = document.getElementById('new-series').value.trim();
+    const seats    = parseInt(document.getElementById('new-seats').value) || 4;
+    const price    = parseInt(document.getElementById('new-price').value) || 9000;
+    const quantity = parseInt(document.getElementById('new-quantity').value) || 1;
+    const colors   = [...document.querySelectorAll('#new-color-checkboxes input:checked')].map(cb => cb.value);
+    const status   = document.getElementById('new-status').value;
+    const photoUrl = document.getElementById('new-photo').value.trim();
+
+    if (!name) { alert('Cart name is required.'); return; }
+
+    const id = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if (inventory.find(c => c.id === id)) { alert('A cart with this name already exists.'); return; }
+
+    const makeEntry = filters.makes.find(m => m.value === make);
+    const newCart = {
+      id, name,
+      series: series || (makeEntry ? makeEntry.label : make),
+      make,
+      seats, price, status,
+      category: make,
+      condition: 'new',
+      colors: colors,
+      bestSeller: false,
+      featured: false,
+      quantity,
+      features: [],
+      photos: photoUrl ? [photoUrl] : [],
+      description: ''
+    };
+
+    inventory.unshift(newCart);
+    document.getElementById('add-cart-form').style.display = 'none';
+    ['new-name','new-series','new-price','new-quantity','new-photo'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    currentFilter = 'all';
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.toggle('active', t.textContent === 'All Carts'));
+    renderGrid();
+    updateStats();
+    showToast('Cart added! Hit Save All Changes to make it live.', 'success');
+  }
+
+  // ── UPDATE CART ──
+  function updateCart(id, field, value) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart) return;
+    cart[field] = value;
+    // Update badge immediately
+    const card = document.getElementById('card-' + id);
+    if (field === 'status') {
+      const badge = card.querySelector('.status-badge');
+      badge.className = 'status-badge ' + value;
+      badge.textContent = formatStatus(value);
+    }
+    // Check if modified
+    const orig = originalInventory.find(o => o.id === id);
+    const modified = orig && (orig.price !== cart.price || orig.status !== cart.status);
+    card.classList.toggle('modified', modified);
+    updateStats();
+  }
+
+  // ── STATS ──
+  function updateStats() {
+    document.getElementById('stat-total').textContent = inventory.length;
+    document.getElementById('stat-available').textContent = inventory.filter(c => c.status === 'available').length;
+    document.getElementById('stat-sold').textContent = inventory.filter(c => c.status === 'sold').length;
+    document.getElementById('stat-soon').textContent = inventory.filter(c => c.status === 'coming-soon').length;
+  }
+
+  // ── FILTER ──
+  function filterCarts(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderGrid();
+  }
+
+  // ── SAVE ──
+  async function saveChanges() {
+    const btn = document.getElementById('save-btn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Saving...';
+    showToast('Saving changes...', 'loading');
+
+    try {
+      const res = await fetch('/api/update-inventory', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ carts: inventory, accessories: accessories, filters })
+      });
+
+      if (res.ok) {
+        originalInventory = inventory.map(c => ({ ...c }));
+        originalAccessories = accessories.map(a => ({ ...a }));
+        renderGrid();
+        renderAccessoriesGrid();
+        showToast('✅ Saved! Site updates in ~60 seconds.', 'success');
+      } else {
+        const err = await res.json();
+        showToast('Error: ' + (err.message || 'Save failed'), 'error');
+      }
+    } catch (e) {
+      showToast('Connection error. Check your internet.', 'error');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '💾 Save All Changes';
+  }
+
+  // ── TOAST ──
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.className = 'show ' + type;
+    t.innerHTML = msg;
+    clearTimeout(window._toastTimer);
+    if (type !== 'loading') {
+      window._toastTimer = setTimeout(() => {
+        t.className = '';
+      }, 4000);
+    }
+  }
+  // ── FILTER MANAGER ──
+  function renderFilterManager() {
+    renderChips('makes',  'fm-makes');
+    renderChips('seats',  'fm-seats');
+    renderChips('colors', 'fm-colors');
+  }
+
+  function renderChips(key, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const items = filters[key] || [];
+    container.innerHTML = items.map((item, i) => `
+      <span class="filter-chip">
+        ${item.label}
+        <button class="filter-chip-remove" onclick="removeFilterItem('${key}', ${i})" title="Remove">×</button>
+      </span>
+    `).join('') || '<span style="font-size:12px;color:var(--gray-400);">None yet</span>';
+  }
+
+  function addFilterItem(key) {
+    const inputId = `fm-${key}-label`;
+    const input = document.getElementById(inputId);
+    const label = input.value.trim();
+    if (!label) { showToast('Enter a label first.', 'error'); return; }
+    const value = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    if ((filters[key] || []).find(i => i.value === value)) {
+      showToast('That option already exists.', 'error'); return;
+    }
+    if (!filters[key]) filters[key] = [];
+    filters[key].push({ value, label });
+    input.value = '';
+    renderChips(key, `fm-${key}`);
+    populateAddFormDropdowns();
+    showToast(`"${label}" added. Hit Save All Changes to go live.`, 'success');
+  }
+
+  function removeFilterItem(key, index) {
+    if (!confirm(`Remove "${filters[key][index].label}" from filters?`)) return;
+    filters[key].splice(index, 1);
+    renderChips(key, `fm-${key}`);
+    populateAddFormDropdowns();
+    showToast('Filter option removed. Hit Save All Changes to go live.', 'success');
+  }
+
+  // ── PHOTO MANAGEMENT ──
+
+  function addPhoto(id) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart) return;
+    if (!Array.isArray(cart.photos)) cart.photos = [];
+    if (cart.photos.length >= 8) {
+      showToast('Max 8 photos per cart.', 'error'); return;
+    }
+    const input = document.getElementById('photo-add-' + id);
+    const url = input ? input.value.trim() : '';
+    if (!url) { showToast('Paste a photo URL first.', 'error'); return; }
+    cart.photos.push(url);
+    markModified(id);
+    renderGrid();
+    showToast('Photo added. Hit Save All Changes to go live.', 'success');
+  }
+
+  async function uploadPhoto(id, input) {
+    const file = input.files[0];
+    if (!file) return;
+    const cart = inventory.find(c => c.id === id);
+    if (!cart) return;
+    if (!Array.isArray(cart.photos)) cart.photos = [];
+    if (cart.photos.length >= 8) { showToast('Max 8 photos per cart.', 'error'); return; }
+
+    showToast('Uploading photo…', 'success');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('cartId', id);
+
+    try {
+      const res  = await fetch('/api/upload-photo', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!res.ok || !data.success) throw new Error(data.message || 'Upload failed');
+      cart.photos.push(data.url);
+      markModified(id);
+      renderGrid();
+      showToast('Photo uploaded! Hit Save All Changes to go live.', 'success');
+    } catch (err) {
+      showToast('Upload failed: ' + err.message, 'error');
+    } finally {
+      input.value = '';
+    }
+  }
+
+  function removePhoto(id, index) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart || !Array.isArray(cart.photos)) return;
+    cart.photos.splice(index, 1);
+    markModified(id);
+    renderGrid();
+    showToast('Photo removed. Hit Save All Changes to go live.', 'success');
+  }
+
+  function updatePhoto(id, index, value) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart || !Array.isArray(cart.photos)) return;
+    cart.photos[index] = value;
+    // Refresh thumbnail immediately
+    const thumb = document.querySelector(`#photo-row-${id}-${index} .photo-thumb`);
+    if (thumb) { thumb.src = value; thumb.style.opacity = '1'; }
+    markModified(id);
+  }
+
+
+  // ── TOGGLE CART SEATS ──
+  function toggleCartSeats(id, value, checked) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart) return;
+    if (!Array.isArray(cart.seats)) cart.seats = cart.seats ? [String(cart.seats)] : [];
+    const strVal = String(value);
+    if (checked) {
+      if (!cart.seats.includes(strVal)) cart.seats.push(strVal);
+    } else {
+      cart.seats = cart.seats.filter(s => s !== strVal);
+    }
+    // Update header display and label highlight
+    const card = document.getElementById('card-' + id);
+    if (card) {
+      const seatsDisplay = card.querySelector('.cart-seats');
+      if (seatsDisplay) seatsDisplay.textContent = cart.seats.join(' / ') + ' Seats';
+      const lbl = document.getElementById(`seat-lbl-${id}-${value}`);
+      if (lbl) lbl.classList.toggle('is-checked', checked);
+    }
+    markModified(id);
+  }
+
+  function toggleCartColor(id, colorValue, checked) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart) return;
+    if (!Array.isArray(cart.colors)) cart.colors = cart.color ? [cart.color] : [];
+    if (checked) {
+      if (!cart.colors.includes(colorValue)) cart.colors.push(colorValue);
+    } else {
+      cart.colors = cart.colors.filter(c => c !== colorValue);
+    }
+    // Update label highlight
+    const lbl = document.getElementById(`lbl-${id}-${colorValue}`);
+    if (lbl) lbl.classList.toggle('is-checked', checked);
+    // Mark card modified
+    const orig = originalInventory.find(o => o.id === id);
+    const card = document.getElementById('card-' + id);
+    if (card && orig) {
+      const modified = JSON.stringify(orig.colors) !== JSON.stringify(cart.colors)
+        || orig.price !== cart.price || orig.status !== cart.status
+        || JSON.stringify(orig.photos) !== JSON.stringify(cart.photos)
+        || orig.featured !== cart.featured
+        || orig.quantity !== cart.quantity;
+      card.classList.toggle('modified', modified);
+    }
+    updateStats();
+  }
+
+  // Repopulate the Add Cart form dropdowns whenever filters change
+  function populateAddFormDropdowns() {
+    // Make dropdown
+    const makeSelect = document.getElementById('new-make');
+    if (makeSelect) {
+      const current = makeSelect.value;
+      makeSelect.innerHTML = (filters.makes || []).map(m =>
+        `<option value="${m.value}" ${m.value === current ? 'selected' : ''}>${m.label}</option>`
+      ).join('') || '<option value="">— Add a Make first —</option>';
+    }
+    // Seats dropdown
+    const seatsSelect = document.getElementById('new-seats');
+    if (seatsSelect) {
+      const current = seatsSelect.value;
+      seatsSelect.innerHTML = (filters.seats || []).map(s =>
+        `<option value="${s.value}" ${s.value === current ? 'selected' : ''}>${s.label}</option>`
+      ).join('') || '<option value="4">4 Seats</option>';
+    }
+    // Color checkboxes
+    const colorBox = document.getElementById('new-color-checkboxes');
+    if (colorBox) {
+      colorBox.innerHTML = (filters.colors || []).length === 0
+        ? '<span class="no-colors-msg">No colors set yet — add them in Filter Manager below.</span>'
+        : (filters.colors || []).map(c => `
+            <label class="color-check-label" id="new-lbl-${c.value}">
+              <input type="checkbox" value="${c.value}"
+                onchange="this.closest('label').classList.toggle('is-checked', this.checked)" />
+              ${c.label}
+            </label>`).join('');
+    }
+  }
+
+  // ── FEATURE EDITOR ──
+  function updateFeature(id, index, value) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart) return;
+    cart.features[index] = value;
+    markModified(id);
+  }
+
+  function removeFeature(id, index) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart) return;
+    cart.features.splice(index, 1);
+    renderGrid();
+    updateStats();
+    showToast('Feature removed. Hit Save to go live.', 'success');
+  }
+
+  function addFeature(id) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart) return;
+    if (cart.features.length >= 4) {
+      showToast('Max 4 features per cart.', 'error'); return;
+    }
+    cart.features.push('');
+    renderGrid();
+    // Focus the new input
+    const editor = document.getElementById('features-' + id);
+    if (editor) {
+      const inputs = editor.querySelectorAll('.feature-input');
+      if (inputs.length) inputs[inputs.length - 1].focus();
+    }
+  }
+
+  // ── DESCRIPTION EDITOR ──
+  function toggleDescEditor(id) {
+    const wrap = document.getElementById('desc-editor-' + id);
+    const icon = document.getElementById('desc-toggle-icon-' + id);
+    if (!wrap) return;
+    const isOpen = wrap.style.display !== 'none';
+    wrap.style.display = isOpen ? 'none' : 'block';
+    if (icon) icon.textContent = isOpen ? '▾' : '▴';
+    if (!isOpen) {
+      const ta = document.getElementById('desc-input-' + id);
+      if (ta) ta.focus();
+    }
+  }
+
+  function handleDescInput(id, textarea) {
+    const cart = inventory.find(c => c.id === id);
+    if (!cart) return;
+
+    const words = textarea.value.trim().split(/\s+/).filter(Boolean);
+    const wordCount = words.length;
+
+    // Enforce 300 word limit
+    if (wordCount > 300) {
+      textarea.value = words.slice(0, 300).join(' ');
+    }
+
+    const finalWords = textarea.value.trim().split(/\s+/).filter(Boolean).length;
+    const countEl = document.getElementById('desc-wordcount-' + id);
+    const warnEl  = document.getElementById('desc-counter-warn-' + id);
+    if (countEl) {
+      countEl.textContent = finalWords;
+      countEl.style.color = finalWords >= 300 ? '#d97706' : '';
+    }
+    if (warnEl) warnEl.style.display = finalWords >= 300 ? 'inline' : 'none';
+
+    cart.description = textarea.value;
+    markModified(id);
+  }
+
+  function markModified(id) {
+    const cart = inventory.find(c => c.id === id);
+    const orig = originalInventory.find(o => o.id === id);
+    const card = document.getElementById('card-' + id);
+    if (!card || !orig) return;
+    const modified = orig.price !== cart.price || orig.status !== cart.status
+      || JSON.stringify(orig.photos) !== JSON.stringify(cart.photos)
+      || orig.featured !== cart.featured
+      || orig.quantity !== cart.quantity
+      || orig.seats !== cart.seats
+      || JSON.stringify(orig.colors) !== JSON.stringify(cart.colors)
+      || JSON.stringify(orig.features) !== JSON.stringify(cart.features)
+      || (orig.description || '') !== (cart.description || '');
+    card.classList.toggle('modified', modified);
+    updateStats();
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  //  ACCESSORIES — Admin Functions
+  // ══════════════════════════════════════════════════════════════
+
+  function updateAccStats() {
+    document.getElementById('acc-stat-total').textContent    = accessories.length;
+    document.getElementById('acc-stat-available').textContent = accessories.filter(a => a.status === 'available').length;
+    document.getElementById('acc-stat-soon').textContent     = accessories.filter(a => a.status === 'coming-soon').length;
+    document.getElementById('acc-stat-soldout').textContent  = accessories.filter(a => a.status === 'sold-out').length;
+  }
+
+  function filterAccessories(filter, btn) {
+    currentAccFilter = filter;
+    document.querySelectorAll('#accessories-admin-grid').forEach(() => {});
+    btn.closest('.filter-tabs').querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+    btn.classList.add('active');
+    renderAccessoriesGrid();
+  }
+
+  function toggleAddAccessoryForm() {
+    const form = document.getElementById('add-accessory-form');
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
+
+  function addAccessory() {
+    const name    = document.getElementById('acc-new-name').value.trim();
+    const price   = parseInt(document.getElementById('acc-new-price').value) || 0;
+    const status  = document.getElementById('acc-new-status').value;
+    const photoUrl = document.getElementById('acc-new-photo').value.trim();
+    const features = [
+      document.getElementById('acc-feat-1').value.trim(),
+      document.getElementById('acc-feat-2').value.trim(),
+      document.getElementById('acc-feat-3').value.trim(),
+      document.getElementById('acc-feat-4').value.trim(),
+    ].filter(Boolean);
+
+    if (!name) { alert('Accessory name is required.'); return; }
+    const id = 'acc-' + name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+    if (accessories.find(a => a.id === id)) { alert('An accessory with this name already exists.'); return; }
+
+    accessories.unshift({ id, name, price, status, features, photos: photoUrl ? [photoUrl] : [] });
+    document.getElementById('add-accessory-form').style.display = 'none';
+    ['acc-new-name','acc-new-price','acc-new-photo','acc-feat-1','acc-feat-2','acc-feat-3','acc-feat-4'].forEach(i => {
+      const el = document.getElementById(i);
+      if (el) el.value = i === 'acc-new-price' ? '' : '';
+    });
+    currentAccFilter = 'all';
+    document.querySelector('#accessories-admin-grid').closest('.main-content')
+      .querySelectorAll('.filter-tabs').forEach((tabs, i) => {
+        if (i === 1) tabs.querySelectorAll('.filter-tab').forEach(t => t.classList.toggle('active', t.textContent === 'All'));
+      });
+    renderAccessoriesGrid();
+    updateAccStats();
+    showToast('Accessory added! Hit Save All Changes to make it live.', 'success');
+  }
+
+  function updateAccessory(id, field, value) {
+    const acc = accessories.find(a => a.id === id);
+    if (!acc) return;
+    if (field === 'price') value = parseInt(value) || 0;
+    acc[field] = value;
+    const card = document.getElementById('acc-card-' + id);
+    if (card) {
+      const orig = originalAccessories.find(o => o.id === id);
+      const modified = orig && (orig.price !== acc.price || orig.status !== acc.status || JSON.stringify(orig.features) !== JSON.stringify(acc.features));
+      card.classList.toggle('modified', modified || !orig);
+    }
+    updateAccStats();
+  }
+
+  function updateAccFeature(id, idx, value) {
+    const acc = accessories.find(a => a.id === id);
+    if (!acc) return;
+    if (!acc.features) acc.features = [];
+    acc.features[idx] = value;
+    acc.features = acc.features.filter((f,i) => i <= idx || f.trim());
+    const card = document.getElementById('acc-card-' + id);
+    if (card) card.classList.add('modified');
+  }
+
+  function deleteAccessory(id) {
+    if (!confirm('Remove this accessory? This cannot be undone until you save.')) return;
+    accessories = accessories.filter(a => a.id !== id);
+    renderAccessoriesGrid();
+    updateAccStats();
+    showToast('Accessory removed. Save to make it live.', 'success');
+  }
+
+  // ── Accessory photo functions ──
+  async function uploadAccPhoto(id, input) {
+    const acc = accessories.find(a => a.id === id);
+    if (!acc || !input.files[0]) return;
+    const file = input.files[0];
+    showToast('Uploading photo...', 'loading');
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('cartId', id);
+    try {
+      const res  = await fetch('/api/upload-photo', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) {
+        acc.photos = acc.photos || [];
+        acc.photos.push(data.url);
+        renderAccessoriesGrid();
+        showToast('Photo uploaded! Save to make it live.', 'success');
+      } else {
+        showToast('Upload failed: ' + (data.message || 'Unknown error'), 'error');
+      }
+    } catch(e) { showToast('Upload error: ' + e.message, 'error'); }
+    input.value = '';
+  }
+
+  function addAccPhoto(id) {
+    const acc = accessories.find(a => a.id === id);
+    if (!acc) return;
+    const input = document.getElementById('acc-photo-add-' + id);
+    const url = input ? input.value.trim() : '';
+    if (!url) return;
+    acc.photos = acc.photos || [];
+    if (acc.photos.length >= 4) { showToast('Max 4 photos per accessory.', 'error'); return; }
+    acc.photos.push(url);
+    if (input) input.value = '';
+    renderAccessoriesGrid();
+  }
+
+  function removeAccPhoto(id, idx) {
+    const acc = accessories.find(a => a.id === id);
+    if (!acc) return;
+    acc.photos.splice(idx, 1);
+    renderAccessoriesGrid();
+  }
+
+  function updateAccPhoto(id, idx, value) {
+    const acc = accessories.find(a => a.id === id);
+    if (!acc) return;
+    acc.photos[idx] = value;
+  }
+
+  // ── Render accessories admin grid ──
+  function renderAccessoriesGrid() {
+    const grid = document.getElementById('accessories-admin-grid');
+    if (!grid) return;
+
+    const filtered = currentAccFilter === 'all'
+      ? accessories
+      : accessories.filter(a => a.status === currentAccFilter);
+
+    if (!filtered.length) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:2rem;color:var(--gray-400);">No accessories yet. Click + Add New Accessory above.</div>';
+      return;
+    }
+
+    grid.innerHTML = filtered.map(acc => {
+      const orig = originalAccessories.find(o => o.id === acc.id);
+      const isModified = !orig || (orig.price !== acc.price || orig.status !== acc.status || JSON.stringify(orig.features) !== JSON.stringify(acc.features) || JSON.stringify(orig.photos) !== JSON.stringify(acc.photos));
+      const photos = Array.isArray(acc.photos) ? acc.photos.filter(Boolean) : [];
+      const firstPhoto = photos[0] || '';
+
+      const photoPreview = firstPhoto
+        ? `<img src="${firstPhoto}" alt="${acc.name}" style="width:100%;height:120px;object-fit:cover;border-radius:8px;margin-bottom:12px;" onerror="this.style.opacity='0.2'">`
+        : '';
+
+      const photoRows = photos.map((url, pi) => `
+        <div class="photo-row" id="acc-photo-row-${acc.id}-${pi}">
+          <img src="${url}" class="photo-thumb" onerror="this.style.opacity='0.2'" />
+          <input class="photo-url-input" type="url" value="${url}"
+            onchange="updateAccPhoto('${acc.id}', ${pi}, this.value.trim())"
+            placeholder="https://..." />
+          <button class="photo-remove-btn" onclick="removeAccPhoto('${acc.id}', ${pi})" title="Remove">×</button>
+        </div>`).join('');
+
+      const photoAdd = photos.length < 4
+        ? `<div class="photo-add-row">
+             <input class="photo-add-input" id="acc-photo-add-${acc.id}" type="url" placeholder="Paste image URL…" />
+             <button class="photo-add-btn" onclick="addAccPhoto('${acc.id}')">+ URL</button>
+             <input type="file" id="acc-file-${acc.id}" accept="image/jpeg,image/png,image/webp" style="display:none" onchange="uploadAccPhoto('${acc.id}', this)" />
+             <button class="photo-add-btn" style="background:var(--gold);color:var(--navy);" onclick="document.getElementById('acc-file-${acc.id}').click()">📁 Upload</button>
+           </div>`
+        : '<div class="photo-limit-msg">✅ Max 4 photos reached.</div>';
+
+      const featureInputs = [0,1,2,3].map(i => `
+        <input class="add-form-input" type="text"
+          value="${(acc.features || [])[i] || ''}"
+          placeholder="Feature ${i+1}"
+          onchange="updateAccFeature('${acc.id}', ${i}, this.value.trim())"
+          style="font-size:0.82rem;padding:0.5rem 0.75rem;" />`).join('');
+
+      return `
+        <div class="cart-card ${isModified ? 'modified' : ''}" id="acc-card-${acc.id}">
+          <div class="modified-dot"></div>
+          <div class="cart-card-header">
+            <div>
+              <div class="cart-name">${acc.name}</div>
+              <div class="cart-seats" style="color:var(--gray-400);font-size:0.78rem;">Accessory</div>
+            </div>
+            <span class="status-badge ${acc.status}">${acc.status === 'available' ? 'Available' : acc.status === 'coming-soon' ? 'Coming Soon' : 'Sold Out'}</span>
+          </div>
+
+          ${photoPreview}
+
+          <div class="field-row">
+            <div class="field-label">Photos <span style="font-weight:400;color:var(--gray-400);">(up to 4)</span></div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:10px;">${photoRows}</div>
+            ${photoAdd}
+          </div>
+
+          <div class="field-row">
+            <div class="field-label">Price ($)</div>
+            <input class="price-input" type="number" value="${acc.price || 0}" min="0"
+              onchange="updateAccessory('${acc.id}', 'price', this.value)" />
+          </div>
+
+          <div class="field-row">
+            <div class="field-label">Status</div>
+            <select class="status-select" onchange="updateAccessory('${acc.id}', 'status', this.value)">
+              <option value="available"  ${acc.status==='available'  ? 'selected':''}>Available</option>
+              <option value="coming-soon"${acc.status==='coming-soon'? 'select

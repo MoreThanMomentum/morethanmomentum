@@ -1,0 +1,624 @@
+/* ============================================================
+   {{BUSINESS_NAME}} — Mobile & Tablet Responsive Stylesheet
+   Breakpoints:
+     Tablet : max-width 1024px
+     Mobile : max-width 767px
+   Load AFTER styles.css on every page.
+   Goal: reduce scroll, focus on carts & services,
+         maximise tap-to-call and quick-quote conversions.
+   ============================================================ */
+
+
+/* ─────────────────────────────────────────────
+   TABLET  (768px – 1024px)
+───────────────────────────────────────────── */
+@media (max-width: 1024px) {
+
+  /* NAV */
+  .nav-links { gap: 1rem; }
+  .nav-links a { font-size: 0.85rem; }
+  .nav-phone { display: none; }
+
+  /* PAGE HERO (inner pages) */
+  .page-hero { padding: 5rem 1.25rem 2.5rem; }
+  .page-hero-title { font-size: 2rem; }
+  .page-hero-sub { font-size: 1rem; }
+
+  /* HOMEPAGE HERO */
+  .hero { min-height: 80vh; }
+  .hero-content { max-width: 560px; }
+  .hero-headline { font-size: 2.4rem; }
+  .hero-trust-pills { gap: 0.5rem; }
+  .trust-pill { font-size: 0.72rem; padding: 0.3rem 0.65rem; }
+
+  /* STATS BAR */
+  .stats-grid { gap: 1rem; }
+  .stat-item { padding: 1rem 0.5rem; }
+
+  /* REVIEWS — 2 across on tablet */
+  .reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  /* Hide the 3rd review card on tablet to reduce scroll */
+  .review-card:nth-child(3) { display: none; }
+
+  /* FEATURED CARTS — 2 across on tablet */
+  .cart-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem;
+  }
+
+  /* LIFESTYLE GRID — 2x2 */
+  .lifestyle-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem;
+  }
+
+  /* SERVICES GRID — 2x2 */
+  .services-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem;
+  }
+
+  /* RENTAL PACKAGES — 2x2 */
+  .rental-options-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem;
+  }
+
+  /* RENTAL USE CASES — 2x2 */
+  .rental-use-cases {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1rem;
+  }
+
+  /* SERVICE DETAIL SECTIONS */
+  .service-detail-inner {
+    flex-direction: column !important;
+    gap: 1.5rem;
+  }
+  .service-detail-inner.reverse {
+    flex-direction: column !important;
+  }
+  .service-detail-visual { max-width: 100%; }
+  .service-detail-visual img { max-height: 280px; object-fit: cover; width: 100%; border-radius: 10px; }
+
+  /* FOOTER — 2x2 grid */
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 2rem;
+  }
+
+  /* SECTION PADDING — trim generously */
+  .section { padding: 3rem 1.25rem; }
+  .cta-strip { padding: 2.5rem 1.25rem; }
+}
+
+
+/* ─────────────────────────────────────────────
+   MOBILE  (≤ 767px)
+───────────────────────────────────────────── */
+@media (max-width: 767px) {
+
+  /* ── GLOBAL ───────────────────────────────── */
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* Prevent any element from causing horizontal scroll */
+  html, body {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+
+  /* Extra body padding to clear sticky bottom bar */
+  body { padding-bottom: 68px; }
+
+  .container { padding-left: 1rem; padding-right: 1rem; }
+  .section { padding: 2.25rem 1rem; }
+
+  /* ── NAVIGATION ───────────────────────────── */
+  .site-header { height: 60px; }
+  .nav-container { padding: 0 1rem; }
+  .nav-logo img { height: 38px; }
+  .nav-phone  { display: none !important; }
+  .nav-cta    { display: none !important; }
+
+ .hamburger {
+  display: flex !important;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+.hamburger span {
+  background-color: #1B2A4A !important;
+}
+
+  /* ── MOBILE NAV DRAWER ────────────────────── */
+  /* Hidden by default — shown via .mobile-open */
+  .nav-links {
+    display: none !important;
+    position: fixed !important;
+    top: 60px;
+    left: 0;
+    right: 0;
+    background: #1B2A4A;
+    flex-direction: column !important;
+    padding: 0.5rem 0 1.5rem;
+    z-index: 9998;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    border-top: 2px solid #C9A84C;
+  }
+
+  /* Opened by main.js adding .mobile-open to #nav-links */
+  .nav-links.mobile-open {
+    display: flex !important;
+  }
+
+  .nav-links li {
+    list-style: none;
+    width: 100%;
+  }
+
+  .nav-links a {
+    display: block;
+    padding: 1rem 1.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+  }
+
+  .nav-links a:active,
+  .nav-links a:hover {
+    background: rgba(201, 168, 76, 0.15);
+    color: #C9A84C !important;
+  }
+
+  /* Active nav link */
+  .nav-links .active {
+    color: #C9A84C !important;
+    border-left: 3px solid #C9A84C;
+    padding-left: calc(1.5rem - 3px);
+  }
+
+  /* ── HERO (homepage) ─────────────────────── */
+  .hero {
+    min-height: auto;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .hero-content {
+    padding: 5.5rem 1.25rem 1.5rem;
+    text-align: center;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .hero-badge { font-size: 0.72rem; margin-bottom: 0.6rem; }
+  .hero-headline {
+    font-size: 2rem;
+    line-height: 1.2;
+    margin-bottom: 0.75rem;
+  }
+  .hero-sub {
+    font-size: 0.92rem;
+    line-height: 1.55;
+    margin-bottom: 1rem;
+  }
+  .hero-cta-row {
+    flex-direction: column;
+    gap: 0.6rem;
+    align-items: stretch;
+  }
+  .hero-cta-row a,
+  .hero-cta-row button {
+    width: 100%;
+    text-align: center;
+    padding: 0.85rem 1rem;
+    font-size: 0.95rem;
+  }
+
+  /* Trust pills — horizontal scroll */
+  .hero-trust-pills {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    gap: 0.5rem;
+    padding-bottom: 0.25rem;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-top: 1rem;
+  }
+  .hero-trust-pills::-webkit-scrollbar { display: none; }
+  .trust-pill {
+    white-space: nowrap;
+    font-size: 0.7rem;
+    padding: 0.28rem 0.6rem;
+    flex-shrink: 0;
+  }
+
+  /* Booking form — full width card below hero content */
+  .hero-form-card {
+    position: relative !important;
+    right: auto !important;
+    top: auto !important;
+    transform: none !important;
+    width: auto !important;
+    margin: 0 1rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+  }
+  .form-card-title { font-size: 1.1rem; }
+  .form-card-sub   { font-size: 0.82rem; }
+
+  /* ── STATS BAR ───────────────────────────── */
+  .stats-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0 !important;
+  }
+  .stat-item {
+    padding: 1rem 0.5rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .stat-item:nth-child(even) { border-right: none; }
+  .stat-item:nth-child(3),
+  .stat-item:nth-child(4)    { border-bottom: none; }
+  .stat-number { font-size: 1.6rem; }
+  .stat-label  { font-size: 0.72rem; }
+
+  /* ── SECTION HEADERS ─────────────────────── */
+  .section-header { margin-bottom: 1.25rem; }
+  .section-header h2 { font-size: 1.5rem; line-height: 1.25; }
+  .section-header p  { font-size: 0.88rem; }
+  .section-eyebrow   { font-size: 0.7rem; }
+
+  /* ── REVIEWS — SWIPE CAROUSEL ────────────── */
+  /* Show all 3 as a swipeable horizontal row */
+  .reviews-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    gap: 0.75rem !important;
+    padding: 0.25rem 1rem 1rem !important;
+    margin: 0 -1rem !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .reviews-grid::-webkit-scrollbar { display: none; }
+
+  /* All review cards visible and snap into place */
+  .review-card {
+    flex: 0 0 85% !important;
+    scroll-snap-align: start !important;
+    display: block !important;
+    padding: 1.25rem;
+    min-width: 0;
+  }
+  .review-card:nth-child(2),
+  .review-card:nth-child(3) { display: block !important; }
+
+  /* Swipe hint — fades in the edge of the next card */
+  .reviews-grid::after {
+    content: '';
+    flex: 0 0 0.25rem;
+    display: block;
+  }
+
+  /* ── FEATURED CARTS — SWIPE CAROUSEL ─────── */
+  .featured-inventory { padding: 2.25rem 0; }
+  .featured-inventory .section-header,
+  .featured-inventory .section-footer {
+    padding: 0 1rem;
+  }
+
+  .cart-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    scroll-snap-type: x mandatory !important;
+    gap: 1rem !important;
+    padding: 0.25rem 1rem 1rem !important;
+    margin: 0 !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    grid-template-columns: unset !important;
+  }
+  .cart-grid::-webkit-scrollbar { display: none; }
+
+  .cart-card {
+    flex: 0 0 82% !important;
+    scroll-snap-align: start !important;
+    width: auto !important;
+    min-width: 0;
+  }
+
+  /* ── LIFESTYLE SECTION ───────────────────── */
+  .lifestyle-section { display: none !important; }
+
+  /* ── CTA STRIP ───────────────────────────── */
+  .cta-strip { padding: 1.75rem 1rem; text-align: center; }
+  .cta-strip-inner { flex-direction: column; gap: 1rem; align-items: center; }
+  .cta-strip-copy h2 { font-size: 1.2rem; }
+  .cta-strip-copy p  { font-size: 0.85rem; }
+  .cta-strip-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    width: 100%;
+  }
+  .cta-strip-buttons a {
+    width: 100%;
+    text-align: center;
+    padding: 0.85rem 1rem;
+  }
+
+  /* ── FOOTER ──────────────────────────────── */
+  .site-footer { padding: 2rem 1rem 1.5rem; }
+  .footer-grid {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .footer-col:nth-child(2) { display: none; }
+  .footer-brand { margin-bottom: 0.5rem; }
+  .footer-brand img { height: 40px; }
+  .footer-brand p { font-size: 0.82rem; }
+  .footer-col h4 { font-size: 0.85rem; margin-bottom: 0.5rem; }
+  .footer-col li { margin-bottom: 0.35rem; }
+  .footer-col a  { font-size: 0.82rem; }
+  .footer-bottom {
+    font-size: 0.75rem;
+    padding-top: 1rem;
+    flex-direction: column;
+    text-align: center;
+    gap: 0.35rem;
+  }
+
+  /* ── PAGE HERO (inner pages) ─────────────── */
+  .page-hero {
+    padding: 4.5rem 1rem 2rem;
+    text-align: center;
+  }
+  .page-hero-inner { max-width: 100%; }
+  .page-hero-title  { font-size: 1.7rem; line-height: 1.2; }
+  .page-hero-sub    { font-size: 0.88rem; }
+  .page-hero-actions {
+    flex-direction: column;
+    gap: 0.6rem;
+    align-items: stretch;
+  }
+  .page-hero-actions a {
+    width: 100%;
+    text-align: center;
+    padding: 0.85rem 1rem;
+    font-size: 0.92rem;
+  }
+
+  /* ── SERVICES PAGE ───────────────────────── */
+  .featured-inventory.rentals-section { display: none !important; }
+
+  .service-detail-inner,
+  .service-detail-inner.reverse {
+    flex-direction: column !important;
+    gap: 1rem;
+  }
+  /* Hide decorative service images on mobile — but NOT about page photo */
+  .service-detail-visual { display: none !important; }
+
+  /* ABOUT PAGE — keep {{OWNER_FIRST}}'s photo visible */
+  .veteran-block .service-detail-visual {
+    display: block !important;
+    width: 100% !important;
+    max-width: 280px;
+    margin: 0 auto 1.5rem;
+    border-radius: 16px;
+    overflow: hidden;
+    aspect-ratio: 1;
+  }
+  .veteran-block .service-detail-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .veteran-block .about-hero-inner {
+    flex-direction: column !important;
+    align-items: center;
+    text-align: center;
+  }
+  .veteran-block .about-copy {
+    width: 100% !important;
+  }
+  .veteran-block .about-values {
+    text-align: left;
+  }
+
+  .service-detail-copy {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0;
+  }
+  .service-detail-copy h2 { font-size: 1.35rem; }
+  .service-detail-copy p  { font-size: 0.88rem; }
+  .service-detail-copy ul {
+    padding-left: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .service-detail-copy ul li { font-size: 0.85rem; margin-bottom: 0.3rem; }
+
+  .services-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+  .service-card { padding: 1.1rem; }
+
+  #repairs, #battery, #lsv { padding: 2rem 1rem; }
+
+  /* ── RENTALS PAGE ─────────────────────────── */
+  .rental-use-cases { display: none !important; }
+  .section:has(.rental-use-cases) { display: none !important; }
+
+  .rental-options-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.85rem !important;
+  }
+  .rental-card, .pricing-card {
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+  }
+  .rental-card h3 { font-size: 1.05rem; }
+  .rental-card ul  { font-size: 0.83rem; }
+  .rental-card .btn {
+    margin-top: auto;
+    width: 100%;
+    text-align: center;
+    padding: 0.8rem 1rem;
+  }
+
+  /* ── SHOP PAGE ────────────────────────────── */
+  .shop-filters,
+  .filter-row {
+    flex-direction: column !important;
+    gap: 0.6rem !important;
+  }
+  .filter-group,
+  .shop-filters select {
+    width: 100% !important;
+  }
+  .shop-filters select {
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+  .shop-hero { padding: 4.5rem 1rem 1.75rem; }
+  .shop-hero h1 { font-size: 1.7rem; }
+
+  /* Shop cart grid — swipeable on mobile too */
+  #cart-grid,
+  .inventory-grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* ── ABOUT PAGE ──────────────────────────── */
+  .about-hero { padding: 4.5rem 1rem 2rem; text-align: center; }
+  .about-grid,
+  .bio-section {
+    flex-direction: column !important;
+    gap: 1.5rem;
+  }
+  .about-img {
+    width: 100% !important;
+    max-height: 260px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+
+  /* ── CONTACT PAGE ────────────────────────── */
+  .contact-grid,
+  .contact-layout {
+    flex-direction: column !important;
+    gap: 1.5rem;
+  }
+  .contact-form-wrapper { width: 100% !important; }
+  .contact-info        { width: 100% !important; }
+  input, textarea, select {
+    font-size: 1rem !important;
+  }
+
+  /* ── MOBILE STICKY BAR ───────────────────── */
+  .mobile-sticky-bar {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 9999;
+    background: #1B2A4A;
+    border-top: 2px solid #C9A84C;
+    padding: 0;
+    height: 60px;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+    gap: 0;
+  }
+  .mobile-sticky-call,
+  .mobile-sticky-quote {
+    flex: 1;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-decoration: none;
+    height: 100%;
+    -webkit-tap-highlight-color: transparent;
+    transition: background 0.15s;
+  }
+  .mobile-sticky-call {
+    background: #1B2A4A;
+    color: #ffffff;
+    border-right: 1px solid rgba(201, 168, 76, 0.35);
+  }
+  .mobile-sticky-call:hover,
+  .mobile-sticky-call:active { background: #243660; }
+
+  .mobile-sticky-quote {
+    background: #C9A84C;
+    color: #1B2A4A;
+    border-radius: 0 !important;
+  }
+  .mobile-sticky-quote:hover,
+  .mobile-sticky-quote:active { background: #b8963d; }
+
+  /* ── GENERAL BUTTONS ─────────────────────── */
+  .btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ── SCROLL ANIMATIONS ───────────────────── */
+  [data-animate] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
+
+/* ─────────────────────────────────────────────
+   TABLET-SPECIFIC FIXES  (768px – 1024px only)
+   Overrides that should NOT apply to mobile
+───────────────────────────────────────────── */
+@media (min-width: 768px) and (max-width: 1024px) {
+
+  .review-card:nth-child(3) { display: none; }
+
+  .service-detail-visual { display: block !important; }
+  .service-detail-visual img { max-height: 260px; object-fit: cover; }
+
+  .lifestyle-section { display: block !important; }
+
+  .featured-inventory.rentals-section { display: block !important; }
+
+  .rental-use-cases { display: grid !important; grid-template-columns: repeat(2, 1fr); gap: 1rem; }
+  .section:has(.rental-use-cases) { display: block !important; }
+
+  .mobile-sticky-bar { display: none !important; }
+
+  body { padding-bottom: 0; }
+}

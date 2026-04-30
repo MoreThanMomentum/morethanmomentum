@@ -1,0 +1,422 @@
+{
+  "filters": {
+    "makes": [
+      {
+        "value": "dach",
+        "label": "Dach"
+      },
+      {
+        "value": "teko",
+        "label": "Teko"
+      }
+    ],
+    "seats": [
+      {
+        "value": "4",
+        "label": "4 Seats"
+      },
+      {
+        "value": "6",
+        "label": "6 Seats"
+      },
+      {
+        "value": "8",
+        "label": "8 Seats"
+      }
+    ],
+    "colors": [
+      {
+        "value": "black",
+        "label": "Black"
+      },
+      {
+        "value": "white",
+        "label": "White"
+      },
+      {
+        "value": "red",
+        "label": "Red"
+      },
+      {
+        "value": "grey",
+        "label": "grey"
+      },
+      {
+        "value": "matte-grey",
+        "label": "Matte Grey"
+      },
+      {
+        "value": "matte-black",
+        "label": "Matte Black"
+      }
+    ]
+  },
+  "carts": [
+    {
+      "id": "dach-falcon-ultra-solar",
+      "name": "DACH Falcon Ultra Solar",
+      "series": "DACH Vehicle",
+      "make": "dach",
+      "seats": 4,
+      "price": 11880,
+      "status": "available",
+      "category": "dach",
+      "condition": "new",
+      "colors": [
+        "white",
+        "matte-grey",
+        "matte-black"
+      ],
+      "bestSeller": false,
+      "featured": false,
+      "quantity": 6,
+      "features": [],
+      "photos": [
+        "/images/inventory/dach-falcon-ultra-solar-1776038368731.jpg",
+        "/images/inventory/dach-falcon-ultra-solar-1776038402139.jpg",
+        "/images/inventory/dach-falcon-ultra-solar-1776038535597.jpg",
+        "/images/inventory/dach-falcon-ultra-solar-1776038612110.jpg"
+      ],
+      "description": ""
+    },
+    {
+      "id": "apollo-4-2-solar",
+      "name": "Apollo 4+2 Solar",
+      "series": "Dach Vehicles",
+      "make": "dach",
+      "seats": 6,
+      "price": 14980,
+      "status": "available",
+      "category": "dach",
+      "condition": "new",
+      "colors": [
+        "white",
+        "matte-grey"
+      ],
+      "bestSeller": false,
+      "featured": false,
+      "quantity": 2,
+      "features": [],
+      "photos": [
+        "/images/inventory/apollo-4-2-solar-1776037541380.jpg",
+        "/images/inventory/apollo-4-2-solar-1776037574975.jpg",
+        "/images/inventory/apollo-4-2-solar-1776037630349.jpg",
+        "/images/inventory/apollo-4-2-solar-1776037673825.jpg"
+      ],
+      "description": ""
+    },
+    {
+      "id": "turbo",
+      "name": "Turbo",
+      "series": "Teko",
+      "make": "teko",
+      "seats": [],
+      "price": 9995,
+      "status": "available",
+      "category": "teko",
+      "condition": "new",
+      "colors": [],
+      "bestSeller": false,
+      "featured": false,
+      "quantity": 0,
+      "features": [
+        "Electric Golf Cart",
+        "Call for Details"
+      ],
+      "photos": [
+        "/images/inventory/turbo-1775782406748.png"
+      ],
+      "description": "Seating & Design\n\n4-passenger capacity with forward-facing bench seating\nSpacious cabin with generous legroom for all passengers\nComfortable seating with durable, weather-resistant upholstery\nFull-coverage roof protecting all four passengers\nWide body construction for stability and passenger comfort\n\nPerformance\n\nPowerful electric motor providing strong acceleration for four passengers\nTop speed up to ~23 mph with full passenger load\nEnhanced grade-climbing ability up to ~25% for hilly terrain\nHeavy-duty suspension system designed for smooth rides on varied surfaces"
+    },
+    {
+      "id": "turbolite-upgrade",
+      "name": "TurboLite Upgrade",
+      "series": "Teko",
+      "make": "teko",
+      "seats": [],
+      "price": 9495,
+      "status": "available",
+      "category": "teko",
+      "condition": "new",
+      "colors": [],
+      "bestSeller": false,
+      "featured": false,
+      "quantity": 0,
+      "features": [
+        "Electric Golf Cart",
+        "Call for Details"
+      ],
+      "photos": [
+        "/images/inventory/turbolite-upgrade-1775782328043.png"
+      ],
+      "description": "Seating & Design\n\n2-passenger capacity with enhanced comfort features\nPremium upgraded seating with improved cushioning and lumbar support\nExtended roof for increased weather protection\nSleek body styling with modern aesthetic touches\nEnhanced dashboard with improved gauge visibility\n\nPerformance\n\nUpgraded electric motor for improved acceleration and responsiveness\nTop speed up to ~20 mph with enhanced torque delivery\nBetter hill-climbing capability for varied terrain\nUpgraded suspension system for smoother ride quality over bumps"
+    },
+    {
+      "id": "turbolite",
+      "name": "TurboLite",
+      "series": "Teko",
+      "make": "teko",
+      "seats": [],
+      "price": 8495,
+      "status": "available",
+      "category": "teko",
+      "condition": "new",
+      "colors": [],
+      "bestSeller": false,
+      "featured": false,
+      "quantity": 1,
+      "features": [
+        "Electric Golf Cart",
+        "Call for Details"
+      ],
+      "photos": [
+        "/images/inventory/turbolite-1775782269031.png"
+      ],
+      "description": "Seating & Design\n\n2-passenger capacity with forward-facing bench seating\nCompact body design ideal for maneuvering tight spaces and narrow paths\nErgonomic seating with supportive cushioning for extended rides\nStandard roof providing overhead coverage for driver and passenger\nEasy entry and exit with accessible step-through design\n\nPerformance\n\nEfficient electric motor delivering smooth, quiet operation\nTop speed up to ~19 mph for neighborhood and community use\nHandles moderate inclines and flat terrain with consistent power delivery\nResponsive handling and a tight turning radius for navigating"
+    },
+    {
+      "id": "trophy-plus",
+      "name": "Trophy Plus",
+      "series": "Teko",
+      "make": "teko",
+      "seats": [
+        "6"
+      ],
+      "price": 12995,
+      "status": "available",
+      "category": "teko",
+      "condition": "new",
+      "colors": [
+        "black",
+        "white",
+        "red",
+        "grey"
+      ],
+      "bestSeller": false,
+      "featured": true,
+      "quantity": 12,
+      "features": [
+        "Electric Golf Cart",
+        "Call for Details"
+      ],
+      "photos": [
+        "/images/inventory/trophy-plus-1775680680799.jpg",
+        "/images/inventory/trophy-plus-1775680960984.jpg"
+      ],
+      "description": "Seating & Design\n6-passenger capacity with a 4 forward-facing + 2 rear-facing seat configuration\nHigh-back premium seating designed for comfort and support\nFlip-down rear seat converts into a cargo platform for storage or hauling gear\nExtended roof providing full coverage for all passengers\nWide body design with generous legroom and easy entry for riders\nPerformance\n5kW AC electric motor delivering strong acceleration and efficient power\nTop speed up to ~25 mph depending on configuration\nClimbs grades up to ~30% for hills and uneven terrain\nHeavy-duty suspension and lifted chassis for improved"
+    },
+    {
+      "id": "triumph",
+      "name": "Triumph",
+      "series": "Teko",
+      "make": "teko",
+      "seats": [],
+      "price": 12995,
+      "status": "sold",
+      "category": "teko",
+      "condition": "new",
+      "colors": [],
+      "bestSeller": false,
+      "featured": false,
+      "quantity": 0,
+      "features": [
+        "Electric Golf Cart",
+        "Call for Details"
+      ],
+      "photos": [
+        "/images/inventory/triumph-1775776348164.jpg"
+      ],
+      "description": "Seating & Design\n\n6-passenger capacity in premium 4 forward + 2 rear-facing configuration\nTop-tier high-back seating with luxury-grade materials and maximum support\nMulti-position rear seat converting between passenger and cargo modes\nFull-length extended roof with enhanced structural design\nWide-body platform with superior stability and spacious accommodations\n\nPerformance\n\nPremium-class electric motor with exceptional power delivery\nTop speed up to ~25 mph with outstanding acceleration\nConquers grades up to ~30% for steep hills and demanding terrain\nAdvanced suspension system with heavy-duty"
+    },
+    {
+      "id": "trophy",
+      "name": "Trophy",
+      "series": "Teko",
+      "make": "teko",
+      "seats": 4,
+      "price": 10995,
+      "status": "available",
+      "category": "teko",
+      "condition": "new",
+      "colors": [
+        "black"
+      ],
+      "bestSeller": false,
+      "featured": true,
+      "quantity": 1,
+      "features": [
+        "Electric Golf Cart",
+        "Call for Details"
+      ],
+      "photos": [
+        "/images/inventory/trophy-1775680743106.jpg"
+      ],
+      "description": "Seating & Design\n\n4-passenger capacity with premium high-back seating\nEnhanced interior appointments with upgraded trim and finishes\nFold-down rear seat that converts to cargo space when needed\nExtended roof with improved coverage and sleek profile\nUpgraded dashboard with modern instrumentation and storage compartments\n\nPerformance\n\nHigh-performance electric motor with superior torque output\nTop speed up to ~24 mph with excellent acceleration\nClimbs grades up to ~28% with confidence\nAdvanced suspension tuning for exceptional ride quality and handling stability"
+    },
+    {
+      "id": "apollo-rider-gen-1",
+      "name": "Apollo Rider Gen 1",
+      "series": "Dach Vehicles",
+      "make": "dach",
+      "seats": 4,
+      "price": 11495,
+      "status": "available",
+      "category": "dach",
+      "condition": "new",
+      "colors": [
+        "matte-black",
+        "matte-grey",
+        "white"
+      ],
+      "bestSeller": false,
+      "featured": false,
+      "quantity": 9,
+      "features": [
+        "Electric Golf Cart",
+        "Call for Details"
+      ],
+      "photos": [
+        "/images/inventory/apollo-rider-gen-1-1775776427707.jpg"
+      ],
+      "description": ""
+    },
+    {
+      "id": "apollo-explorer-gen-2",
+      "name": "Apollo Explorer Gen 2",
+      "series": "Dach Vehicles",
+      "make": "dach",
+      "seats": [],
+      "price": 12992,
+      "status": "coming-soon",
+      "category": "dach",
+      "condition": "new",
+      "colors": [],
+      "bestSeller": false,
+      "featured": false,
+      "quantity": 7,
+      "features": [
+        "Electric Golf Cart",
+        "Call for Details"
+      ],
+      "photos": [
+        "/images/inventory/apollo-explorer-gen-2-1775776618268.jpg"
+      ],
+      "description": ""
+    },
+    {
+      "id": "apollo-rider-gen-2",
+      "name": "Apollo Rider Gen 2",
+      "series": "Dach Vehicles",
+      "make": "dach",
+      "seats": 4,
+      "price": 12995,
+      "status": "coming-soon",
+      "category": "dach",
+      "condition": "new",
+      "colors": [],
+      "bestSeller": false,
+      "featured": false,
+      "quantity": 1,
+      "features": [
+        "Electric Golf Cart",
+        "Call for Details"
+      ],
+      "photos": [],
+      "description": "change the description to Apollo Gen 2 Solar\n\n"
+    },
+    {
+      "id": "dach-apollo-4plus2",
+      "name": "Apollo 4+2",
+      "series": "Dach Vehicles",
+      "make": "dach",
+      "seats": [
+        6
+      ],
+      "price": 13995,
+      "status": "available",
+      "category": "dach",
+      "condition": "new",
+      "colors": [
+        "white",
+        "matte-grey"
+      ],
+      "bestSeller": false,
+      "featured": true,
+      "quantity": 3,
+      "features": [
+        "6 Seats",
+        "Electric Golf Cart",
+        "Premium Build",
+        "Call for Full Details"
+      ],
+      "photos": [
+        "/images/inventory/dach-apollo-4plus2-1775680823274.jpg"
+      ],
+      "description": "The DACH Apollo 4+2 is a premium, automotive-inspired 72V lithium Low-Speed Vehicle (LSV) designed to deliver a luxury driving experience far beyond a traditional golf cart. Built on a unibody monocoque chassis, the Apollo combines durability, performance, and high-end technology into a sleek, modern platform.\n\nThis model features a 4-forward-facing seat layout with a convertible rear seat (4+2 configuration), allowing it to function as both a passenger vehicle and a utility cart—perfect for beach communities, campgrounds, resorts, and neighborhood driving.\n\nWith advanced features like cruise "
+    },
+    {
+      "id": "dach-falcon-ultra",
+      "name": "Falcon Ultra",
+      "series": "Dach Vehicles",
+      "make": "dach",
+      "seats": [
+        4
+      ],
+      "price": 10880,
+      "status": "available",
+      "category": "dach",
+      "condition": "new",
+      "colors": [
+        "matte-grey",
+        "matte-black",
+        "white"
+      ],
+      "bestSeller": false,
+      "featured": false,
+      "quantity": 5,
+      "features": [
+        "Electric Golf Cart",
+        "Premium Build",
+        "Multiple Units Available",
+        "Call for Full Details"
+      ],
+      "photos": [
+        "/images/inventory/dach-falcon-ultra-1775680917262.jpg"
+      ],
+      "description": ""
+    }
+  ],
+  "accessories": [
+    {
+      "id": "acc-dach-apollo-falcon-ultra-glove-box-insert",
+      "name": "DACH Apollo, Falcon Ultra Glove Box insert",
+      "price": 195,
+      "status": "available",
+      "features": [
+        "Driver Side Glove Box",
+        "Passenger Side Glove Box",
+        "Lockable",
+        "Free Shipping"
+      ],
+      "photos": [
+        "/images/inventory/acc-dach-apollo-falcon-ultra-glove-box-insert-1776291832824.jpg",
+        "/images/inventory/acc-dach-apollo-falcon-ultra-glove-box-insert-1776291841163.jpg",
+        "/images/inventory/acc-dach-apollo-falcon-ultra-glove-box-insert-1776291856982.jpg"
+      ]
+    },
+    {
+      "id": "acc-apollo-hitch-rear-mounting-reciever",
+      "name": "Apollo Hitch Rear Mounting Reciever",
+      "price": 199,
+      "status": "available",
+      "features": [
+        "Add a hitch to your Dach Apollo making it even more versatile",
+        "Easy Install"
+      ],
+      "photos": [
+        "/images/inventory/acc-apollo-hitch-rear-mounting-reciever-1776277195158.png",
+        "/images/inventory/acc-apollo-hitch-rear-mounting-reciever-1776277201017.png"
+      ]
+    }
+  ]
+}

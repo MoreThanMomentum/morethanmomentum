@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{GA_ID}}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '{{GA_ID}}');
+</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{BUSINESS_NAME}} | {{INDUSTRY_TITLE_DESCRIPTOR}} | {{CITY_STATE}}</title>
+  <meta name="description" content="{{META_DESCRIPTION}}" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://{{SITE_DOMAIN}}/" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="{{BUSINESS_NAME}} — Built Different. By Someone Who Served." />
+  <meta property="og:description" content="{{OG_DESCRIPTION}}" />
+  <meta property="og:image" content="https://{{SITE_DOMAIN}}/images/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+  <meta name="theme-color" content="{{PRIMARY_COLOR}}" />
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/mobile.css">
+</head>
+<body>
+
+<div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
+<header class="site-header" id="site-header">
+  <nav class="nav-container" role="navigation" aria-label="Main navigation">
+    <a href="index.html" class="nav-logo" aria-label="{{BUSINESS_NAME}} Home">
+  <img src="/images/logo.png" alt="{{BUSINESS_NAME}}" style="height:84px;width:auto;display:block;" />
+</a>
+      
+    <ul class="nav-links" id="nav-links" role="list">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="shop.html" class="nav-link">Shop</a></li>
+      <li><a href="rentals.html" class="nav-link">Rentals</a></li>
+      <li><a href="services.html" class="nav-link">Services</a></li>
+      <li><a href="about.html" class="nav-link">{{ABOUT_NAV_LABEL}}</a></li>
+      <li><a href="contact.html" class="nav-link">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="tel:{{PHONE_DIGITS}}" class="nav-phone">{{PHONE}}</a>
+      <a href="#lead-form" class="btn btn-gold nav-cta">Get a Quote</a>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+
+<!-- ===== HERO ===== -->
+<section class="hero" id="hero" aria-label="{{BUSINESS_NAME}} Welcome">
+  <video class="hero-video" autoplay muted loop playsinline poster="images/heroimage.png">
+    <source src="videos/herovideo.mp4" type="video/mp4" />
+  </video>
+  <div class="hero-bg-overlay" aria-hidden="true"></div>
+  <canvas class="hero-particles" id="hero-particles" aria-hidden="true"></canvas>
+
+  <div class="hero-content">
+    <div class="hero-badge" data-animate="fade-up">
+      <span aria-hidden="true">⭐</span> {{HERO_BADGE_TAGLINE}}
+    </div>
+    <h1 class="hero-headline" data-animate="fade-up" data-delay="100">
+      Built Different.<br />
+      <span class="headline-gold">
+        <span class="typewriter" id="typewriter-text" aria-live="polite"></span>
+        <span class="typewriter-cursor" aria-hidden="true">|</span>
+      </span>
+    </h1>
+    <p class="hero-sub" data-animate="fade-up" data-delay="200">
+      Veteran-owned. Community-driven. Premium golf carts for
+      {{HERO_USE_CASE_LIST}} — starting at <strong>{{STARTING_PRICE}}</strong>.
+    </p>
+    <div class="hero-cta-row" data-animate="fade-up" data-delay="300">
+      <a href="shop.html" class="btn btn-gold btn-lg">Browse Inventory</a>
+      <a href="tel:{{PHONE_DIGITS}}" class="btn btn-outline btn-lg">📞 Call Us: {{PHONE}}</a>
+    </div>
+    {{HERO_TRUST_PILLS_HTML}}
+  </div>
+
+  <!-- ── APPOINTMENT / SERVICE CARD ──
+       Booking is handled entirely by the embedded GHL calendar iframe (set
+       GHL_CALENDAR_EMBED_URL in Cloudflare Pages env vars). The service-
+       request path posts to /api/submit-service which creates a GHL contact
+       + adds a note on the timeline. -->
+  <div class="hero-form-card" id="lead-form" data-animate="fade-up" data-delay="150">
+
+    <!-- Header -->
+    <p class="form-card-label" id="form-card-label">Book with {{BUSINESS_NAME}}</p>
+    <h3 class="form-card-title" id="form-card-title">How Can We Help?</h3>
+    <p class="form-card-sub" id="form-card-sub">Pick the option that fits — we will reach out fast.</p>
+
+    <!-- STEP 1: Type Selection -->
+    <div id="step-type">
+      <div class="form-group">
+        <div class="appt-type-row">
+          <button type="button" class="appt-type-btn" onclick="selectType('appointment')">
+            <span class="appt-type-icon">📅</span>
+            <span class="appt-type-label">Book Appointment</span>
+            <span class="appt-type-sub">Pick a date &amp; time</span>
+          </button>
+          <button type="button" class="appt-type-btn" onclick="selectType('service')">
+            <span class="appt-type-icon">🔧</span>
+            <span class="appt-type-label">Service Request</span>
+            <span class="appt-type-sub">Tell us what you need</span>
+          </button>
+        </div>
+      </div>
+      <p class="form-disclaimer">🔒 Your info is never shared or sold. Ever.</p>
+    </div>
+
+    <!-- STEP 2A: Appointment — GHL Calendar Embed -->
+    <div id="step-appointment" style="display:none;">
+      <button type="button" class="form-back-btn" onclick="goBack()">← Back</button>
+      <div class="ghl-embed-wrap">
+        <iframe
+          src="{{GHL_CALENDAR_EMBED_URL}}"
+          class="ghl-embed-frame"
+          title="Book an appointment"
+          loading="lazy"
+          allow="payment"
+          scrolling="no">
+        </iframe>
+      </div>
+    </div>
+
+    <!-- STEP 2B: Service Request -->
+    <div id="step-service" style="display:none;">
+      <button type="button" class="form-back-btn" onclick="goBack()">← Back</button>
+      <div class="form-group">
+        <label for="service-name">Full Name <span class="required-star" aria-hidden="true">*</span></label>
+        <input type="text" id="service-name" name="name" placeholder="Your name" required autocomplete="name" />
+      </div>
+      <div class="form-group">
+        <label for="service-phone">Phone Number <span class="required-star" aria-hidden="true">*</span></label>
+        <input type="tel" id="service-phone" name="phone" placeholder="(000) 000-0000" required autocomplete="tel" />
+      </div>
+      <div class="form-group">
+        <label for="service-email">Email Address <span class="required-star" aria-hidden="true">*</span></label>
+        <input type="email" id="service-email" name="email" placeholder="you@email.com" required autocomplete="email" />
+      </div>
+      <div class="form-group">
+        <label for="service-desc">Describe what you need <span class="required-star" aria-hidden="true">*</span></label>
+        <textarea id="service-desc" name="service_description" rows="4"
+          placeholder="Tell us what's going on — the more detail the better"
+          class="snh-textarea"></textarea>
+      </div>
+      <button type="button" class="btn btn-gold btn-full" onclick="submitService()">
+        Send Service Request →
+      </button>
+      <p class="form-disclaimer">🔒 Your info is never shared or sold. Ever.</p>
+    </div>
+
+    <!-- SUCCESS -->
+    <div id="step-success" style="display:none;">
+      <div class="form-success visible">
+        <div class="success-icon" id="success-icon">✅</div>
+        <h4 id="success-title">You're all set!</h4>
+        <p id="success-msg">We will be in touch within 1 business day.</p>
+        <a href="shop.html" class="btn btn-gold" style="margin-top:1rem;display:inline-block;">Browse Inventory →</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── FORM CARD STYLES ── -->
+  <style>
+    .appt-type-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+    }
+    .appt-type-btn {
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+      padding: 1rem 0.5rem;
+      border: 2px solid var(--color-border); border-radius: var(--radius-md);
+      background: var(--color-white); cursor: pointer;
+      transition: all 0.18s ease; gap: 0.25rem;
+    }
+    .appt-type-btn:hover { border-color: var(--color-navy); background: #f8f9ff; }
+    .appt-type-btn.active { border-color: var(--color-navy); background: var(--color-navy); }
+    .appt-type-btn.active .appt-type-label,
+    .appt-type-btn.active .appt-type-sub { color: var(--color-white); }
+    .appt-type-icon { font-size: 1.5rem; }
+    .appt-type-label { font-family: var(--font-headline); font-size: 0.85rem; font-weight: 700; color: var(--color-navy); }
+    .appt-type-sub { font-size: 0.7rem; color: var(--color-mid-gray); }
+
+    .form-back-btn {
+      background: none; border: none; font-size: 0.8rem; font-weight: 600;
+      color: var(--color-navy); cursor: pointer; padding: 0; margin-bottom: 0.75rem;
+      font-family: var(--font-headline); letter-spacing: 0.02em;
+    }
+    .form-back-btn:hover { color: var(--color-gold); }
+
+    .snh-textarea {
+      width: 100%; padding: 0.65rem 0.9rem;
+      border: 1.5px solid var(--color-border); border-radius: var(--radius-md);
+      font-size: 0.9rem; color: var(--color-charcoal); background: var(--color-white);
+      font-family: 'Open Sans', sans-serif; resize: vertical; outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .snh-textarea:focus { border-color: var(--color-navy); box-shadow: 0 0 0 3px rgba(27,42,74,0.1); }
+
+    /* ── GHL Calendar Embed ── */
+    .ghl-embed-wrap {
+      width: 100%;
+      border: 1.5px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--color-white);
+    }
+    .ghl-embed-frame {
+      width: 100%;
+      min-height: 620px;
+      border: 0;
+      display: block;
+    }
+  </style>
+
+  <!-- ── FORM LOGIC ──
+       Type selection toggles between the GHL calendar embed and the service-
+       request form. The embed handles its own contact capture + booking; the
+       service-request form posts to /api/submit-service. -->
+  <script>
+  (function() {
+    var selectedType = null;
+
+    // ── TYPE SELECTION ──
+    window.selectType = function(type) {
+      selectedType = type;
+      document.querySelectorAll('.appt-type-btn').forEach(function(b) { b.classList.remove('active'); });
+      if (event && event.currentTarget) event.currentTarget.classList.add('active');
+
+      document.getElementById('step-type').style.display        = 'none';
+      document.getElementById('step-appointment').style.display = type === 'appointment' ? 'block' : 'none';
+      document.getElementById('step-service').style.display     = type === 'service'     ? 'block' : 'none';
+
+      var title = document.getElementById('form-card-title');
+      var sub   = document.getElementById('form-card-sub');
+      if (type === 'appointment') {
+        title.textContent = 'Pick a Time';
+        sub.textContent   = 'Choose any open slot — we will confirm by email.';
+      } else {
+        title.textContent = 'Send a Service Request';
+        sub.textContent   = 'We will call to schedule the visit.';
+      }
+    };
+
+    // ── BACK BUTTON ──
+    window.goBack = function() {
+      document.getElementById('step-appointment').style.display = 'none';
+      document.getElementById('step-service').style.display     = 'none';
+      document.getElementById('step-type').style.display        = 'block';
+      document.getElementById('form-card-title').textContent    = 'How Can We Help?';
+      document.getElementById('form-card-sub').textContent      = 'Pick the option that fits — we will reach out fast.';
+      document.querySelectorAll('.appt-type-btn').forEach(function(b) { b.classList.remove('active'); });
+    };
+
+    // ── SUBMIT SERVICE ──
+    window.submitService = function() {
+      var name  = document.getElementById('service-name').value.trim();
+      var phone = document.getElementById('service-phone').value.trim();
+      var email = document.getElementById('service-email').value.trim();
+      var desc  = document.getElementById('service-desc').value.trim();
+
+      if (!name || !phone || !email || !desc) {
+        alert('Please fill in your name, phone, email, and description.');
+        return;
+      }
+
+      var btn = event.currentTarget;
+      btn.disabled = true; btn.textContent = 'Sending...';
+
+      fetch('/api/submit-service', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name, phone: phone, email: email, description: desc })
+      })
+      .then(function(r) { return r.json(); })
+      .then(function(data) {
+        if (data.success) {
+          showSuccess('🔧', 'Request Sent!', 'We will call to schedule your service visit.');
+        } else {
+          btn.disabled = false; btn.textContent = 'Send Service Request →';
+          alert('Something went wrong. Please try again or call us directly.');
+        }
+      })
+      .catch(function() {
+        btn.disabled = false; btn.textContent = 'Send Service Request →';
+        alert('Connection error. Please try again or call us directly.');
+      });
+    };
+
+    function showSuccess(icon, title, msg) {
+      ['step-type','step-appointment','step-service'].forEach(function(id) {
+        document.getElementById(id).style.display = 'none';
+      });
+      document.getElementById('success-icon').textContent = icon;
+      document.getElementById('success-title').textContent = title;
+      document.getElementById('success-msg').textContent = msg;
+      document.getElementById('step-success').style.display = 'block';
+    }
+  })();
+  </script>
+</section>
+
+
+<!-- ===== STATS BAR ===== -->
+<section class="stats-bar" aria-label="Key numbers">
+  <div class="container stats-grid">
+    <div class="stat-item">
+      <div class="stat-row"><span class="stat-number" data-target="15">0</span><span class="stat-suffix">+</span></div>
+      <span class="stat-label">Models In Stock</span>
+    </div>
+    <div class="stat-item">
+      <div class="stat-row"><span class="stat-number" data-target="3">0</span><span class="stat-suffix">+</span></div>
+      <span class="stat-label">Years Serving {{REGION_SHORT}}</span>
+    </div>
+    <div class="stat-item">
+      <div class="stat-row"><span class="stat-number" data-target="4.7">0</span><span class="stat-suffix">★</span></div>
+      <span class="stat-label">Google Rating</span>
+    </div>
+    <div class="stat-item">
+      <div class="stat-row"><span class="stat-number" data-target="100">0</span><span class="stat-suffix">%</span></div>
+      <span class="stat-label">{{STAT_LABEL_TRUST}}</span>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== GOOGLE REVIEWS ===== -->
+<section class="section reviews-section" id="reviews" aria-labelledby="reviews-heading">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">What Customers Say</p>
+      <h2 class="section-title" id="reviews-heading">Don't Take Our Word For It</h2>
+   <div class="review-aggregate">
+  <div class="review-stars" aria-label="Google Rating">★★★★★</div>
+</div>
+    </div>
+    <div class="reviews-grid">
+      {{REVIEWS_GRID_HTML}}
+    </div>
+    <div class="reviews-footer">
+      <a href="{{GOOGLE_REVIEWS_URL}}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-white">
+        Leave Us a Review on Google ↗
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== FEATURED INVENTORY ===== -->
+<!-- Dynamic — pulls featured carts from inventory.json. {{OWNER_FIRST}} controls which {{ITEM_NAME_PLURAL_LOWER}} appear here via the admin panel. -->
+<section class="section featured-inventory" id="inventory" aria-labelledby="inventory-heading">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">On the Lot Now</p>
+      <h2 class="section-title" id="inventory-heading">Featured Carts</h2>
+      <p class="section-sub">Hand-picked from our full lineup. Every cart priced upfront — no games, no hidden fees.</p>
+    </div>
+    <div class="cart-grid" id="featured-cart-grid">
+      <!-- Loaded dynamically from inventory.json -->
+    </div>
+    <div class="inventory-footer">
+      <a href="shop.html" class="btn btn-gold btn-lg">View All {{CATALOG_PAGE_LABEL}} →</a>
+    </div>
+  </div>
+</section>
+
+<script>
+(function loadFeaturedCarts() {
+  const grid = document.getElementById('featured-cart-grid');
+  if (!grid) return;
+
+  fetch('/inventory.json?v=' + Date.now())
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      var carts = data.carts || [];
+
+      // Show carts marked featured=true (max 3)
+      // Fallback: first 3 available carts if none are marked featured
+      var featured = carts.filter(function(c) { return c.featured && c.status === 'available'; }).slice(0, 3);
+      if (!featured.length) {
+        featured = carts.filter(function(c) { return c.status === 'available'; }).slice(0, 3);
+      }
+
+      if (!featured.length) {
+        grid.innerHTML = '<p style="text-align:center;color:#6B7280;">Check back soon for available inventory.</p>';
+        return;
+      }
+
+      grid.innerHTML = featured.map(function(cart, i) {
+        var delay = i * 100;
+        var price = cart.price > 0 ? '$' + cart.price.toLocaleString() : 'Call for Price';
+        var badgeHtml = cart.bestSeller ? '<span class="cart-badge-feature">Best Seller</span>' : '';
+
+        // Normalize photos — support legacy photoUrl or new photos array
+        var photos = Array.isArray(cart.photos) && cart.photos.length
+          ? cart.photos.filter(Boolean)
+          : (cart.photoUrl ? [cart.photoUrl] : []);
+        var firstPhoto = photos[0] || '';
+        var photosAttr = photos.length ? "data-photos='" + JSON.stringify(photos) + "'" : '';
+        var galleryBadge = photos.length > 1
+          ? '<span class="cart-gallery-badge">📷 ' + photos.length + '</span>'
+          : '';
+
+        var imgHtml = firstPhoto
+          ? '<img src="' + firstPhoto + '" alt="' + cart.name + '" style="width:100%;height:100%;object-fit:cover;" onerror="this.style.display=\'none\'">'
+          : '<div class="img-placeholder-inner"><span>📷</span><strong>' + cart.name + '</strong><p>Photo coming soon.</p></div>';
+
+        return '<article class="cart-card" data-animate="fade-up"' + (delay ? ' data-delay="' + delay + '"' : '') + '>' +
+          '<div class="cart-img-wrap" ' + photosAttr + '>' +
+            imgHtml +
+            '<span class="cart-badge-price">' + price + '</span>' +
+            badgeHtml +
+            galleryBadge +
+          '</div>' +
+          '<div class="cart-details">' +
+            '<p class="cart-series">' + (cart.series || '{{BUSINESS_NAME}}') + '</p>' +
+            '<h3 class="cart-name">' + cart.name + '</h3>' +
+            '<ul class="cart-features">' + cart.features.map(function(f) { return '<li>' + f + '</li>'; }).join('') + '</ul>' +
+            '<div class="cart-cta-row">' +
+              '<a href="shop.html#' + cart.id + '" class="btn btn-navy">View Details</a>' +
+              '<a href="#lead-form" class="btn btn-outline-navy">Get a Quote</a>' +
+            '</div>' +
+          '</div>' +
+        '</article>';
+      }).join('');
+
+      // Re-trigger scroll animations for newly added cards
+      if (typeof initScrollReveal === 'function') initScrollReveal();
+    })
+    .catch(function() {
+      grid.innerHTML = '<p style="text-align:center;color:#6B7280;">Unable to load inventory. <a href="shop.html">Browse all carts →</a></p>';
+    });
+})();
+</script>
+
+
+<!-- ===== LIFESTYLE PHOTO GRID ===== -->
+<section class="section lifestyle-section" id="lifestyle" aria-labelledby="lifestyle-heading">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">{{LIFESTYLE_SECTION_EYEBROW}}</p>
+      <h2 class="section-title" id="lifestyle-heading">Built For Your Life</h2>
+      <p class="section-sub">From lake houses to campgrounds to wedding days — there's a cart for every moment.</p>
+    </div>
+   <div class="lifestyle-grid">
+
+      <div class="lifestyle-tile lifestyle-tile--lake" data-animate="fade-up">
+        <img src="images/dock.png" alt="Luxury golf cart at a New Hampshire lakefront dock" loading="lazy" />
+        <div class="lifestyle-overlay">
+          <h3>Lake Houses</h3>
+          <p>Glide the shoreline in style</p>
+        </div>
+      </div>
+
+      <div class="lifestyle-tile lifestyle-tile--campground" data-animate="fade-up" data-delay="100">
+        <img src="images/camping.png" alt="Family loading a golf cart at a New England campground" loading="lazy" />
+        <div class="lifestyle-overlay">
+          <h3>Campgrounds</h3>
+          <p>Fleet packages for operators</p>
+        </div>
+      </div>
+
+      <div class="lifestyle-tile lifestyle-tile--wedding" data-animate="fade-up" data-delay="200">
+        <img src="images/wedding.png" alt="Bride and groom stepping into a decorated golf cart at a wedding venue" loading="lazy" />
+        <div class="lifestyle-overlay">
+          <h3>Weddings</h3>
+          <p>Arrive in unforgettable style</p>
+        </div>
+      </div>
+
+      <div class="lifestyle-tile lifestyle-tile--neighborhood" data-animate="fade-up" data-delay="300">
+        <img src="images/street.png" alt="Family cruising a New Hampshire neighborhood street in a luxury golf cart" loading="lazy" />
+        <div class="lifestyle-overlay">
+          <h3>Neighborhoods</h3>
+          <p>Your road. Your cart. Your rules.</p>
+        </div>
+      </div>
+
+    </div>
+ 
+</section>
+
+
+<!-- ===== CTA STRIP ===== -->
+<section class="cta-strip">
+  <div class="container cta-strip-inner">
+    <div class="cta-strip-copy">
+      <h2>Ready to Find Your Cart?</h2>
+      <p>{{ADDRESS_LINE_1}}, {{CITY_STATE}} — or get a quote online in 60 seconds. Spring is here and inventory moves fast.</p>
+    </div>
+    <div class="cta-strip-buttons">
+      <a href="#lead-form" class="btn btn-gold btn-lg">Get a Free Quote</a>
+      <a href="shop.html" class="btn btn-outline-white btn-lg">View Inventory</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ===== FOOTER ===== -->
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="footer-logo"><span class="logo-snh">{{LOGO_PRIMARY_TEXT}}</span><span class="logo-golf">{{LOGO_SECONDARY_TEXT}}</span></a>
+      <p class="footer-tagline">Veteran Owned. Community Driven. Cart Obsessed.</p>
+      <address class="footer-address">{{ADDRESS_LINE_1}}<br />{{CITY_STATE_ZIP}}</address>
+      <a href="tel:{{PHONE_DIGITS}}" class="footer-phone">{{PHONE}}</a>
+      <a href="/cdn-cgi/l/email-protection#493a27212e26252f2a283b3d3a092e24282025672a2624" class="footer-email"><span class="__cf_email__" data-cfemail="24574a4c434b48424745565057644349454d480a474b49">[email&#160;protected]</span></a>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Quick Links</h4>
+      <ul class="footer-links">
+        <li><a href="shop.html">Shop Carts</a></li>
+        <li><a href="rentals.html">Rentals</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="about.html">{{ABOUT_NAV_LABEL}}</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Services</h4>
+      <ul class="footer-links">
+        <li><a href="shop.html">New Cart Sales</a></li>
+        <li><a href="{{USED_INVENTORY_URL}}" target="_blank" rel="noopener noreferrer">Used Carts</a></li>
+        <li><a href="rentals.html">Cart Rentals</a></li>
+        <li><a href="services.html">Repairs</a></li>
+        <li><a href="services.html#battery">Battery Upgrades</a></li>
+        <li><a href="services.html#lsv">LSV / Street-Legal</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Follow Us</h4>
+      <div class="footer-social">
+        <a href="{{FACEBOOK_URL}}" target="_blank" rel="noopener noreferrer" class="social-link">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> Facebook
+        </a>
+        <a href="{{INSTAGRAM_URL}}" target="_blank" rel="noopener noreferrer" class="social-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> Instagram
+        </a>
+
+      </div>
+      {{FOOTER_TRUST_BADGES_HTML}}
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container footer-bottom-inner">
+      <p>&copy; <span id="current-year"></span> {{BUSINESS_NAME_LLC}}. All rights reserved. | {{CITY_STATE}}</p>
+      <p><a href="privacy.html">Privacy Policy</a> · <a href="contact.html">Contact</a> · <a href="sitemap.xml">Sitemap</a></p>
+    </div>
+  </div>
+  
+</footer>
+
+<div class="mobile-sticky-bar" id="mobile-sticky-bar" aria-hidden="true">
+  <a href="tel:{{PHONE_DIGITS}}" class="mobile-sticky-call">📞 Call Us</a>
+  <a href="#lead-form" class="mobile-sticky-quote btn btn-gold">Get a Free Quote</a>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="main.js"></script>
+
+<script>
+  // ── SECRET ADMIN ACCESS — desktop only ──
+  // Triple-click the logo within 2 seconds to open the admin panel.
+  // Touch devices are skipped entirely so accidental taps don't surface admin.
+  (function() {
+    var isFinePointer = window.matchMedia && window.matchMedia('(pointer: fine)').matches;
+    var hasMouseHover = window.matchMedia && window.matchMedia('(hover: hover)').matches;
+    if (!isFinePointer || !hasMouseHover) return;
+
+    var clicks = 0;
+    var timer  = null;
+    var logo   = document.querySelector('.nav-logo');
+    if (!logo) return;
+
+    logo.addEventListener('click', function(e) {
+      e.preventDefault();
+      clicks++;
+      clearTimeout(timer);
+
+      if (clicks >= 3) {
+        clicks = 0;
+        window.location.href = '/admin.html';
+        return;
+      }
+
+      timer = setTimeout(function() {
+        if (clicks < 3) window.location.href = 'index.html';
+        clicks = 0;
+      }, 2000);
+    });
+  })();
+</script>
+</body>
+</html>

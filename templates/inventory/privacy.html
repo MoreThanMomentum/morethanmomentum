@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{GA_ID}}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '{{GA_ID}}');
+</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="{{PRIMARY_COLOR}}" />
+  <meta name="robots" content="noindex, follow" />
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/mobile.css">
+  <title>Privacy Policy &amp; Terms of Service | {{BUSINESS_NAME}} | {{CITY_STATE}}</title>
+  <meta name="description" content="Privacy Policy and Terms of Service for {{BUSINESS_NAME_LLC}}. Learn how we collect, use, and protect your information, and the terms governing our SMS messaging program." />
+  <style>
+    .privacy-hero {
+      background: var(--color-navy);
+      padding: calc(var(--nav-height) + var(--space-3xl)) 0 var(--space-3xl);
+      text-align: center;
+    }
+    .privacy-hero-eyebrow {
+      font-family: var(--font-headline);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-gold);
+      margin-bottom: var(--space-sm);
+    }
+    .privacy-hero-title {
+      font-family: var(--font-headline);
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 800;
+      color: var(--color-white);
+      margin-bottom: var(--space-md);
+    }
+    .privacy-hero-sub {
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.6);
+    }
+
+    .privacy-body {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: var(--space-4xl) var(--space-lg);
+    }
+    .privacy-updated {
+      display: inline-block;
+      background: var(--color-light-gray);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-pill);
+      font-family: var(--font-headline);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--color-mid-gray);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.35rem 1rem;
+      margin-bottom: var(--space-3xl);
+    }
+    .privacy-section {
+      margin-bottom: var(--space-3xl);
+    }
+    .privacy-section-title {
+      font-family: var(--font-headline);
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--color-navy);
+      margin-bottom: var(--space-md);
+      padding-bottom: var(--space-sm);
+      border-bottom: 2px solid var(--color-gold);
+      display: inline-block;
+    }
+    .privacy-text {
+      font-size: 0.95rem;
+      color: var(--color-mid-gray);
+      line-height: 1.85;
+      margin-bottom: var(--space-md);
+    }
+    .privacy-text:last-child {
+      margin-bottom: 0;
+    }
+    .privacy-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 var(--space-md);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-sm);
+    }
+    .privacy-list li {
+      font-size: 0.95rem;
+      color: var(--color-mid-gray);
+      line-height: 1.7;
+      padding-left: var(--space-lg);
+      position: relative;
+    }
+    .privacy-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.6em;
+      width: 6px;
+      height: 6px;
+      background: var(--color-gold);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .privacy-highlight {
+      background: var(--color-light-gray);
+      border-left: 3px solid var(--color-gold);
+      border-radius: 0 var(--radius-md) var(--radius-md) 0;
+      padding: var(--space-lg) var(--space-xl);
+      margin: var(--space-xl) 0;
+    }
+    .privacy-highlight p {
+      font-size: 0.9rem;
+      color: var(--color-charcoal);
+      line-height: 1.75;
+      margin: 0;
+    }
+    .privacy-highlight strong {
+      color: var(--color-navy);
+    }
+    .privacy-contact-block {
+      background: var(--color-navy);
+      border-radius: var(--radius-xl);
+      padding: var(--space-2xl);
+      margin-top: var(--space-3xl);
+      text-align: center;
+    }
+    .privacy-contact-block h3 {
+      font-family: var(--font-headline);
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--color-white);
+      margin-bottom: var(--space-sm);
+    }
+    .privacy-contact-block p {
+      font-size: 0.9rem;
+      color: rgba(255,255,255,0.65);
+      line-height: 1.7;
+      margin-bottom: var(--space-lg);
+    }
+    .privacy-contact-block a {
+      color: var(--color-gold);
+      font-weight: 600;
+    }
+    .privacy-contact-block a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+<div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+
+<header class="site-header" id="site-header">
+  <nav class="nav-container" role="navigation" aria-label="Main navigation">
+    <a href="index.html" class="nav-logo" aria-label="{{BUSINESS_NAME}} Home">
+  <img src="/images/logo.png" alt="{{BUSINESS_NAME}}" style="height:44px;width:auto;display:block;" />
+</a>
+      
+    <ul class="nav-links" id="nav-links" role="list">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="shop.html" class="nav-link">Shop</a></li>
+      <li><a href="rentals.html" class="nav-link">Rentals</a></li>
+      <li><a href="services.html" class="nav-link">Services</a></li>
+      <li><a href="about.html" class="nav-link">{{ABOUT_NAV_LABEL}}</a></li>
+      <li><a href="contact.html" class="nav-link">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="tel:{{PHONE_DIGITS}}" class="nav-phone">{{PHONE}}</a>
+      <a href="contact.html" class="btn btn-gold nav-cta">Get a Quote</a>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+
+<!-- HERO -->
+<section class="privacy-hero">
+  <div class="container">
+    <p class="privacy-hero-eyebrow">Legal</p>
+    <h1 class="privacy-hero-title">Privacy Policy &amp; Terms of Service</h1>
+    <p class="privacy-hero-sub">{{BUSINESS_NAME_LLC}} &mdash; {{CITY_STATE}}</p>
+  </div>
+</section>
+
+<div style="height: 3px; background: linear-gradient(90deg, var(--color-navy), var(--color-gold), var(--color-navy));"></div>
+
+
+<!-- BODY -->
+<main class="privacy-body">
+
+  <span class="privacy-updated">Last Updated: April 2026</span>
+
+  <div class="privacy-highlight">
+    <p><strong>The short version:</strong> We only collect information you choose to give us through our contact forms. We do not sell your data, we do not share it with third parties for marketing, and we will never spam you. {{OWNER_FIRST}} reads these personally.</p>
+  </div>
+
+  <!-- 1 -->
+  <div class="privacy-section">
+    <h2 class="privacy-section-title">1. Who We Are</h2>
+    <p class="privacy-text">This Privacy Policy applies to {{BUSINESS_NAME_LLC}} (&ldquo;{{BUSINESS_NAME_SHORT}},&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or &ldquo;our&rdquo;), a {{INDUSTRY_DESCRIPTOR}} located at {{ADDRESS_LINE_1}}, {{CITY_STATE_ZIP}}. We operate the website {{SITE_DOMAIN}}.</p>
+    <p class="privacy-text">If you have any questions about this policy or your information, you can reach us at <a href="mailto:{{EMAIL}}" style="color:var(--color-navy);font-weight:600;">{{EMAIL}}</a> or by calling <a href="tel:{{PHONE_DIGITS}}" style="color:var(--color-navy);font-weight:600;">{{PHONE}}</a>.</p>
+  </div>
+
+  <!-- 2 -->
+  <div class="privacy-section">
+    <h2 class="privacy-section-title">2. Information We Collect</h2>
+    <p class="privacy-text">We collect information in two ways: information you give us directly, and information collected automatically when you visit our site.</p>
+    <p class="privacy-text"><strong style="color:var(--color-navy);">Information you provide directly</strong> — when you fill out a contact or quote request form on our website, we may collect:</p>
+    <ul class="privacy-list">
+      <li>Your full name</li>
+      <li>Your phone number</li>
+      <li>Your email address</li>
+      <li>Your area of interest (e.g. buying, renting, repair)</li>
+      <li>Any message or details you choose to include</li>
+    </ul>
+    <p class="privacy-text"><strong style="color:var(--color-navy);">Information collected automatically</strong> — like most websites, we use Google Analytics to understand how visitors interact with our site. This may include:</p>
+    <ul class="privacy-list">
+      <li>Pages visited and time spent on each page</li>
+      <li>General geographic location (city/region level, not precise)</li>
+      <li>Device type, browser, and operating system</li>
+      <li>How you arrived at our site (search, direct, social, etc.)</li>
+    </ul>
+    <p class="privacy-text">This data is aggregated and anonymous. We cannot identify individual visitors from Google Analytics data.</p>
+  </div>
+
+  <!-- 3 -->
+  <div class="privacy-section">
+    <h2 class="privacy-section-title">3. How We Use Your Information</h2>
+    <p class="privacy-text">We use the information you submit through our forms solely to respond to your inquiry. Specifically:</p>
+    <ul class="privacy-list">
+      <li>To respond to your quote request, question, or service inquiry</li>
+      <li>To follow up about a cart purchase, rental, or service appointment</li>
+      <li>To send occasional updates about inventory or promotions, if you&rsquo;ve expressed interest</li>
+    </ul>
+    <p class="privacy-text">We use Google Analytics data to improve our website &mdash; understanding which pages are most helpful, where visitors come from, and how to better serve {{REGION_SHORT}} customers.</p>
+  </div>
+
+  <!-- 4 -->
+  <div class="privacy-section">
+    <h2 class="privacy-section-title">4. How We Store and Protect Your Data</h2>
+    <p class="privacy-text">Form submissions are collected and stored securely through our CRM system (GoHighLevel). We use industry-standard security practices to protect your information. We limit access to your data to only those who need it to respond to your inquiry.</p>
+    <p class="privacy-text">We retain your contact information for as long as necessary to fulfill the purpose it was collected for, or as required by law. You may request deletion of your information at any time by contacting us directly.</p>
+  </div>
+
+  <!-- 5 -->
+  <div class="privacy-section">
+    <h2 class="privacy-section-title">5. Cookies</h2>
+    <p class="privacy-text">Our website uses cookies &mdash; small text files stored in your browser &mdash; to support Google Analytics tracking. These cookies do not collect personally identifiable information and are used only to understand aggregate site usage.</p>
+    <p class="privacy-text">You can disable cookies at any time through your browser settings. Doing so will not affect your ability to use our website, though some features may behave differently.</p>
+    <p class="privacy-text">We do not use advertising cookies, retargeting pixels, or third-party tracking beyond Google Analytics.</p>
+  </div>
+
+  <!-- 6 -->
+  <div class="privacy-section">
+    <h2 class="privacy-section-title">6. Sharing Your Information</h2>
+    <p class="privacy-text">We do not sell, rent, or trade your personal information to any third party &mdash; ever.</p>
+    <p class="privacy-text">We may share your information only in the following limited circumstances:</p>
+    <ul class="privacy-list">
+      <li><strong style="color:var(--color-charcoal);">Service providers:</strong> We use GoHighLevel as our CRM to store and manage form submissions. They are bound by their own privacy policy and are not permitted to use your data for any other purpose.</li>
+      <li><strong style="color:var(--color-charcoal);">Legal requirements:</strong> We may disclose information if required to do so by law or in response to valid legal process.</li>
+    </ul>
+    <div class="privacy-highlight">
+      <p><strong>SMS &amp; Text Messaging Data:</strong> No mobile information will be shared with third parties or affiliates for marketing or promotional purposes. Information sharing to subcontractors in support services, such as customer service, is permitted. All other use case categories exclude text messaging originator opt-in data and consent; this information will not be shared with any third parties, excluding aggregators and providers of the Text Message services. Text messaging originator opt-in data and consent will not be shared with any third parties.</p>
+    </div>
+  </div>
+
+  <!-- 7 -->
+  <div class="privacy-section">
+    <h2 class="privacy-section-title">7. Your Rights</h2>
+    <p class="privacy-text">You have the right to:</p>
+    <ul class="privacy-list">
+      <li>Request a copy of the personal information we hold about you</li>
+      <li>Request correction of inaccurate information</li>
+      <li>Request deletion of your information from our records</li>
+      <li>Opt out of any future marketing communications at any time</li>
+    </ul>
+    <p class="privacy-text">To exercise any of these rights, simply contact us at <a href="mailto:{{EMAIL}}" style="color:var(--color-navy);font-weight:600;">{{EMAIL}}</a> or call <a href="tel:{{PHONE_DIGITS}}" style="color:var(--color-navy);font-weight:600;">{{PHONE}}</a>. We will respond promptly.</p>
+  </div>
+
+  <!-- 8 -->
+  <div class="privacy-section">
+    <h2 class="privacy-section-title">8. Third-Party Links</h2>
+    <p class="privacy-text">Our website may contain links to third-party sites such as Facebook, Instagram, and Google. These sites have their own privacy policies, and we are not responsible for their practices. We encourage you to review their policies before providing any personal information.</p>
+  </div>
+
+  <!-- 9 -->
+  <div class="privacy-section">
+    <h2 class="privacy-section-title">9. Children&rsquo;s Privacy</h2>
+    <p class="privacy-text">Our website is not directed at children under the age of 13, and we do not knowingly collect personal information from children. If you believe a child has submitted information through our site, please contact us and we will delete it promptly.</p>
+  </div>
+
+  <!-- 10 -->
+  <div class="privacy-section">
+    <h2 class="privacy-section-title">10. Changes to This Policy</h2>
+    <p class="privacy-text">We may update this Privacy Policy from time to time to reflect changes in our practices or legal requirements. When we do, we will update the &ldquo;Last Updated&rdquo; date at the top of this page. We encourage you to review this page periodically.</p>
+    <p class="privacy-text">Continued use of our website after any changes constitutes your acceptance of the updated policy.</p>
+  </div>
+
+  <!-- TERMS OF SERVICE -->
+  <div class="privacy-section" id="terms" style="margin-top: var(--space-4xl); padding-top: var(--space-3xl); border-top: 2px solid var(--color-border);">
+    <p class="privacy-hero-eyebrow" style="font-family:var(--font-headline);font-size:0.75rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--color-gold);margin-bottom:var(--space-md);">Terms of Service</p>
+    <h2 class="privacy-section-title" style="font-size:1.5rem;">SMS Messaging Terms of Service</h2>
+    <p class="privacy-text"><strong style="color:var(--color-navy);">Program Name:</strong> {{BUSINESS_NAME_LLC}} — Customer Care SMS Program</p>
+
+    <div class="privacy-highlight">
+      <p>By opting in to receive text messages from {{BUSINESS_NAME_LLC}}, you agree to the following terms. Please read them carefully.</p>
+    </div>
+
+    <ol style="padding-left:1.5rem;display:flex;flex-direction:column;gap:var(--space-md);margin-bottom:var(--space-xl);">
+      <li class="privacy-text" style="margin-bottom:0;"><strong style="color:var(--color-navy);">Program Description.</strong> {{BUSINESS_NAME_LLC}} operates an SMS messaging program to send customer care communications including appointment reminders, payment follow-ups, service updates, and other customer support messages to customers who have opted in. Message frequency may vary based on your interaction with our business.</li>
+      <li class="privacy-text" style="margin-bottom:0;"><strong style="color:var(--color-navy);">How to Opt Out.</strong> You can cancel SMS messages at any time. Simply text <strong>STOP</strong> to the number from which you received the message. Upon sending STOP, we will confirm your unsubscribe status via SMS. Following this confirmation, you will no longer receive SMS messages from us. To rejoin, opt in again as you did initially and we will resume sending SMS messages to you.</li>
+      <li class="privacy-text" style="margin-bottom:0;"><strong style="color:var(--color-navy);">How to Get Help.</strong> If you experience any issues with our messaging program, reply with the keyword <strong>HELP</strong> for more assistance, or contact us directly at <a href="mailto:{{EMAIL}}" style="color:var(--color-navy);font-weight:600;">{{EMAIL}}</a> or <a href="tel:{{PHONE_DIGITS}}" style="color:var(--color-navy);font-weight:600;">{{PHONE}}</a>.</li>
+      <li class="privacy-text" style="margin-bottom:0;"><strong style="color:var(--color-navy);">Carrier Liability.</strong> Carriers are not liable for delayed or undelivered messages.</li>
+      <li class="privacy-text" style="margin-bottom:0;"><strong style="color:var(--color-navy);">Message &amp; Data Rates.</strong> Message and data rates may apply for messages sent to you from us and to us from you. For questions about your text plan or data plan, contact your wireless provider.</li>
+      <li class="privacy-text" style="margin-bottom:0;"><strong style="color:var(--color-navy);">Privacy.</strong> For privacy-related inquiries and to understand how we handle your information, please refer to our <a href="privacy.html" style="color:var(--color-navy);font-weight:600;">Privacy Policy</a> above. No mobile opt-in data or consent will be shared with any third parties.</li>
+      <li class="privacy-text" style="margin-bottom:0;"><strong style="color:var(--color-navy);">Compliance.</strong> {{BUSINESS_NAME_LLC}} complies with all applicable federal and state laws and industry standards governing SMS communications, including TCPA guidelines and CTIA standards.</li>
+    </ol>
+  </div>
+
+  <!-- Contact block -->
+  <div class="privacy-contact-block">
+    <h3>Questions About This Policy?</h3>
+    <p>Reach out directly. {{OWNER_FIRST}} runs this business personally and will respond to any privacy-related questions himself.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <a href="tel:{{PHONE_DIGITS}}" class="btn btn-gold">&#128222; {{PHONE}}</a>
+      <a href="mailto:{{EMAIL}}" class="btn btn-outline-white">{{EMAIL}}</a>
+    </div>
+  </div>
+
+</main>
+
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="footer-logo"><span class="logo-snh">{{LOGO_PRIMARY_TEXT}}</span><span class="logo-golf">{{LOGO_SECONDARY_TEXT}}</span></a>
+      <p class="footer-tagline">Veteran Owned. Community Driven. Cart Obsessed.</p>
+      <address class="footer-address">{{ADDRESS_LINE_1}}<br />{{CITY_STATE_ZIP}}</address>
+      <a href="tel:{{PHONE_DIGITS}}" class="footer-phone">{{PHONE}}</a>
+      <a href="mailto:{{EMAIL}}" class="footer-email">{{EMAIL}}</a>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Quick Links</h4>
+      <ul class="footer-links">
+        <li><a href="shop.html">Shop Carts</a></li>
+        <li><a href="rentals.html">Rentals</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="about.html">{{ABOUT_NAV_LABEL}}</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Services</h4>
+      <ul class="footer-links">
+        <li><a href="shop.html">New Cart Sales</a></li>
+        <li><a href="rentals.html">Cart Rentals</a></li>
+        <li><a href="services.html">Repairs</a></li>
+        <li><a href="services.html#battery">Battery Upgrades</a></li>
+        <li><a href="services.html#lsv">LSV / Street-Legal</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Follow Us</h4>
+      <div class="footer-social">
+        <a href="{{FACEBOOK_URL}}" target="_blank" rel="noopener noreferrer" class="social-link">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> Facebook
+        </a>
+        <a href="{{INSTAGRAM_URL}}" target="_blank" rel="noopener noreferrer" class="social-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> Instagram
+        </a>
+      </div>
+      {{FOOTER_TRUST_BADGES_HTML}}
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container footer-bottom-inner">
+      <p>&copy; <span id="current-year"></span> {{BUSINESS_NAME_LLC}}. All rights reserved.</p>
+      <p><a href="privacy.html">Privacy Policy</a> &middot; <a href="contact.html">Contact</a></p>
+    </div>
+  </div>
+</footer>
+
+<div class="mobile-sticky-bar" id="mobile-sticky-bar" aria-hidden="true">
+  <a href="tel:{{PHONE_DIGITS}}" class="mobile-sticky-call">&#128222; Call Us</a>
+  <a href="contact.html" class="mobile-sticky-quote btn btn-gold">Get a Free Quote</a>
+</div>
+<script src="main.js"></script>
+</body>
+</html>

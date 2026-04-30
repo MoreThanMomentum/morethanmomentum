@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{GA_ID}}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '{{GA_ID}}');
+</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="{{PRIMARY_COLOR}}" />
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/mobile.css">
+  <title>Golf Cart Rentals | {{BUSINESS_NAME}} | {{CITY_STATE}}</title>
+  <meta name="description" content="Rent a premium golf cart for weddings, campgrounds, events, or neighborhood cruising in {{REGION_SHORT}}. Daily, weekly, and fleet packages from {{BUSINESS_NAME}}." />
+</head>
+<body>
+<div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+<header class="site-header" id="site-header">
+  <nav class="nav-container" role="navigation" aria-label="Main navigation">
+    <a href="index.html" class="nav-logo" aria-label="{{BUSINESS_NAME}} Home">
+  <img src="/images/logo.png" alt="{{BUSINESS_NAME}}" style="height:44px;width:auto;display:block;" />
+</a>
+      
+    <ul class="nav-links" id="nav-links" role="list">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="shop.html" class="nav-link">Shop</a></li>
+      <li><a href="rentals.html" class="nav-link">Rentals</a></li>
+      <li><a href="services.html" class="nav-link">Services</a></li>
+      <li><a href="about.html" class="nav-link">{{ABOUT_NAV_LABEL}}</a></li>
+      <li><a href="contact.html" class="nav-link">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="tel:{{PHONE_DIGITS}}" class="nav-phone">{{PHONE}}</a>
+      <a href="contact.html" class="btn btn-gold nav-cta">Get a Quote</a>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="container page-hero-inner">
+    <p class="section-eyebrow">Daily &middot; Weekly &middot; Fleet</p>
+    <h1 class="page-hero-title">Golf Cart Rentals<br />Built for {{REGION_SHORT}}</h1>
+    <p class="page-hero-sub">Weddings, campgrounds, neighborhoods, events. {{BUSINESS_NAME_SHORT}} has the perfect cart for any occasion — with no-hassle pickup and delivery options.</p>
+    <div class="page-hero-actions">
+      <a href="tel:{{PHONE_DIGITS}}" class="btn btn-gold btn-lg">&#128222; Call to Book Today</a>
+      <a href="contact.html" class="btn btn-outline">Request a Rental Quote</a>
+    </div>
+  </div>
+</section>
+
+
+<!-- MORE THAN JUST SALES -->
+<div style="height: 3px; background: linear-gradient(90deg, var(--color-navy), var(--color-gold), var(--color-navy));"></div>
+<section class="section featured-inventory rentals-section" style="background: var(--color-navy);">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">Everything You Need</p>
+      <h2 class="section-title">More Than Just Sales</h2>
+      <p class="section-sub">{{BUSINESS_NAME_SHORT}} is your full-service golf cart partner from your first ride to your hundredth.</p>
+    </div>
+    <div class="services-grid">
+      <a href="shop.html" class="service-card" data-animate="fade-up">
+        <div class="service-icon">&#128721;</div>
+        <h3 class="service-name">Browse Inventory</h3>
+        <p class="service-desc">15+ models in stock. New and used. Every cart priced upfront with zero hidden fees.</p>
+        <span class="service-link">Shop All Carts &#8594;</span>
+      </a>
+   <a href="#rental-packages" class="service-card" data-animate="fade-up" data-delay="100">
+  <div class="service-icon">&#128273;</div>
+  <h3 class="service-name">Rental Options</h3>
+  <p class="service-desc">Daily, weekly, and fleet rentals for campgrounds, events, weddings, and neighborhoods across {{REGION_SHORT}}.</p>
+  <span class="service-link" style="color:var(--color-gold)">See Rental Packages Below &#8595;</span>
+</a>
+      <a href="services.html" class="service-card" data-animate="fade-up" data-delay="200">
+        <div class="service-icon">&#128295;</div>
+        <h3 class="service-name">Schedule Service</h3>
+        <p class="service-desc">Fast turnaround, honest assessments. Bring your cart in or ask about pickup. Your cart is in good hands.</p>
+        <span class="service-link">Book a Service &#8594;</span>
+      </a>
+      <a href="services.html#battery" class="service-card" data-animate="fade-up" data-delay="300">
+        <div class="service-icon">&#9889;</div>
+        <h3 class="service-name">Battery Upgrades</h3>
+        <p class="service-desc">Lithium conversion packages that double your range and dramatically improve performance and lifespan.</p>
+        <span class="service-link">Learn More &#8594;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- RENTAL PACKAGES -->
+<section class="section" id="rental-packages">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">Pricing</p>
+      <h2 class="section-title">Rental Packages</h2>
+      <p class="section-sub">Flexible options for every occasion. Contact us for custom fleet pricing and availability.</p>
+    </div>
+    <div class="rental-options-grid">
+
+      <div class="rental-option-card" data-animate="fade-up">
+        <div class="rental-option-icon">&#128336;</div>
+        <h3 class="rental-option-name">Daily Rental</h3>
+        <p class="rental-option-price">Call for Pricing <span>/ day</span></p>
+        <p class="rental-option-desc">Perfect for a weekend event, party, or one-time occasion. Pick up or have it delivered — your choice.</p>
+        <ul class="rental-option-features">
+          <li>&#9989; 4 or 6-seat options available</li>
+          <li>&#9989; Delivery available in {{REGION_SHORT}}</li>
+          <li>&#9989; Fully charged on arrival</li>
+          <li>&#9989; Liability waiver included</li>
+        </ul>
+        <a href="contact.html" class="btn btn-gold btn-full">Request a Quote</a>
+      </div>
+
+      <div class="rental-option-card" data-animate="fade-up" data-delay="100">
+        <div class="rental-option-icon">&#128197;</div>
+        <h3 class="rental-option-name">Weekly Rental</h3>
+        <p class="rental-option-price">Call for Pricing <span>/ week</span></p>
+        <p class="rental-option-desc">Ideal for vacations, lake house stays, or campground visits. Best value for extended use.</p>
+        <ul class="rental-option-features">
+          <li>&#9989; 4 or 6-seat options available</li>
+          <li>&#9989; Free mid-week charge if needed</li>
+          <li>&#9989; Delivery and pickup included</li>
+          <li>&#9989; Best rate per day</li>
+        </ul>
+        <a href="contact.html" class="btn btn-gold btn-full">Request a Quote</a>
+      </div>
+
+      <div class="rental-option-card" data-animate="fade-up" data-delay="200">
+        <div class="rental-option-icon">&#127963;</div>
+        <h3 class="rental-option-name">Fleet / Commercial</h3>
+        <p class="rental-option-price">Custom Pricing <span>/ season</span></p>
+        <p class="rental-option-desc">Built for campgrounds, resorts, and event venues. Multi-cart packages with maintenance support.</p>
+        <ul class="rental-option-features">
+          <li>&#9989; 2&ndash;20+ carts available</li>
+          <li>&#9989; Seasonal and annual contracts</li>
+          <li>&#9989; Priority maintenance support</li>
+          <li>&#9989; Custom branding options</li>
+        </ul>
+        <a href="contact.html" class="btn btn-gold btn-full">Talk to Us About Fleet</a>
+      </div>
+
+      <div class="rental-option-card" data-animate="fade-up" data-delay="300">
+        <div class="rental-option-icon">&#128142;</div>
+        <h3 class="rental-option-name">Event / Wedding</h3>
+        <p class="rental-option-price">Call for Pricing <span>/ event</span></p>
+        <p class="rental-option-desc">Make your wedding, graduation, or special event unforgettable. Decorated carts available on request.</p>
+        <ul class="rental-option-features">
+          <li>&#9989; Setup and pickup included</li>
+          <li>&#9989; Decoration options available</li>
+          <li>&#9989; 4 and 6-seat options</li>
+          <li>&#9989; Book early — fills fast in summer</li>
+        </ul>
+        <a href="contact.html" class="btn btn-gold btn-full">Book an Event Cart</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- USE CASES -->
+<section class="section" style="background: var(--color-navy); padding-bottom: var(--space-4xl);">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow" style="color:var(--color-gold);">Where Our Rentals Go</p>
+      <h2 class="section-title" style="color:var(--color-white);">Built for Every Occasion</h2>
+    </div>
+    <div class="rental-use-cases">
+      <div class="rental-use-card" data-animate="fade-up">
+  <div class="rental-use-img-wrap">
+    <img src="images/camp2.png" alt="Golf cart at a New England campground" class="rental-use-img" loading="lazy" />
+  </div>
+  <div class="rental-use-body">
+    <p class="rental-use-name">Campgrounds</p>
+    <p class="rental-use-desc">Fleet packages for operators. Your guests will love it.</p>
+  </div>
+</div>
+
+<div class="rental-use-card" data-animate="fade-up" data-delay="100">
+  <div class="rental-use-img-wrap">
+    <img src="images/lake2.png" alt="Golf cart parked at a New Hampshire lake house dock" class="rental-use-img" loading="lazy" />
+  </div>
+  <div class="rental-use-body">
+    <p class="rental-use-name">Lake Houses</p>
+    <p class="rental-use-desc">Cruise the property. Get the kids to the dock in style.</p>
+  </div>
+</div>
+
+<div class="rental-use-card" data-animate="fade-up" data-delay="200">
+  <div class="rental-use-img-wrap">
+    <img src="images/wedding2.png" alt="Decorated golf cart at an outdoor wedding venue" class="rental-use-img" loading="lazy" />
+  </div>
+  <div class="rental-use-body">
+    <p class="rental-use-name">Weddings</p>
+    <p class="rental-use-desc">Arrive in style. Decorated carts available on request.</p>
+  </div>
+</div>
+
+<div class="rental-use-card" data-animate="fade-up" data-delay="300">
+  <div class="rental-use-img-wrap">
+    <img src="images/hood2.png" alt="Family riding a golf cart through a neighborhood" class="rental-use-img" loading="lazy" />
+  </div>
+  <div class="rental-use-body">
+    <p class="rental-use-name">Neighborhoods</p>
+    <p class="rental-use-desc">Try before you buy. A week rental often leads to a sale.</p>
+  </div>
+</div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CTA STRIP -->
+<section class="cta-strip">
+  <div class="container cta-strip-inner">
+    <div class="cta-strip-copy">
+      <h2>Ready to Book Your Rental?</h2>
+      <p>Call us directly or send a message. We'll get back to you within 1 business day with availability and pricing.</p>
+    </div>
+    <div class="cta-strip-buttons">
+      <a href="tel:{{PHONE_DIGITS}}" class="btn btn-gold btn-lg">&#128222; Call Us: {{PHONE}}</a>
+      <a href="contact.html" class="btn btn-outline-white btn-lg">Send a Message</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="footer-logo"><span class="logo-snh">{{LOGO_PRIMARY_TEXT}}</span><span class="logo-golf">{{LOGO_SECONDARY_TEXT}}</span></a>
+      <p class="footer-tagline">Veteran Owned. Community Driven. Cart Obsessed.</p>
+      <address class="footer-address">{{ADDRESS_LINE_1}}<br />{{CITY_STATE_ZIP}}</address>
+      <a href="tel:{{PHONE_DIGITS}}" class="footer-phone">{{PHONE}}</a>
+      <a href="mailto:{{EMAIL}}" class="footer-email">{{EMAIL}}</a>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Quick Links</h4>
+      <ul class="footer-links">
+        <li><a href="shop.html">Shop Carts</a></li>
+        <li><a href="rentals.html">Rentals</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="about.html">{{ABOUT_NAV_LABEL}}</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Services</h4>
+      <ul class="footer-links">
+        <li><a href="shop.html">New Cart Sales</a></li>
+        <li><a href="rentals.html">Cart Rentals</a></li>
+        <li><a href="services.html">Repairs</a></li>
+        <li><a href="services.html#battery">Battery Upgrades</a></li>
+        <li><a href="services.html#lsv">LSV / Street-Legal</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Follow Us</h4>
+      <div class="footer-social">
+        <a href="{{FACEBOOK_URL}}" target="_blank" rel="noopener noreferrer" class="social-link">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> Facebook
+        </a>
+        <a href="{{INSTAGRAM_URL}}" target="_blank" rel="noopener noreferrer" class="social-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> Instagram
+        </a>
+      </div>
+      {{FOOTER_TRUST_BADGES_HTML}}
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container footer-bottom-inner">
+      <p>&copy; <span id="current-year"></span> {{BUSINESS_NAME_LLC}}. All rights reserved.</p>
+      <p><a href="privacy.html">Privacy Policy</a> &middot; <a href="contact.html">Contact</a></p>
+    </div>
+  </div>
+</footer>
+<div class="mobile-sticky-bar" id="mobile-sticky-bar" aria-hidden="true">
+  <a href="tel:{{PHONE_DIGITS}}" class="mobile-sticky-call">&#128222; Call {{OWNER_FIRST}}</a>
+  <a href="contact.html" class="mobile-sticky-quote btn btn-gold">Get a Free Quote</a>
+</div>
+<script src="main.js"></script>
+</body>
+</html>

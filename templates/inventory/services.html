@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id={{GA_ID}}"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '{{GA_ID}}');
+</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="{{PRIMARY_COLOR}}" />
+  <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="/mobile.css">
+  <title>Golf Cart Services | Repairs, Battery Upgrades, LSV | {{BUSINESS_NAME}}</title>
+  <meta name="description" content="Full-service golf cart shop in {{CITY_STATE}}. Repairs, lithium battery upgrades, LSV street-legal conversions, and maintenance from {{BUSINESS_NAME}}." />
+</head>
+<body>
+<div class="scroll-progress" id="scroll-progress" aria-hidden="true"></div>
+<header class="site-header" id="site-header">
+  <nav class="nav-container" role="navigation" aria-label="Main navigation">
+    <a href="index.html" class="nav-logo" aria-label="{{BUSINESS_NAME}} Home">
+  <img src="/images/logo.png" alt="{{BUSINESS_NAME}}" style="height:44px;width:auto;display:block;" />
+</a>
+      
+    <ul class="nav-links" id="nav-links" role="list">
+      <li><a href="index.html" class="nav-link">Home</a></li>
+      <li><a href="shop.html" class="nav-link">Shop</a></li>
+      <li><a href="rentals.html" class="nav-link">Rentals</a></li>
+      <li><a href="services.html" class="nav-link">Services</a></li>
+      <li><a href="about.html" class="nav-link">{{ABOUT_NAV_LABEL}}</a></li>
+      <li><a href="contact.html" class="nav-link">Contact</a></li>
+    </ul>
+    <div class="nav-right">
+      <a href="tel:{{PHONE_DIGITS}}" class="nav-phone">{{PHONE}}</a>
+      <a href="contact.html" class="btn btn-gold nav-cta">Get a Quote</a>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+</header>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="container page-hero-inner">
+    <p class="section-eyebrow">Expert Golf Cart Service</p>
+    <h1 class="page-hero-title">We Don't Just Sell Carts.<br />We Keep Them Running.</h1>
+    <p class="page-hero-sub">From routine maintenance to full lithium battery upgrades, {{BUSINESS_NAME_SHORT}} is {{REGION_SHORT}}'s trusted golf cart service shop. Honest work. Fair pricing. No runaround.</p>
+    <div class="page-hero-actions">
+      <a href="tel:{{PHONE_DIGITS}}" class="btn btn-gold btn-lg">&#128222; Call to Schedule</a>
+      <a href="contact.html" class="btn btn-outline">Request a Service Quote</a>
+    </div>
+  </div>
+</section>
+
+
+<div style="height: 3px; background: linear-gradient(90deg, var(--color-navy), var(--color-gold), var(--color-navy));"></div>
+<!-- WHAT WE DO -->
+<section class="section featured-inventory rentals-section" style="background: var(--color-navy);">
+  <div class="container">
+    <div class="section-header">
+      <p class="section-eyebrow">What We Do</p>
+      <h2 class="section-title">More Than Just Sales</h2>
+      <p class="section-sub">{{BUSINESS_NAME_SHORT}} is your full-service golf cart partner &mdash; from your first ride to your hundredth.</p>
+    </div>
+    <div class="services-grid">
+      <a href="shop.html" class="service-card" data-animate="fade-up">
+        <div class="service-icon">&#128721;</div>
+        <h3 class="service-name">Cart Sales</h3>
+        <p class="service-desc">New &amp; used golf carts. 15+ models, transparent pricing, zero sales pressure.</p>
+        <span class="service-link">Browse Inventory &#8594;</span>
+      </a>
+      <a href="rentals.html" class="service-card" data-animate="fade-up" data-delay="100">
+        <div class="service-icon">&#128273;</div>
+        <h3 class="service-name">Rentals</h3>
+        <p class="service-desc">Perfect for weddings, campgrounds, events, and neighborhoods. Daily, weekly, and fleet options.</p>
+        <span class="service-link">View Rental Options &#8594;</span>
+      </a>
+      <a href="#repairs" class="service-card" data-animate="fade-up" data-delay="200">
+        <div class="service-icon">&#128295;</div>
+        <h3 class="service-name">Repairs</h3>
+        <p class="service-desc">Fast turnaround, honest assessments, and fair pricing. Your cart is in good hands.</p>
+        <span class="service-link">Learn About Repairs &#8594;</span>
+      </a>
+      <a href="#battery" class="service-card" data-animate="fade-up" data-delay="300">
+        <div class="service-icon">&#9889;</div>
+        <h3 class="service-name">Battery Upgrades</h3>
+        <p class="service-desc">Lithium conversion packages that dramatically improve range, performance, and lifespan.</p>
+        <span class="service-link">Upgrade Your Cart &#8594;</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- REPAIRS DETAIL -->
+<section class="section" id="repairs">
+  <div class="container">
+    <div class="service-detail-inner" data-animate="fade-right">
+      
+        <div class="service-detail-visual">
+  <img src="/images/owner-at-work.png" alt="{{OWNER_FIRST}} working on a cart at {{BUSINESS_NAME}}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />
+</div>
+      
+      <div class="service-detail-copy">
+        <p class="section-eyebrow">Expert Repairs</p>
+        <h2 class="section-title">Fast, Honest Golf Cart Repairs</h2>
+        <p class="service-detail-body">Whether your cart won't start, has electrical gremlins, or just needs a tune-up before summer, {{BUSINESS_NAME_SHORT}} has you covered. {{OWNER_FIRST}} personally handles every repair &mdash; no outsourcing, no guesswork.</p>
+        <p class="service-detail-body">We work on all major brands and models. Transparent quotes before any work begins. Most repairs completed same-week.</p>
+        <ul class="service-detail-list">
+          <li>Motor and controller diagnostics</li>
+          <li>Brake system inspection and repair</li>
+          <li>Electrical troubleshooting</li>
+          <li>Tire replacement and alignment</li>
+          <li>Charger repair and replacement</li>
+          <li>General maintenance and tune-ups</li>
+          <li>Pre-season and post-season inspections</li>
+        </ul>
+        <a href="contact.html" class="btn btn-gold">Schedule a Repair &#8594;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- BATTERY UPGRADES DETAIL -->
+<section class="section" id="battery" style="background: var(--color-light-gray);">
+  <div class="container">
+    <div class="service-detail-inner reverse" data-animate="fade-left">
+      
+        <div class="service-detail-visual">
+  <img src="/images/service-feature-1.png" alt="Lithium battery upgrade at {{BUSINESS_NAME}}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />
+</div>
+      
+      <div class="service-detail-copy">
+        <p class="section-eyebrow">Lithium Upgrades</p>
+        <h2 class="section-title">Upgrade to Lithium.<br />Double Your Range.</h2>
+        <p class="service-detail-body">Lead-acid batteries are heavy, slow to charge, and lose capacity fast. A lithium upgrade from {{BUSINESS_NAME_SHORT}} is one of the best investments you can make in your golf cart.</p>
+        <p class="service-detail-body">Lithium packs charge 3x faster, last 3x longer, and cut your cart's weight significantly &mdash; which means better performance on hills and longer rides per charge.</p>
+        <ul class="service-detail-list">
+          <li>48V lithium battery conversion packages</li>
+          <li>Up to 2x the range of lead-acid</li>
+          <li>Charges in 2&ndash;4 hours vs 8+ hours</li>
+          <li>5&ndash;10 year battery lifespan</li>
+          <li>No maintenance, no watering required</li>
+          <li>Compatible with all major cart brands</li>
+        </ul>
+        <a href="contact.html" class="btn btn-gold">Get a Lithium Quote &#8594;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- LSV DETAIL -->
+<section class="section" id="lsv">
+  <div class="container">
+    <div class="service-detail-inner" data-animate="fade-right">
+        <div class="service-detail-visual">
+  <img src="/images/lifestyle-feature.png" alt="Lithium battery upgrade at {{BUSINESS_NAME}}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" />
+</div>
+      <div class="service-detail-copy">
+        <p class="section-eyebrow">Street-Legal Carts</p>
+        <h2 class="section-title">LSVs: Drive It on the Road.</h2>
+        <p class="service-detail-body">Low Speed Vehicles (LSVs) are street-legal golf carts that can be driven on public roads posted at 35 mph or less &mdash; perfect for neighborhoods, coastal roads, and campground access routes.</p>
+        <p class="service-detail-body">{{BUSINESS_NAME_SHORT}} carries many different cart series, purpose-built as street-legal LSVs with seatbelts, headlights, turn signals, and mirrors standard.</p>
+        <ul class="service-detail-list">
+          <li>Street-legal on roads up to 35 mph</li>
+          <li>Seatbelts, headlights, turn signals included</li>
+          <li>NH registration and title assistance</li>
+          <li>Insurance guidance available</li>
+          <li>4 and 6-seat Forester models in stock</li>
+        </ul>
+        <a href="shop.html#forester-6-plus" class="btn btn-gold">Shop LSV Models &#8594;</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CTA STRIP -->
+<section class="cta-strip">
+  <div class="container cta-strip-inner">
+    <div class="cta-strip-copy">
+      <h2>Ready to Get Your Cart Serviced?</h2>
+      <p>Call us or drop us a message. We'll get you a quote and on the schedule fast.</p>
+    </div>
+    <div class="cta-strip-buttons">
+      <a href="tel:{{PHONE_DIGITS}}" class="btn btn-gold btn-lg">&#128222; Call Us: {{PHONE}}</a>
+      <a href="contact.html" class="btn btn-outline-white btn-lg">Request a Quote</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container footer-grid">
+    <div class="footer-brand">
+      <a href="index.html" class="footer-logo"><span class="logo-snh">{{LOGO_PRIMARY_TEXT}}</span><span class="logo-golf">{{LOGO_SECONDARY_TEXT}}</span></a>
+      <p class="footer-tagline">Veteran Owned. Community Driven. Cart Obsessed.</p>
+      <address class="footer-address">{{ADDRESS_LINE_1}}<br />{{CITY_STATE_ZIP}}</address>
+      <a href="tel:{{PHONE_DIGITS}}" class="footer-phone">{{PHONE}}</a>
+      <a href="mailto:{{EMAIL}}" class="footer-email">{{EMAIL}}</a>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Quick Links</h4>
+      <ul class="footer-links">
+        <li><a href="shop.html">Shop Carts</a></li>
+        <li><a href="rentals.html">Rentals</a></li>
+        <li><a href="services.html">Services</a></li>
+        <li><a href="about.html">{{ABOUT_NAV_LABEL}}</a></li>
+        <li><a href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Services</h4>
+      <ul class="footer-links">
+        <li><a href="shop.html">New Cart Sales</a></li>
+        <li><a href="rentals.html">Cart Rentals</a></li>
+        <li><a href="services.html">Repairs</a></li>
+        <li><a href="services.html#battery">Battery Upgrades</a></li>
+        <li><a href="services.html#lsv">LSV / Street-Legal</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4 class="footer-col-title">Follow Us</h4>
+      <div class="footer-social">
+        <a href="{{FACEBOOK_URL}}" target="_blank" rel="noopener noreferrer" class="social-link">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> Facebook
+        </a>
+        <a href="{{INSTAGRAM_URL}}" target="_blank" rel="noopener noreferrer" class="social-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg> Instagram
+        </a>
+      </div>
+      {{FOOTER_TRUST_BADGES_HTML}}
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="container footer-bottom-inner">
+      <p>&copy; <span id="current-year"></span> {{BUSINESS_NAME_LLC}}. All rights reserved.</p>
+      <p><a href="privacy.html">Privacy Policy</a> &middot; <a href="contact.html">Contact</a></p>
+    </div>
+  </div>
+</footer>
+<div class="mobile-sticky-bar" id="mobile-sticky-bar" aria-hidden="true">
+  <a href="tel:{{PHONE_DIGITS}}" class="mobile-sticky-call">&#128222; Call Us</a>
+  <a href="contact.html" class="mobile-sticky-quote btn btn-gold">Get a Free Quote</a>
+</div>
+<script src="main.js"></script>
+</body>
+</html>
