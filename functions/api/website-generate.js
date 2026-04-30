@@ -193,16 +193,29 @@ Aim for 4-6 services, 3-4 testimonials, 4-5 FAQs. If you can't find real data fo
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 8000,
-      system: systemPrompt,
+      // Use prompt caching on the (large, static) system prompt so the input
+      // tokens for it only count once per 5-min window — huge ITPM relief
+      // when this tool runs back-to-back with Stage B or other tools that
+      // share API budget.
+      system: [
+        { type: 'text', text: systemPrompt, cache_control: { type: 'ephemeral' } }
+      ],
       messages: [{ role: 'user', content: userMessage }],
       tools: [
-        { type: 'web_search_20250305', name: 'web_search' }
+        // max_uses caps search-result accumulation — without this Claude
+        // routinely runs 10-20 searches and pulls full page content, easily
+        // burning 25K+ input tokens on a single business and tripping the
+        // 30K/min ITPM cap on Anthropic Tier 1.
+        { type: 'web_search_20250305', name: 'web_search', max_uses: 5 }
       ]
     })
   });
 
   if (!apiResponse.ok) {
     const errText = await apiResponse.text();
+    if (apiResponse.status === 429) {
+      throw new Error(`Anthropic API rate limit hit during research. Wait 60 seconds and try again. (Tier 1 caps Sonnet at 30K input tokens/min — research + generation together can come close on token-heavy businesses.)`);
+    }
     throw new Error(`Research stage failed: ${apiResponse.status} ${errText.slice(0, 300)}`);
   }
 
@@ -240,6 +253,12 @@ Aim for 4-6 services, 3-4 testimonials, 4-5 FAQs. If you can't find real data fo
 async function runGeneration({ research, apiKey }) {
   const prompt = buildGenerationPrompt(research);
 
+  // Brief pause between Stage A and Stage B. Stage A finishes with
+  // accumulated web_search results in the input-token-per-minute budget;
+  // a small gap gives the 60s ITPM window a head start and reduces
+  // collisions on the 30K/min Tier 1 cap.
+  await new Promise(r => setTimeout(r, 1500));
+
   const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -253,12 +272,20 @@ async function runGeneration({ research, apiKey }) {
       // ~12-18K output tokens. 32000 gives comfortable headroom; matches the
       // colby-side website-generator-worker's setting.
       max_tokens: 32000,
-      messages: [{ role: 'user', content: prompt }],
+      // Cache the prompt — every regen for the same research will hit the
+      // cache. Even single runs benefit because the long static instruction
+      // block doesn't count against ITPM on the second-of-second retries.
+      messages: [{ role: 'user', content: [
+        { type: 'text', text: prompt, cache_control: { type: 'ephemeral' } }
+      ] }],
     })
   });
 
   if (!apiResponse.ok) {
     const errText = await apiResponse.text();
+    if (apiResponse.status === 429) {
+      throw new Error(`Anthropic API rate limit hit during generation. Wait 60 seconds and try again. The research stage already succeeded — the rate-limit window will clear soon.`);
+    }
     throw new Error(`Generation stage failed: ${apiResponse.status} ${errText.slice(0, 300)}`);
   }
 
