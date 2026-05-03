@@ -52,7 +52,7 @@ export async function onRequestPost(context) {
     return jsonResponse({ error: 'Invalid JSON body.' }, 400);
   }
 
-  const { businessName, city, websiteUrl, tone, siteType } = body;
+  const { businessName, city, websiteUrl, tone, siteType, pages } = body;
 
   if (!businessName || !city) {
     return jsonResponse({ error: 'Business name and city are required.' }, 400);
@@ -62,6 +62,8 @@ export async function onRequestPost(context) {
   }
 
   const normalizedSiteType = normalizeSiteType(siteType);
+  const requestedPages = Array.isArray(pages) ? pages.map(String) : null;
+  const requestOrigin = new URL(request.url).origin;
 
   // ─── STREAMING SETUP ────────────────────────────────────────────────────
   // TransformStream gives us a {readable, writable} pair. We hand `readable`
@@ -102,22 +104,43 @@ export async function onRequestPost(context) {
       console.log(`${ts()} [wgen] STAGE A research DONE — services=${research.services?.length || 0} confidence=${research.researchNotes?.researchConfidence || 'n/a'}`);
       await send({ event: 'research_done', research });
 
-      // ─── STAGE B — GENERATION (STREAMING) ──────────────────────────────
-      console.log(`${ts()} [wgen] STAGE B generation START`);
-      await send({ event: 'generate_start' });
-      const files = await runGenerationStreaming({
-        research,
-        siteType: normalizedSiteType,
-        apiKey: env.ANTHROPIC_API_KEY,
-        onProgress: async (chars) => {
-          // Keep the connection warm with a regular heartbeat. Sampling
-          // approximately every 500 chars keeps the stream chatty enough to
-          // pass any intermediary idle timeout while not flooding the client.
-          await send({ event: 'generate_progress', chars });
-        },
-        log: (msg) => console.log(`${ts()} [wgen][B] ${msg}`),
-      });
-      console.log(`${ts()} [wgen] STAGE B generation DONE — files=${Object.keys(files).length} totalBytes=${Object.values(files).reduce((n, c) => n + c.length, 0)}`);
+      // ─── STAGE B — GENERATION ──────────────────────────────────────────
+      // Two branches:
+      //   - DEALER: skips Stage B AI generation entirely. Fetches the inventory
+      //     template files from this Pages deployment's static assets, runs
+      //     token substitution per templates/inventory/tokens.json, generates
+      //     per-client config (inventory.json, sitemap.xml, SETUP_README.md),
+      //     filters by the `pages` array, and bundles. ~5s total.
+      //   - OTHER: existing streaming AI generation (brochure / service /
+      //     hospitality fall here until Cole builds templates for them).
+      let files;
+      if (normalizedSiteType === 'dealer') {
+        console.log(`${ts()} [wgen] DEALER TEMPLATE branch — skipping Stage B AI generation`);
+        await send({ event: 'generate_start' });
+        files = await runDealerTemplate({
+          research,
+          requestedPages,
+          origin: requestOrigin,
+          log: (msg) => console.log(`${ts()} [wgen][T] ${msg}`),
+        });
+        console.log(`${ts()} [wgen] DEALER TEMPLATE done — files=${Object.keys(files).length} totalBytes=${totalBytes(files)}`);
+      } else {
+        console.log(`${ts()} [wgen] STAGE B generation START (AI path)`);
+        await send({ event: 'generate_start' });
+        files = await runGenerationStreaming({
+          research,
+          siteType: normalizedSiteType,
+          apiKey: env.ANTHROPIC_API_KEY,
+          onProgress: async (chars) => {
+            // Keep the connection warm with a regular heartbeat. Sampling
+            // approximately every 500 chars keeps the stream chatty enough to
+            // pass any intermediary idle timeout while not flooding the client.
+            await send({ event: 'generate_progress', chars });
+          },
+          log: (msg) => console.log(`${ts()} [wgen][B] ${msg}`),
+        });
+        console.log(`${ts()} [wgen] STAGE B generation DONE — files=${Object.keys(files).length} totalBytes=${totalBytes(files)}`);
+      }
 
       console.log(`${ts()} [wgen] sending complete event`);
       await send({
@@ -173,38 +196,48 @@ function jsonResponse(payload, status = 200) {
 const SUPPORTED_SITE_TYPES = new Set([
   'brochure',
   'service-business',
-  'inventory',
-  'restaurant',
-  'real-estate',
-  'portfolio',
+  'dealer',
+  'hospitality',
 ]);
+
+// Backward-compat aliases. Old Tool 06 UI used `inventory` for what's now
+// `dealer`, and had restaurant/real-estate/portfolio site types we've since
+// dropped (not MTM target market). These aliases keep in-flight requests from
+// breaking while the rollout completes.
+const SITE_TYPE_ALIASES = {
+  'inventory': 'dealer',
+  'restaurant': 'hospitality',
+  'real-estate': 'brochure',
+  'portfolio': 'brochure',
+};
 
 function normalizeSiteType(raw) {
   if (!raw) return 'brochure';
   const v = String(raw).toLowerCase().trim();
-  return SUPPORTED_SITE_TYPES.has(v) ? v : 'brochure';
+  if (SUPPORTED_SITE_TYPES.has(v)) return v;
+  if (SITE_TYPE_ALIASES[v]) return SITE_TYPE_ALIASES[v];
+  return 'brochure';
 }
 
 function siteTypeHint(siteType) {
-  // Short hint text injected into both research and generation prompts.
-  // Once Cole's template library lands these will be replaced by full
-  // template definitions, but for now a clear directional hint is enough
-  // to bias Claude's structural decisions.
+  // Short hint text injected into the AI generation prompt for non-template
+  // site types (brochure, service-business, hospitality). The dealer site
+  // type uses the inventory template directly and bypasses this prompt.
   switch (siteType) {
     case 'service-business':
-      return 'Site type: SERVICE BUSINESS (HVAC, plumbing, roofing, landscaping, cleaning, similar trades). Emphasize booking, service-area coverage, emergency/24-7 if applicable, and trust signals (license, insurance, years in business, reviews). Standard 4-page structure (Home, Services, About, Contact) but lead with a clear service-area + booking CTA on Home.';
-    case 'inventory':
-      return 'Site type: INVENTORY / DEALER (golf carts, vehicles, equipment, products with stock). The Services page should be reframed as an Inventory or Browse page with a placeholder grid for individual product listings (each card: image placeholder, model name, price, "View details" link). Add a clear "Sell or trade-in" CTA on Home and a financing-info section if relevant. Keep the contact/booking placeholders intact for the Phase 2 GHL embed.';
-    case 'restaurant':
-      return 'Site type: RESTAURANT / FOOD SERVICE. Replace the Services page with a Menu page (sections: appetizers, mains, drinks, desserts) with placeholder rows for items. The Home hero should emphasize cuisine type, location, hours, and reservations. Replace the booking placeholder section with a reservation prompt — same comment marker so the Phase 2 GHL booking embed still drops in cleanly.';
-    case 'real-estate':
-      return 'Site type: REAL ESTATE / AGENT. The Services page should be reframed as a Listings page with placeholder cards for individual properties (each: image placeholder, price, beds/baths/sqft, "View listing" link). Add an Agent Bio section to the About page. Keep contact + booking placeholders intact — Phase 2 swaps in GHL forms.';
-    case 'portfolio':
-      return 'Site type: PORTFOLIO / CREATIVE. The Services page should be reframed as Work or Projects, with placeholder cards for case-study items (each: image placeholder, title, client, brief description, link). Tone leans expressive; whitespace is heavier; typography hierarchy is the visual workhorse. Keep contact placeholder intact.';
+      return 'Site type: SERVICE BUSINESS (HVAC, plumbing, roofing, landscaping, cleaning, electrical, salons, barbers, spas, dental, vet, fitness studios — anywhere the funnel is "book me"). Emphasize booking, service-area coverage, emergency/24-7 if applicable, and trust signals (license, insurance, years in business, reviews). Standard 4-page structure (Home, Services, About, Contact) but lead with a clear service-area + booking CTA on Home.';
+    case 'dealer':
+      return 'Site type: DEALER / CATALOG (golf carts, vehicles, RVs, boats, equipment, machinery, motorcycles — high-ticket inventory). The Services page should be reframed as a Shop or Inventory page with a placeholder grid for individual product listings (each card: image placeholder, model name, price, "View details" link). Add a clear "Get a Quote" CTA on Home and a financing-info section if relevant. Keep the contact/booking placeholders intact for the Phase 2 GHL embed.';
+    case 'hospitality':
+      return 'Site type: HOSPITALITY (bars, restaurants, breweries, coffee shops, cafes, food trucks, ice cream shops — visit-driven local businesses). Replace the Services page with a Menu page (sections appropriate to the business: food + drinks for restaurants, taps + bottles for breweries, etc.). The Home hero should emphasize cuisine/atmosphere, location, hours, and (if applicable) reservations. Keep the booking placeholder for venues that take reservations.';
     case 'brochure':
     default:
       return 'Site type: BROCHURE (general small-business marketing site). Standard 4-page structure (Home, Services, About, Contact) with the GHL contact form + booking embed placeholders on the Contact page. This is the default catch-all when no specialized template applies.';
   }
+}
+
+function totalBytes(files) {
+  return Object.values(files).reduce((n, c) => typeof c === 'string' ? n + c.length : n, 0);
 }
 
 // ─── STAGE A — RESEARCH CALL ──────────────────────────────────────────────────
@@ -743,6 +776,647 @@ function validateFiles(files, research) {
       throw new Error(`${path} appears truncated (no </body> or </html>). Length: ${html.length} chars.`);
     }
   }
+}
+
+// ─── DEALER TEMPLATE BRANCH ───────────────────────────────────────────────────
+// Fast, deterministic generation path for the inventory/dealer site type.
+// Reads templates/inventory/tokens.json from this Pages deployment's static
+// assets, fetches each template file, performs token substitution, prunes
+// excluded pages, generates per-client config, and bundles. ~3-5s total.
+
+async function runDealerTemplate({ research, requestedPages, origin, log }) {
+  const TEMPLATE_BASE = `${origin}/templates/inventory`;
+  log(`template base URL: ${TEMPLATE_BASE}`);
+
+  // ── 1. Fetch the token contract ──
+  log('fetching tokens.json');
+  const tokensResp = await fetch(`${TEMPLATE_BASE}/tokens.json`);
+  if (!tokensResp.ok) {
+    throw new Error(`Could not fetch tokens.json from ${TEMPLATE_BASE}: ${tokensResp.status}`);
+  }
+  const tokensSpec = await tokensResp.json();
+  log(`tokens.json loaded — version ${tokensSpec.version}`);
+
+  // ── 2. Generate the per-client admin password (random, secure) ──
+  const adminPassword = generateAdminPassword();
+  log('admin password generated (16 chars, alphanumeric)');
+
+  // ── 3. Resolve all tokens from research ──
+  const tokenMap = resolveTokens(research, adminPassword);
+  log(`resolved ${Object.keys(tokenMap).length} tokens`);
+
+  // ── 4. Determine which files to fetch (page filtering) ──
+  const pageFiles = (tokensSpec.files && tokensSpec.files.page_files) || {};
+  const alwaysInclude = (tokensSpec.files && tokensSpec.files.always_include) || [];
+  const alwaysExclude = new Set((tokensSpec.files && tokensSpec.files.always_exclude_per_client) || []);
+
+  // Default: all pages with `home` and `contact` always required
+  const pages = (Array.isArray(requestedPages) && requestedPages.length > 0)
+    ? requestedPages
+    : ['home', 'shop', 'services', 'about', 'contact', 'privacy'];
+  if (!pages.includes('home')) pages.unshift('home');
+  if (!pages.includes('contact')) pages.push('contact');
+
+  const requestedPageFiles = pages.map(p => pageFiles[p]).filter(Boolean);
+
+  // Compute which page files were excluded — used to prune nav links from the
+  // pages that ARE included. E.g. if "rentals" is unchecked, every other HTML
+  // file's nav menu should drop the `<li><a href="rentals.html">` entry.
+  const allPageFilenames = Object.values(pageFiles);
+  const excludedPageFilenames = allPageFilenames.filter(fn => !requestedPageFiles.includes(fn));
+  log(`pages: included=[${requestedPageFiles.join(', ')}] excluded=[${excludedPageFilenames.join(', ')}]`);
+
+  // Build the full fetch list: page HTML files + always_include files
+  const filesToFetch = [];
+  for (const fn of requestedPageFiles) {
+    if (!alwaysExclude.has(fn) && !filesToFetch.includes(fn)) filesToFetch.push(fn);
+  }
+  for (const fn of alwaysInclude) {
+    if (!alwaysExclude.has(fn) && !filesToFetch.includes(fn)) filesToFetch.push(fn);
+  }
+  log(`will fetch ${filesToFetch.length} files`);
+
+  // ── 5. Fetch all files in parallel ──
+  const fetched = await Promise.all(filesToFetch.map(async (path) => {
+    const url = `${TEMPLATE_BASE}/${path}`;
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) {
+        log(`WARN: ${path} returned ${resp.status} — skipping`);
+        return null;
+      }
+      // Skip binary files (favicon, fonts, icons). Client adds real images
+      // separately per the SETUP_README instructions. The placeholder visual
+      // language renders the missing-image state gracefully.
+      if (/\.(png|jpe?g|webp|gif|mp4|webm|ico|woff2?|ttf|otf|eot)$/i.test(path)) {
+        log(`SKIP binary: ${path}`);
+        return null;
+      }
+      const content = await resp.text();
+      return { path, content };
+    } catch (e) {
+      log(`WARN: fetch failed for ${path}: ${e.message}`);
+      return null;
+    }
+  }));
+
+  // ── 6. Substitute tokens + prune excluded nav links ──
+  const files = {};
+  for (const item of fetched) {
+    if (!item) continue;
+    let content = substituteTokens(item.content, tokenMap);
+    if (item.path.endsWith('.html')) {
+      content = pruneNavLinksForExcludedPages(content, excludedPageFilenames);
+    }
+    files[item.path] = content;
+  }
+  log(`substituted tokens across ${Object.keys(files).length} text files`);
+
+  // ── 7. Generate per-client config files ──
+  files['inventory.json'] = generateEmptyInventoryJson();
+  files['sitemap.xml'] = generateSitemapXml({
+    siteDomain: tokenMap['{{SITE_DOMAIN}}'],
+    pages,
+    pageFiles,
+  });
+  files['_redirects'] = '/home    /index.html    301\n/index    /index.html    301\n';
+  files['SETUP_README.md'] = generateSetupReadme({
+    research,
+    tokenMap,
+    adminPassword,
+    pages,
+  });
+  log('generated inventory.json, sitemap.xml, _redirects, SETUP_README.md');
+
+  return files;
+}
+
+// ─── TOKEN RESOLUTION ─────────────────────────────────────────────────────────
+// Maps every {{TOKEN}} declared in tokens.json to its value, derived from the
+// research blob plus computed fields (slugs, color variants, formatted phone).
+
+function resolveTokens(research, adminPassword) {
+  const map = {};
+  const b = research.business || {};
+  const branding = research.branding || {};
+
+  // ── Identity ──
+  const businessName = b.name || 'Your Business';
+  const businessNameSlug = slugify(businessName);
+  const ownerObj = (typeof b.owner === 'object' && b.owner) ? b.owner : null;
+  const ownerName = (ownerObj && ownerObj.fullName) || (typeof b.owner === 'string' ? b.owner : null);
+  const ownerFirst = (ownerObj && ownerObj.firstName) || (ownerName ? ownerName.split(/\s+/)[0] : null);
+
+  // Logo text — split business name into primary + secondary
+  const nameWords = businessName.split(/\s+/).filter(Boolean);
+  let logoPrimary, logoSecondary;
+  if (nameWords.length === 1) {
+    logoPrimary = nameWords[0];
+    logoSecondary = '';
+  } else {
+    logoPrimary = nameWords[0];
+    logoSecondary = nameWords.slice(1).join(' ');
+  }
+
+  // Phone variants
+  const phone = b.contact?.phone || '';
+  const phoneDigits = phone.replace(/\D/g, '');
+
+  // Address variants
+  const city = b.location?.city || '';
+  const state = b.location?.state || '';
+  const zip = b.location?.zip || '';
+  const cityState = (city && state) ? `${city}, ${state}` : '';
+  const cityStateZip = zip ? `${cityState} ${zip}` : cityState;
+  const cityStateNoComma = (city && state) ? `${city} ${state}` : '';
+
+  // Industry + trust
+  const trustQualifier = b.trustQualifier || '';
+  const industry = b.industry || '';
+  const industryDescriptor = (trustQualifier && industry)
+    ? `${trustQualifier.toLowerCase()} ${industry.toLowerCase()}`
+    : (industry.toLowerCase() || `${businessName.toLowerCase()} business`);
+  const industryTitleDescriptor = (trustQualifier && industry)
+    ? toTitleCase(`${trustQualifier} ${industry}`)
+    : (toTitleCase(industry) || 'Local Business');
+
+  // Site domain — strip protocol + trailing slash, fall back to slug.com
+  let siteDomain = (b.contact?.website || '')
+    .replace(/^https?:\/\//, '')
+    .replace(/^www\./, '')
+    .replace(/\/+$/, '');
+  if (!siteDomain) siteDomain = `${businessNameSlug}.com`;
+
+  // ── String tokens ──
+  map['{{BUSINESS_NAME}}'] = businessName;
+  map['{{BUSINESS_NAME_LLC}}'] = b.legalName || businessName;
+  map['{{BUSINESS_NAME_SHORT}}'] = b.shortName || logoPrimary || businessName;
+  map['{{BUSINESS_NAME_SLUG}}'] = businessNameSlug;
+  map['{{OWNER_NAME}}'] = ownerName || 'the owner';
+  map['{{OWNER_FIRST}}'] = ownerFirst || 'the team';
+  map['{{ABOUT_NAV_LABEL}}'] = ownerFirst ? `About ${ownerFirst}` : 'About Us';
+
+  map['{{PHONE}}'] = phone || '(000) 000-0000';
+  map['{{PHONE_DIGITS}}'] = phoneDigits || '0000000000';
+  map['{{EMAIL}}'] = b.contact?.email || `hello@${siteDomain}`;
+
+  map['{{SITE_DOMAIN}}'] = siteDomain;
+
+  map['{{ADDRESS_LINE_1}}'] = b.location?.address || '[Address TBD]';
+  map['{{CITY_STATE}}'] = cityState || 'Your City, ST';
+  map['{{CITY_STATE_ZIP}}'] = cityStateZip || 'Your City, ST 00000';
+  map['{{CITY_STATE_NO_COMMA}}'] = cityStateNoComma || 'Your City ST';
+  map['{{REGION_SHORT}}'] = b.location?.regionShort || cityState;
+  map['{{REGION_LONG}}'] = b.location?.regionLong || cityState;
+
+  map['{{LOGO_PRIMARY_TEXT}}'] = logoPrimary;
+  map['{{LOGO_SECONDARY_TEXT}}'] = logoSecondary;
+  map['{{LOG_PREFIX}}'] = (businessNameSlug || 'app').toUpperCase().replace(/-/g, '_');
+
+  // GA4 — leave the placeholder if nothing in research; client sets via env later
+  map['{{GA_ID}}'] = b.tracking?.ga4Id || 'G-XXXXXXXXXX';
+  // GHL embed URL is per-client env var. Placeholder stays in HTML; Cloudflare
+  // env injection at deploy time isn't a thing for static HTML, so the client
+  // edits the iframe src after deploy OR we extend the SETUP_README to walk
+  // them through it.
+  map['{{GHL_CALENDAR_EMBED_URL}}'] = '{{GHL_CALENDAR_EMBED_URL}}';
+
+  map['{{FACEBOOK_URL}}'] = b.social?.facebook || '#';
+  map['{{INSTAGRAM_URL}}'] = b.social?.instagram || '#';
+  map['{{GOOGLE_REVIEWS_URL}}'] = b.googleReviewsUrl || '#';
+
+  map['{{FINANCE_PARTNER_1_URL}}'] = (b.financingPartners && b.financingPartners[0] && b.financingPartners[0].url) || '';
+  map['{{FINANCE_PARTNER_2_URL}}'] = (b.financingPartners && b.financingPartners[1] && b.financingPartners[1].url) || '';
+  map['{{USED_INVENTORY_URL}}'] = b.partnerLinks?.usedInventory || '';
+
+  map['{{TRUST_QUALIFIER}}'] = trustQualifier;
+  map['{{STAT_LABEL_TRUST}}'] = b.trustStatLabel || (trustQualifier ? `${trustQualifier} & Operated` : 'Locally Owned & Operated');
+  map['{{INDUSTRY_DESCRIPTOR}}'] = industryDescriptor;
+  map['{{INDUSTRY_TITLE_DESCRIPTOR}}'] = industryTitleDescriptor;
+
+  map['{{META_DESCRIPTION}}'] = b.metaDescription
+    || `${businessName} in ${cityState || 'your area'} — ${industry || 'local business'}.`;
+  map['{{OG_DESCRIPTION}}'] = b.ogDescription || map['{{META_DESCRIPTION}}'];
+  map['{{HERO_BADGE_TAGLINE}}'] = b.heroBadgeTagline
+    || (cityState ? `Local Business in ${cityState}` : 'Local Business');
+  map['{{HERO_USE_CASE_LIST}}'] = (Array.isArray(b.useCases) ? b.useCases.join(', ') : b.useCases) || 'all your needs';
+  map['{{INVENTORY_HEADLINE_COPY}}'] = b.inventoryHeadlineCopy || 'Browse our full lineup.';
+  map['{{INVENTORY_DESCRIPTOR}}'] = b.inventoryDescriptor || 'Our full lineup';
+  map['{{LIFESTYLE_SECTION_EYEBROW}}'] = b.lifestyleEyebrow
+    || `The ${map['{{BUSINESS_NAME_SHORT}}']} Life`;
+  map['{{ITEM_PLACEHOLDER_EXAMPLE}}'] = research.vocabulary?.itemExampleName || 'Item Name';
+  map['{{ITEM_NAME_PLURAL_LOWER}}'] = (research.vocabulary?.itemPlural || 'items').toLowerCase();
+  map['{{STARTING_PRICE}}'] = b.startingPrice || 'Call for Pricing';
+
+  // Typewriter phrases — client gets a sensible default. JSON.parse'd at runtime.
+  const typewriterPhrases = Array.isArray(b.typewriterPhrases) && b.typewriterPhrases.length > 0
+    ? b.typewriterPhrases
+    : [
+        cityState ? `For ${cityState}.` : 'For You.',
+        'For Your Family.',
+        'Built Local.',
+        'For Life.',
+      ];
+  // Inject as a JSON-string LITERAL inside the JSON.parse('...') wrapper. We
+  // need to escape single quotes in the JSON for the JS string literal to stay
+  // valid; the wrapper expression in main.js is JSON.parse('{{TYPEWRITER_PHRASES_JSON}}').
+  map['{{TYPEWRITER_PHRASES_JSON}}'] = JSON.stringify(typewriterPhrases).replace(/'/g, "\\'");
+
+  // ── Color tokens ──
+  const primary = branding.primaryColor || '#1B2A4A';
+  const accent = branding.accentColor || '#C9A84C';
+  map['{{PRIMARY_COLOR}}'] = primary;
+  map['{{PRIMARY_COLOR_DARK}}'] = branding.primaryColorDark || shadeHex(primary, -0.25);
+  map['{{PRIMARY_COLOR_LIGHT}}'] = branding.primaryColorLight || shadeHex(primary, 0.15);
+  map['{{ACCENT_COLOR}}'] = accent;
+  map['{{ACCENT_COLOR_DARK}}'] = branding.accentColorDark || shadeHex(accent, -0.25);
+  map['{{ACCENT_COLOR_LIGHT}}'] = branding.accentColorLight || shadeHex(accent, 0.15);
+
+  // ── Block tokens ──
+  const trustSignals = Array.isArray(b.trustSignals) ? b.trustSignals : [];
+  map['{{HERO_TRUST_PILLS_HTML}}'] = renderTrustPills(trustSignals, cityState);
+  map['{{FOOTER_TRUST_BADGES_HTML}}'] = renderTrustBadges(trustSignals);
+  map['{{REVIEWS_GRID_HTML}}'] = renderReviewCards(research.content?.testimonials || []);
+  map['{{ABOUT_VALUE_TRUST_LINE_HTML}}'] = renderTrustValueLine(trustQualifier);
+
+  return map;
+}
+
+// ─── BLOCK RENDERERS ──────────────────────────────────────────────────────────
+// Each renderer takes a slice of research data and returns the inner HTML for
+// a block-level token placeholder.
+
+const TRUST_ICON_PATTERNS = [
+  [/\bveteran/i, '🎖️'],
+  [/\bfamily/i, '👨‍👩‍👧'],
+  [/\baward/i, '🏆'],
+  [/\bcertified|authorized\b/i, '✅'],
+  [/\b(\d+(?:\.\d+)?[ ‑-]?(?:star|stars))\b/i, '⭐'],
+  [/\bgoogle rating\b/i, '⭐'],
+  [/\byears?\b/i, '📅'],
+  [/\blicensed\b/i, '✅'],
+  [/\binsured\b/i, '🛡️'],
+  [/\blocal\b/i, '📍'],
+  [/\bpremier|premium\b/i, '⭐'],
+];
+
+function pickTrustIcon(text) {
+  if (!text) return '✅';
+  for (const [pattern, icon] of TRUST_ICON_PATTERNS) {
+    if (pattern.test(text)) return icon;
+  }
+  return '✅';
+}
+
+function renderTrustPills(signals, cityState) {
+  const top = (signals || []).slice(0, 3);
+  const parts = top.map(s => `<span class="trust-pill">${pickTrustIcon(s)} ${escapeHtml(s)}</span>`);
+  if (cityState) {
+    parts.push(`<span class="trust-pill">📍 ${escapeHtml(cityState)}</span>`);
+  }
+  if (parts.length === 0) {
+    return '<span class="trust-pill">📍 Local Business</span>';
+  }
+  return parts.join('\n      ');
+}
+
+function renderTrustBadges(signals) {
+  const top = (signals || []).slice(0, 2);
+  if (top.length === 0) return '';
+  const inner = top.map(s => `<span class="footer-badge">${pickTrustIcon(s)} ${escapeHtml(s)}</span>`).join('\n        ');
+  return `<div class="footer-trust-badges">\n        ${inner}\n      </div>`;
+}
+
+function renderReviewCards(testimonials) {
+  const top = (testimonials || []).slice(0, 3);
+  if (top.length === 0) {
+    return '<p style="text-align:center;color:#6B7280;grid-column:1/-1;padding:2rem 0;">Reviews coming soon — we will populate this section after launch.</p>';
+  }
+  return top.map((t, i) => {
+    const author = t.author || 'Verified Customer';
+    const initial = (author.match(/[A-Za-z]/) || ['?'])[0].toUpperCase();
+    const delay = i * 100;
+    const delayAttr = delay > 0 ? ` data-delay="${delay}"` : '';
+    return `<div class="review-card" data-animate="fade-up"${delayAttr}>
+        <div class="review-stars-sm" aria-label="5 stars">★★★★★</div>
+        <p class="review-text">${escapeHtml(t.text || '')}</p>
+        <div class="reviewer">
+          <div class="reviewer-avatar">${escapeHtml(initial)}</div>
+          <div><p class="reviewer-name">${escapeHtml(author)}</p><p class="reviewer-meta">Verified Review</p></div>
+        </div>
+      </div>`;
+  }).join('\n      ');
+}
+
+function renderTrustValueLine(qualifier) {
+  if (!qualifier) return '';
+  return `<li><span>&#9989;</span> ${escapeHtml(qualifier)} &mdash; built on service</li>`;
+}
+
+// ─── TEMPLATE FILE OPS ────────────────────────────────────────────────────────
+
+function substituteTokens(content, tokenMap) {
+  // Sort tokens by length desc so longer tokens substitute before shorter ones
+  // that might be substrings (defensive — current token list doesn't have this
+  // issue but cheap insurance).
+  const tokens = Object.keys(tokenMap).sort((a, b) => b.length - a.length);
+  let result = content;
+  for (const token of tokens) {
+    if (result.indexOf(token) !== -1) {
+      result = result.split(token).join(tokenMap[token]);
+    }
+  }
+  return result;
+}
+
+function pruneNavLinksForExcludedPages(html, excludedFilenames) {
+  let result = html;
+  for (const filename of excludedFilenames) {
+    // Match nav <li> entries linking to this filename
+    const escaped = filename.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const navLi = new RegExp(`\\s*<li>\\s*<a\\s+href="${escaped}"[^>]*>[^<]*</a>\\s*</li>\\s*`, 'gi');
+    result = result.replace(navLi, '\n      ');
+    // Also strip plain footer <a href="filename">label</a> entries inside <ul>
+    const footerLi = new RegExp(`\\s*<li>\\s*<a\\s+href="${escaped}"[^>]*>[^<]*</a>\\s*</li>\\s*`, 'gi');
+    result = result.replace(footerLi, '\n      ');
+  }
+  return result;
+}
+
+function generateEmptyInventoryJson() {
+  return JSON.stringify({
+    filters: {
+      makes: [],
+      seats: [],
+      colors: [],
+    },
+    carts: [],
+    accessories: [],
+  }, null, 2) + '\n';
+}
+
+function generateSitemapXml({ siteDomain, pages, pageFiles }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const priorityMap = { home: '1.0', shop: '0.9', services: '0.8', rentals: '0.8', about: '0.7', contact: '0.7', privacy: '0.3' };
+  const changefreqMap = { home: 'weekly', shop: 'weekly', services: 'monthly', rentals: 'monthly', about: 'monthly', contact: 'monthly', privacy: 'yearly' };
+
+  const entries = pages.map(page => {
+    const filename = pageFiles[page];
+    if (!filename) return null;
+    const loc = page === 'home' ? `https://${siteDomain}/` : `https://${siteDomain}/${filename}`;
+    return `  <url>
+    <loc>${escapeHtml(loc)}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${changefreqMap[page] || 'monthly'}</changefreq>
+    <priority>${priorityMap[page] || '0.5'}</priority>
+  </url>`;
+  }).filter(Boolean).join('\n\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+${entries}
+
+</urlset>
+`;
+}
+
+function generateSetupReadme({ research, tokenMap, adminPassword, pages }) {
+  const businessName = tokenMap['{{BUSINESS_NAME}}'];
+  const slug = tokenMap['{{BUSINESS_NAME_SLUG}}'];
+  const owner = tokenMap['{{OWNER_FIRST}}'] !== 'the team' ? tokenMap['{{OWNER_FIRST}}'] : null;
+  const phone = tokenMap['{{PHONE}}'];
+  const email = tokenMap['{{EMAIL}}'];
+  const address = tokenMap['{{ADDRESS_LINE_1}}'];
+  const cityStateZip = tokenMap['{{CITY_STATE_ZIP}}'];
+  const today = new Date().toISOString().slice(0, 10);
+
+  return `# ${businessName} — Website Setup
+
+> Generated by More Than Momentum's Tool 06 on ${today}.
+
+## What this bundle is
+
+A complete dealer/inventory website for **${businessName}** in ${tokenMap['{{CITY_STATE}}']}. Includes ${pages.length} pages (${pages.join(', ')}) plus an admin panel for inventory management, a GHL calendar embed for booking, and Cloudflare Pages Functions for contact form + admin commits.
+
+The bundle is fully wired with research-driven content. Most fields are already populated from the prospect intelligence pass (business name, phone, email, address, owner story, trust signals, testimonials). What's left is the per-client integration steps below.
+
+---
+
+## Setup steps (do these in order)
+
+### 1. Create a GitHub repo
+
+\`\`\`
+gh repo create MoreThanMomentum/${slug}-website --private
+\`\`\`
+
+Or via the web: github.com/organizations/MoreThanMomentum/repositories/new
+
+### 2. Push this bundle to the repo
+
+Unzip the bundle, \`cd\` into the folder, then:
+
+\`\`\`
+git init
+git add .
+git commit -m "Initial site for ${businessName}"
+git branch -M main
+git remote add origin https://github.com/MoreThanMomentum/${slug}-website.git
+git push -u origin main
+\`\`\`
+
+### 3. Connect Cloudflare Pages
+
+Cloudflare Dashboard → **Workers & Pages → Create → Pages → Connect to Git** → pick \`${slug}-website\`.
+
+Build settings: framework preset = none, build command = empty, build output dir = \`/\`.
+
+### 4. Configure Cloudflare Pages environment variables
+
+Cloudflare Pages → Settings → Environment Variables → add:
+
+| Variable | Value | Where to get it |
+|---|---|---|
+| \`GHL_API_KEY\` | (paste your GHL sub-account key) | GHL → Settings → Business Profile → API Keys |
+| \`GHL_LOCATION_ID\` | (paste your GHL location ID) | GHL → Settings → Business Profile → Location ID |
+| \`GHL_CALENDAR_EMBED_URL\` | (paste your GHL calendar embed URL) | GHL → Calendars → [calendar] → Share → Embed → copy iframe **src** |
+| \`GITHUB_TOKEN\` | (paste a PAT with repo scope) | GitHub → Settings → Developer settings → Personal access tokens |
+| \`GITHUB_REPO\` | \`MoreThanMomentum/${slug}-website\` | (your new repo from step 1) |
+| \`ADMIN_PASSWORD\` | (see step 6) | Auto-generated for this client |
+
+### 5. Replace the GHL calendar iframe placeholder
+
+Open \`index.html\`, search for \`{{GHL_CALENDAR_EMBED_URL}}\`, replace with your actual GHL embed URL.
+
+(Future improvement: this could be a runtime env-var injection, but for now it's a one-time HTML edit.)
+
+### 6. Set the admin password
+
+Cloudflare Pages → Settings → Environment Variables → \`ADMIN_PASSWORD\`:
+
+\`\`\`
+${adminPassword}
+\`\`\`
+
+> ⚠️ **Hand this password to ${owner || 'the client'} via 1Password share, encrypted message, or in person.** Do NOT email or text it. The password is stored in Cloudflare env vars and is the only way into the admin panel.
+
+### 7. Set up the GHL sub-account
+
+If not already done:
+
+- Create the GHL sub-account
+- Add custom contact fields: \`cart_model\`, \`service_description\`
+- Set up the booking calendar — name it (e.g.) "${businessName} Appointment"
+- Grab the embed URL from Calendar → Share → Embed → copy iframe \`src\` for step 4 above
+
+### 8. Custom domain
+
+Cloudflare Pages → Custom domains → add the client's domain.
+
+### 9. Drop in real images
+
+The bundle ships with placeholder paths — every \`<img>\` references \`/images/[filename]\` but no actual image files exist. Add real assets at these locations:
+
+- \`/images/logo.png\` — site logo (recommend 200×80 PNG with transparent background)
+- \`/images/heroimage.png\` — homepage hero (1920×1080 JPG/PNG; used as fallback if no video)
+- \`/videos/herovideo.mp4\` — homepage hero loop video (60-90s, no audio, ≤ 10 MB)
+- \`/images/owner-portrait.png\` — about page owner photo (recommend 600×800 JPG)
+- \`/images/owner-at-work.png\` — services page action shot (recommend 1200×800 JPG)
+- \`/images/service-feature-1.png\` — battery upgrade / service feature image
+- \`/images/lifestyle-feature.png\` — lifestyle hero image
+- \`/images/dock.png\`, \`camping.png\`, \`wedding.png\`, \`street.png\` — lifestyle grid (4 use-case photos)
+
+Replacing files at these paths and pushing to GitHub triggers a Cloudflare Pages auto-deploy (~60s).
+
+### 10. Google Search Console verification
+
+When ready to submit the site to Google:
+
+- Search Console → Add property → DNS record verification (recommended) OR HTML file upload
+- If HTML file: drop the \`google[hash].html\` file Google gives you at the repo root and push
+
+---
+
+## Admin panel access
+
+Two ways for ${owner || 'the client'} to reach the admin panel from desktop:
+
+1. **Direct URL**: type \`/admin.html\` in the address bar
+2. **Hidden trigger**: triple-click the site logo within 2 seconds
+
+Both bail out on mobile / narrow viewports — admin is desktop-only by design.
+
+### Admin capabilities
+
+- Add / edit / delete inventory items
+- Upload product photos (5 MB max, JPG/PNG/WebP)
+- Manage filter groups (makes, seats, colors)
+- Manage accessories
+- All changes auto-commit to the GitHub repo and trigger a Cloudflare Pages auto-deploy (~60s)
+
+---
+
+## What's already configured (no action needed)
+
+The generator already substituted these from the research blob:
+
+- **Business name**: ${businessName}
+- **Phone**: ${phone}
+- **Email**: ${email}
+- **Address**: ${address}, ${cityStateZip}
+${owner ? `- **Owner**: ${tokenMap['{{OWNER_NAME}}']}` : ''}
+- **Brand colors**: primary ${tokenMap['{{PRIMARY_COLOR}}']}, accent ${tokenMap['{{ACCENT_COLOR}}']}
+- **Pages included**: ${pages.join(', ')}
+- **Trust signals + testimonials**: rendered from research data
+- **Sitemap.xml**: auto-generated for the included pages
+
+If anything's wrong, edit those values directly in the HTML files (search-and-replace works since values are now plain text, not tokens).
+
+---
+
+## What this template does NOT include (by design)
+
+- **Real images / videos** — drop in at the paths listed in step 9
+- **Custom email service** — emails go through GHL's built-in workflows
+- **Online checkout / e-commerce** — inquire-only model (admin posts inventory; customers contact ${owner || 'you'} via the GHL form)
+- **Live chat** — none. The site directs to phone or contact form.
+- **AI Cart Finder** — was an SNH-specific bonus, not included by default. If a client requests it, can be added back as a follow-up.
+
+---
+
+## Troubleshooting
+
+**Admin panel won't load**: Check that \`ADMIN_PASSWORD\` env var is set in Cloudflare Pages, and you're on a desktop with a real mouse/touchpad (not touch-only).
+
+**Booking calendar shows blank**: The iframe \`src\` is still \`{{GHL_CALENDAR_EMBED_URL}}\` — replace with your GHL embed URL (step 5).
+
+**Contact form submissions don't reach GHL**: Verify \`GHL_API_KEY\` and \`GHL_LOCATION_ID\` env vars are correct. Check Cloudflare Pages Function logs (Workers & Pages → [project] → Functions → Logs).
+
+**Site doesn't deploy**: Check Cloudflare Pages build logs. Common issues: build command should be EMPTY (we have no build step), output dir should be \`/\`.
+
+**Photo uploads fail in admin panel**: Check \`GITHUB_TOKEN\` has \`repo\` scope and \`GITHUB_REPO\` is correct format (\`org/repo\`).
+
+---
+
+Generated by More Than Momentum Tool 06 (template-grounding mode) — ${today}.
+`;
+}
+
+// ─── ADMIN PASSWORD GENERATION ────────────────────────────────────────────────
+
+function generateAdminPassword() {
+  // 16 chars from a memorable-but-secure alphabet (no 0/O/1/l/I confusion).
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+  const arr = new Uint8Array(16);
+  crypto.getRandomValues(arr);
+  let result = '';
+  for (let i = 0; i < arr.length; i++) {
+    result += chars[arr[i] % chars.length];
+  }
+  return result;
+}
+
+// ─── COLOR HELPERS ────────────────────────────────────────────────────────────
+// shadeHex(hex, factor) — factor in [-1, 1]. Negative darkens, positive lightens.
+//   shadeHex('#1B2A4A', -0.25) ≈ '#142036' (darker navy)
+//   shadeHex('#C9A84C', 0.15) ≈ '#D5BC6E' (lighter gold)
+
+function shadeHex(hex, factor) {
+  const m = String(hex).match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  if (!m) return hex;
+  let r = parseInt(m[1], 16);
+  let g = parseInt(m[2], 16);
+  let b = parseInt(m[3], 16);
+  if (factor < 0) {
+    const k = 1 + factor;
+    r = Math.round(r * k);
+    g = Math.round(g * k);
+    b = Math.round(b * k);
+  } else {
+    r = Math.round(r + (255 - r) * factor);
+    g = Math.round(g + (255 - g) * factor);
+    b = Math.round(b + (255 - b) * factor);
+  }
+  const clamp = (v) => Math.max(0, Math.min(255, v));
+  const hx = (v) => clamp(v).toString(16).padStart(2, '0');
+  return `#${hx(r)}${hx(g)}${hx(b)}`;
+}
+
+// ─── HTML / TEXT HELPERS ──────────────────────────────────────────────────────
+
+function escapeHtml(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function toTitleCase(s) {
+  if (!s) return '';
+  return String(s).split(/\s+/).map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 }
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
