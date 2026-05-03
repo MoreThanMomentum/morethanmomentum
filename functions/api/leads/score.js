@@ -94,22 +94,25 @@ export async function onRequestPost(context) {
   const results = [];
   let scored_ok = 0, scored_failed = 0;
 
-  // Process leads in parallel inside the batch — Anthropic can handle ~10 concurrent.
-  await Promise.all(leads.map(async (lead) => {
-    try {
-      const out = await scoreOne(lead, env);
-      await env.DB.prepare(
-        `UPDATE leads_outreach
-         SET score = ?, tier = ?, score_reason = ?, scored_at = datetime('now')
-         WHERE id = ?`
-      ).bind(out.score, out.tier, out.reason, lead.id).run();
-      results.push({ id: lead.id, business_name: lead.business_name, ok: true, ...out });
-      scored_ok++;
-    } catch (err) {
-      results.push({ id: lead.id, business_name: lead.business_name, ok: false, error: err.message });
-      scored_failed++;
-    }
-  }));
+ // Process leads in chunks of 5 to stay under Anthropic rate limits.
+  for (let i = 0; i < leads.length; i += 5) {
+    const chunk = leads.slice(i, i + 5);
+    await Promise.all(chunk.map(async (lead) => {
+      try {
+        const out = await scoreOne(lead, env);
+        await env.DB.prepare(
+          `UPDATE leads_outreach
+           SET score = ?, tier = ?, score_reason = ?, scored_at = datetime('now')
+           WHERE id = ?`
+        ).bind(out.score, out.tier, out.reason, lead.id).run();
+        results.push({ id: lead.id, business_name: lead.business_name, ok: true, ...out });
+        scored_ok++;
+      } catch (err) {
+        results.push({ id: lead.id, business_name: lead.business_name, ok: false, error: err.message });
+        scored_failed++;
+      }
+    }));
+  }
 
   // Close run log
   if (runId) {
