@@ -99,7 +99,7 @@ export async function onRequestPost(context) {
       currentWebsiteTraffic, currentLeadsPerMonth,
       currentInstagramFollowers, currentFacebookFollowers, currentTiktokFollowers,
       currentGoogleReviews,
-      defaultMinTerm, budget,
+      defaultMinTerm,
     }, env.ANTHROPIC_API_KEY);
 
     // Apply overrides if provided
