@@ -407,22 +407,30 @@ function buildGroundTruthBlock(websiteData) {
   parts.push('═══════════════════════════════════════════════════════════════════════════════');
   parts.push(`The following data was fetched and parsed directly from ${websiteData.url} BEFORE this research call. These values are AUTHORITATIVE — DO NOT contradict them. Use these for the corresponding fields, then fill in everything else from web_search.`);
   parts.push('');
-  if (websiteData.title) parts.push(`Website title: "${websiteData.title}"`);
-  if (websiteData.metaDescription) parts.push(`Meta description: "${websiteData.metaDescription}"`);
+  // ALL scraped text values are JSON.stringify'd so quotes, backslashes, and
+  // control characters are properly escaped before they touch the prompt.
+  // Without this, a `"` or backtick in scraped HTML would close the embedded
+  // string literal in the prompt and leak the rest of the value into the
+  // surrounding instructions — Claude then echoes the malformed shape into
+  // its JSON response, producing parse errors at unpredictable positions.
+  if (websiteData.title) parts.push(`Website title: ${JSON.stringify(websiteData.title)}`);
+  if (websiteData.metaDescription) parts.push(`Meta description: ${JSON.stringify(websiteData.metaDescription)}`);
   if (websiteData.colors.length > 0) {
     parts.push(`Most-used hex colors (CSS frequency-counted): ${websiteData.colors.slice(0, 5).join(', ')}`);
     parts.push(`  → Use ${websiteData.colors[0]} as branding.primaryColor`);
     if (websiteData.colors[1]) parts.push(`  → Use ${websiteData.colors[1]} as branding.secondaryColor`);
   }
   if (websiteData.headings.length > 0) {
-    parts.push(`Page headlines (H1/H2): ${websiteData.headings.slice(0, 8).map(h => `"${h}"`).join(' | ')}`);
+    parts.push(`Page headlines (H1/H2): ${websiteData.headings.slice(0, 8).map(h => JSON.stringify(h)).join(' | ')}`);
   }
   if (websiteData.trustSignals.length > 0) {
-    parts.push(`Trust signal phrases found in HTML: ${websiteData.trustSignals.join(', ')}`);
+    parts.push(`Trust signal phrases found in HTML: ${websiteData.trustSignals.map(s => JSON.stringify(s)).join(', ')}`);
     parts.push(`  → Include all of these in business.trustSignals`);
   }
   if (websiteData.bodyTextSample) {
-    parts.push(`Body text excerpt (first 800 chars): "${websiteData.bodyTextSample.slice(0, 800)}..."`);
+    // Slice first, stringify second, so the truncation marker is outside the
+    // escaped string for clarity in the prompt.
+    parts.push(`Body text excerpt (first 800 chars, JSON-encoded): ${JSON.stringify(websiteData.bodyTextSample.slice(0, 800))}`);
   }
   parts.push('═══════════════════════════════════════════════════════════════════════════════');
   return parts.join('\n');
@@ -1938,28 +1946,58 @@ function robustJsonParse(text) {
   // Strip markdown fences first — some prompts wrap JSON in ```json ... ```
   let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
 
+  let lastError = null;
+
   // Strategy 1 — parse as-is (works when Claude produces clean JSON)
-  try { return JSON.parse(cleaned); } catch {}
+  try { return JSON.parse(cleaned); } catch (e) { lastError = e; }
 
   // Strategy 2 — sanitize control chars inside string literals, then parse.
-  // This is the fix for "Bad control character in string literal" errors that
-  // happen when Claude embeds raw \n / \r / \t inside multi-paragraph fields
-  // like aboutStory or metaDescription.
-  try { return JSON.parse(sanitizeJsonString(cleaned)); } catch {}
+  // Catches raw \n / \r / \t embedded in multi-paragraph fields.
+  try { return JSON.parse(sanitizeJsonString(cleaned)); } catch (e) { lastError = e; }
 
-  // Strategy 3 — clip to outermost braces (defensive — Claude sometimes adds
-  // a leading or trailing comment despite the prompt telling it not to)
+  // Strategy 3 — clip to outermost braces (Claude sometimes adds a leading
+  // or trailing comment despite the prompt telling it not to)
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
   if (start !== -1 && end !== -1 && end > start) {
     const clipped = cleaned.slice(start, end + 1);
-    try { return JSON.parse(clipped); } catch {}
+    try { return JSON.parse(clipped); } catch (e) { lastError = e; }
+
     // Strategy 4 — clip + sanitize
-    try { return JSON.parse(sanitizeJsonString(clipped)); } catch {}
+    try { return JSON.parse(sanitizeJsonString(clipped)); } catch (e) { lastError = e; }
 
     // Strategy 5 — clip + pad missing closing braces (truncation recovery)
     for (let extra = 1; extra <= 5; extra++) {
-      try { return JSON.parse(sanitizeJsonString(clipped + '}'.repeat(extra))); } catch {}
+      try { return JSON.parse(sanitizeJsonString(clipped + '}'.repeat(extra))); } catch (e) { lastError = e; }
+    }
+  }
+
+  // All strategies failed — log a diagnostic context window around the
+  // failure position so we can see the exact offending bytes in production
+  // logs. This reveals whether the bad char is a control char (handled by
+  // sanitizer), a smart-quote artifact, an unpaired Unicode surrogate, or
+  // something else entirely.
+  if (lastError) {
+    const msg = lastError.message || '';
+    const posMatch = msg.match(/position (\d+)/);
+    console.error(`[wgen][robustJsonParse] ALL STRATEGIES FAILED. Error: "${msg}"`);
+    console.error(`[wgen][robustJsonParse] Cleaned input length: ${cleaned.length} chars`);
+    if (posMatch) {
+      const pos = parseInt(posMatch[1], 10);
+      const ctxStart = Math.max(0, pos - 250);
+      const ctxEnd = Math.min(cleaned.length, pos + 250);
+      const before = cleaned.slice(ctxStart, pos);
+      const offending = cleaned[pos] || '<EOF>';
+      const after = cleaned.slice(pos + 1, ctxEnd);
+      const codepoint = offending === '<EOF>'
+        ? 'N/A'
+        : '0x' + offending.charCodeAt(0).toString(16).padStart(4, '0');
+      console.error(`[wgen][robustJsonParse] Char at pos ${pos}: ${JSON.stringify(offending)} (codepoint ${codepoint})`);
+      console.error(`[wgen][robustJsonParse] Context (250 chars before): ${JSON.stringify(before)}`);
+      console.error(`[wgen][robustJsonParse] Context (250 chars after):  ${JSON.stringify(after)}`);
+    } else {
+      console.error(`[wgen][robustJsonParse] No position info in error. First 500 chars of cleaned: ${cleaned.slice(0, 500)}`);
+      console.error(`[wgen][robustJsonParse] Last 500 chars of cleaned:  ${cleaned.slice(-500)}`);
     }
   }
 
