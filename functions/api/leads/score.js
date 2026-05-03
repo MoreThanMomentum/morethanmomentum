@@ -102,9 +102,10 @@ export async function onRequestPost(context) {
         const out = await scoreOne(lead, env);
         await env.DB.prepare(
           `UPDATE leads_outreach
-           SET score = ?, tier = ?, score_reason = ?, scored_at = datetime('now')
+           SET score = ?, tier = ?, score_reason = ?, scored_at = datetime('now'),
+           email = CASE WHEN email IS NULL AND ? IS NOT NULL THEN ? ELSE email END
            WHERE id = ?`
-        ).bind(out.score, out.tier, out.reason, lead.id).run();
+        ).bind(out.score, out.tier, out.reason, out.email, out.email, lead.id).run();
         results.push({ id: lead.id, business_name: lead.business_name, ok: true, ...out });
         scored_ok++;
       } catch (err) {
@@ -151,6 +152,7 @@ async function scoreOne(lead, env) {
   } catch {
     return finalize(80, 'Site unreachable — likely outdated or broken.');
   }
+  const extractedEmail = extractEmails(html); // extract before truncation
 
   // Rule 3: pass HTML to Claude for scoring
   const truncated = stripAndTrim(html, HTML_CHAR_CAP);
@@ -194,12 +196,12 @@ ${truncated}`;
     score = Math.min(100, score + 5);
   }
 
-  return finalize(score, (parsed.reason || '').toString().slice(0, 400));
+  return finalize(score, (parsed.reason || '').toString().slice(0, 400), extractedEmail);
 }
 
-function finalize(score, reason) {
+function finalize(score, reason, email = null) {
   const tier = score >= 70 ? 'Hot' : score >= 40 ? 'Warm' : 'Cold';
-  return { score, tier, reason };
+  return { score, tier, reason, email };
 }
 
 /* ────────────────────── helpers ────────────────────── */
@@ -245,4 +247,23 @@ function extractJson(text) {
   const m = text.match(/\{[\s\S]*\}/);
   if (m) { try { return JSON.parse(m[0]); } catch {} }
   return null;
+}
+
+function extractEmails(html) {
+  const matches = html.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g);
+  if (!matches) return null;
+  const filtered = [...new Set(matches)].filter(e =>
+    !e.includes('sentry') &&
+    !e.includes('example') &&
+    !e.includes('domain') &&
+    !e.includes('wix') &&
+    !e.includes('wordpress') &&
+    !e.includes('schema') &&
+    !e.includes('jquery') &&
+    !e.includes('@2x') &&
+    !e.includes('.png') &&
+    !e.includes('.jpg') &&
+    !e.includes('.svg')
+  );
+  return filtered[0] || null;
 }
