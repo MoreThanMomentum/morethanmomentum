@@ -76,7 +76,16 @@ export async function onRequestPost(context) {
   const encoder = new TextEncoder();
   const send = async (obj) => {
     try {
-      await writer.write(encoder.encode(JSON.stringify(obj) + '\n'));
+      // Sanitize the serialized JSON before transmission so no raw control
+      // characters ever leave the Worker. The research blob can contain
+      // multi-paragraph fields (aboutStory, narratives, descriptions) where
+      // Claude has occasionally inserted raw \n or  -style chars that
+      // survive JSON.stringify and break the frontend's JSON.parse on the
+      // SSE line. sanitizeJsonString re-walks the serialized output and
+      // escapes any in-string control char to a proper \\n / \\u#### form.
+      const json = JSON.stringify(obj);
+      const safeJson = sanitizeJsonString(json);
+      await writer.write(encoder.encode(safeJson + '\n'));
     } catch (e) {
       // Client disconnected mid-stream — log and stop. Don't throw, the
       // runner needs to cleanly close the writer in finally.
@@ -685,28 +694,6 @@ For typewriterPhrases: 4-6 short phrases (≤30 chars each, ending in period). T
 
   if (!textContent) {
     throw new Error('Research stage returned no text content. Try again.');
-  }
-
-  // ── TEMPORARY DEBUG DUMP — remove after Billerica issue is resolved ──
-  // Logs the full raw Claude response + a focused dump of the bytes around
-  // position 20867 (where parses have been failing deterministically).
-  // Cloudflare's log line limit truncates around ~16KB, so we chunk the
-  // full response into 4KB segments to ensure nothing gets cut.
-  console.error(`[wgen][debug] RAW CLAUDE RESPONSE — total length: ${textContent.length} chars`);
-  const CHUNK = 4000;
-  for (let i = 0; i < textContent.length; i += CHUNK) {
-    console.error(`[wgen][debug] raw[${i}..${Math.min(i + CHUNK, textContent.length)}]: ${textContent.slice(i, i + CHUNK)}`);
-  }
-  // Focused dump on the deterministic failure position. JSON.stringify on a
-  // single char reveals its codepoint as \uXXXX if it's a control char.
-  const FAIL_POS = 20867;
-  if (textContent.length > FAIL_POS) {
-    const charAtFail = textContent[FAIL_POS];
-    const codepoint = '0x' + charAtFail.charCodeAt(0).toString(16).padStart(4, '0');
-    console.error(`[wgen][debug] char at pos ${FAIL_POS}: ${JSON.stringify(charAtFail)} (codepoint ${codepoint})`);
-    console.error(`[wgen][debug] bytes [${FAIL_POS - 200}..${FAIL_POS + 200}]: ${JSON.stringify(textContent.slice(Math.max(0, FAIL_POS - 200), FAIL_POS + 200))}`);
-  } else {
-    console.error(`[wgen][debug] response shorter than expected fail pos ${FAIL_POS} (length ${textContent.length})`);
   }
 
   const research = robustJsonParse(textContent);

@@ -3471,6 +3471,55 @@ function renderMTMAnalytics(data) {
    TOOL 06 — WEBSITE GENERATOR
 ══════════════════════════════════════════════ */
 
+// Sanitize raw JSON text — escape any control character (0x00-0x1F) that
+// appears INSIDE a string literal. The Worker now runs the same sanitizer
+// before transmitting each SSE event, but this is the belt-and-suspenders
+// fallback used by parseWgenLine() — if a stray control char ever leaks
+// through (legacy browser cache, proxy mangling, etc.), the parse retries
+// with sanitization instead of dropping the event.
+function sanitizeWgenJson(s) {
+  let out = '';
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    const code = c.charCodeAt(0);
+    if (!inString) {
+      if (c === '"') inString = true;
+      out += c;
+      continue;
+    }
+    if (escaped) {
+      escaped = false;
+      if (code < 0x20) {
+        out += code === 0x0a ? '\\n' : code === 0x0d ? '\\r' : code === 0x09 ? '\\t' : '\\u' + code.toString(16).padStart(4, '0');
+      } else {
+        out += c;
+      }
+      continue;
+    }
+    if (c === '\\') { escaped = true; out += c; continue; }
+    if (c === '"')  { inString = false; out += c; continue; }
+    if (code < 0x20) {
+      out += code === 0x0a ? '\\n' : code === 0x0d ? '\\r' : code === 0x09 ? '\\t' : '\\u' + code.toString(16).padStart(4, '0');
+    } else {
+      out += c;
+    }
+  }
+  return out;
+}
+
+// Try JSON.parse; if it fails, sanitize and retry. Returns the parsed object
+// or null if both attempts fail (in which case the caller skips the line).
+function parseWgenLine(line) {
+  try { return JSON.parse(line); } catch (e) {
+    try { return JSON.parse(sanitizeWgenJson(line)); } catch (e2) {
+      console.warn('[wgen] dropping unparseable SSE line:', e2.message, 'line head:', line.slice(0, 200));
+      return null;
+    }
+  }
+}
+
 let _wgenLastResult = null;        // holds the most recent { businessName, slug, files, research }
 let _wgenSelectedTone = '';        // empty string = let AI decide
 let _wgenSelectedSiteType = 'brochure'; // structural template choice — passed to backend; defaults to brochure
@@ -3664,8 +3713,8 @@ async function runWebsiteGen() {
       for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed) continue;
-        let evt;
-        try { evt = JSON.parse(trimmed); } catch { continue; }
+        const evt = parseWgenLine(trimmed);
+        if (!evt) continue;
         handleWgenEvent(evt, (data) => { finalData = data; });
       }
     }
@@ -3673,10 +3722,8 @@ async function runWebsiteGen() {
     // Drain any final partial line in the buffer (server should always end
     // with a newline, but be defensive).
     if (buffer.trim()) {
-      try {
-        const evt = JSON.parse(buffer.trim());
-        handleWgenEvent(evt, (data) => { finalData = data; });
-      } catch {}
+      const evt = parseWgenLine(buffer.trim());
+      if (evt) handleWgenEvent(evt, (data) => { finalData = data; });
     }
 
     if (!finalData) {
