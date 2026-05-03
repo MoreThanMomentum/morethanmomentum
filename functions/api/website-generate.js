@@ -76,15 +76,10 @@ export async function onRequestPost(context) {
   const encoder = new TextEncoder();
   const send = async (obj) => {
     try {
-      // Sanitize the serialized JSON before transmission so no raw control
-      // characters ever leave the Worker. The research blob can contain
-      // multi-paragraph fields (aboutStory, narratives, descriptions) where
-      // Claude has occasionally inserted raw \n or  -style chars that
-      // survive JSON.stringify and break the frontend's JSON.parse on the
-      // SSE line. sanitizeJsonString re-walks the serialized output and
-      // escapes any in-string control char to a proper \\n / \\u#### form.
-      const json = JSON.stringify(obj);
-      const safeJson = sanitizeJsonString(json);
+      // Sanitize the serialized JSON before transmission. Prevents any
+      // in-string control character from leaking into the SSE payload and
+      // breaking the frontend JSON.parse on receive.
+      const safeJson = sanitizeJsonString(JSON.stringify(obj));
       await writer.write(encoder.encode(safeJson + '\n'));
     } catch (e) {
       // Client disconnected mid-stream — log and stop. Don't throw, the
