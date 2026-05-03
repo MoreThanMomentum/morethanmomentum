@@ -498,7 +498,16 @@ Tone selection rule: pick ONE of professional|friendly|luxury|authoritative|casu
 
 ${groundTruth}
 
-CRITICAL: Your ENTIRE response must be a single valid JSON object. Start with { and end with }. No text before, no text after, no markdown fences, no commentary. Just the raw JSON conforming to this schema:
+CRITICAL: Your ENTIRE response must be a single valid JSON object. Start with { and end with }. No text before, no text after, no markdown fences, no commentary. Just the raw JSON conforming to this schema.
+
+JSON FORMATTING RULES (these break parsing if violated):
+- All string values must use \\n for newlines, never raw line breaks. Multi-paragraph fields like aboutStory must be a single string with \\n\\n between paragraphs.
+- Use \\t for tabs, \\" for quotes inside strings, \\\\ for literal backslashes.
+- Never embed raw control characters (\\u0000-\\u001F) in string values.
+- Numbers must not have leading zeros (use 5 not 05).
+- Use null for missing values, not the string "null" or "undefined".
+
+Schema:
 
 {
   "slug": "lowercase-hyphen-business-slug-max-50-chars",
@@ -1860,20 +1869,97 @@ function toTitleCase(s) {
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
 
+// Sanitize raw JSON text — when LLMs produce JSON, they sometimes embed raw
+// control characters (literal newlines, tabs, etc.) inside string literals.
+// JSON.parse rejects those because the spec requires control chars to be
+// escaped as \n / \t / \r / \u####. This walks the JSON char-by-char,
+// tracks whether we're inside a string literal, and escapes any control
+// chars we see in-string. Outside-string control chars (between fields,
+// indentation) are left alone — JSON.parse tolerates whitespace there.
+function sanitizeJsonString(s) {
+  let out = '';
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    const code = c.charCodeAt(0);
+
+    if (!inString) {
+      if (c === '"') inString = true;
+      out += c;
+      continue;
+    }
+
+    // Inside a string literal
+    if (escaped) {
+      escaped = false;
+      // Backslash + raw control char (e.g. `\` followed by a literal newline)
+      // is malformed JSON. Treat the control char as needing escape too.
+      if (code < 0x20) {
+        out += controlEscape(c, code);
+      } else {
+        out += c;
+      }
+      continue;
+    }
+    if (c === '\\') {
+      escaped = true;
+      out += c;
+      continue;
+    }
+    if (c === '"') {
+      inString = false;
+      out += c;
+      continue;
+    }
+    if (code < 0x20) {
+      out += controlEscape(c, code);
+    } else {
+      out += c;
+    }
+  }
+  return out;
+}
+
+function controlEscape(c, code) {
+  switch (c) {
+    case '\n': return '\\n';
+    case '\r': return '\\r';
+    case '\t': return '\\t';
+    case '\b': return '\\b';
+    case '\f': return '\\f';
+    default:   return '\\u' + code.toString(16).padStart(4, '0');
+  }
+}
+
 function robustJsonParse(text) {
   const raw = text.trim();
 
+  // Strip markdown fences first — some prompts wrap JSON in ```json ... ```
   let cleaned = raw.replace(/```json\s*/gi, '').replace(/```\s*/gi, '').trim();
+
+  // Strategy 1 — parse as-is (works when Claude produces clean JSON)
   try { return JSON.parse(cleaned); } catch {}
 
+  // Strategy 2 — sanitize control chars inside string literals, then parse.
+  // This is the fix for "Bad control character in string literal" errors that
+  // happen when Claude embeds raw \n / \r / \t inside multi-paragraph fields
+  // like aboutStory or metaDescription.
+  try { return JSON.parse(sanitizeJsonString(cleaned)); } catch {}
+
+  // Strategy 3 — clip to outermost braces (defensive — Claude sometimes adds
+  // a leading or trailing comment despite the prompt telling it not to)
   const start = cleaned.indexOf('{');
   const end = cleaned.lastIndexOf('}');
   if (start !== -1 && end !== -1 && end > start) {
-    try { return JSON.parse(cleaned.slice(start, end + 1)); } catch {}
+    const clipped = cleaned.slice(start, end + 1);
+    try { return JSON.parse(clipped); } catch {}
+    // Strategy 4 — clip + sanitize
+    try { return JSON.parse(sanitizeJsonString(clipped)); } catch {}
 
-    const partial = cleaned.slice(start, end + 1);
+    // Strategy 5 — clip + pad missing closing braces (truncation recovery)
     for (let extra = 1; extra <= 5; extra++) {
-      try { return JSON.parse(partial + '}'.repeat(extra)); } catch {}
+      try { return JSON.parse(sanitizeJsonString(clipped + '}'.repeat(extra))); } catch {}
     }
   }
 
