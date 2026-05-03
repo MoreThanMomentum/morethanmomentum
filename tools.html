@@ -3512,8 +3512,21 @@ function sanitizeWgenJson(s) {
 // Try JSON.parse; if it fails, sanitize and retry. Returns the parsed object
 // or null if both attempts fail (in which case the caller skips the line).
 function parseWgenLine(line) {
-  try { return JSON.parse(line); } catch (e) {
-    try { return JSON.parse(sanitizeWgenJson(line)); } catch (e2) {
+  // ── DIAGNOSTIC (temporary) — confirms parseWgenLine is actually being
+  //    called and shows what each line looks like on entry.
+  console.log('[wgen][diag] parseWgenLine called. line length=' + line.length + ' head: ' + JSON.stringify(line.slice(0, 100)));
+  try {
+    return JSON.parse(line);
+  } catch (e) {
+    // ── DIAGNOSTIC (temporary) — confirms the retry-with-sanitize path
+    //    actually executes when the first parse fails.
+    console.log('[wgen][diag] first JSON.parse failed: ' + e.message + ' — attempting sanitize+retry');
+    try {
+      const sanitized = sanitizeWgenJson(line);
+      const result = JSON.parse(sanitized);
+      console.log('[wgen][diag] sanitize+retry SUCCEEDED');
+      return result;
+    } catch (e2) {
       console.warn('[wgen] dropping unparseable SSE line:', e2.message, 'line head:', line.slice(0, 200));
       return null;
     }
