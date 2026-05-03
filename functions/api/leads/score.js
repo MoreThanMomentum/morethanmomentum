@@ -24,7 +24,7 @@ import { jsonResponse, corsPreflight, requireAdmin, requireDb } from './_auth.js
 
 export const onRequestOptions = () => corsPreflight();
 
-const MODEL          = 'claude-sonnet-4-20250514';
+const MODEL          = 'claude-sonnet-4-6';
 const MAX_BATCH      = 25;
 const FETCH_TIMEOUT  = 10_000;            // ms
 const HTML_CHAR_CAP  = 12_000;            // truncated body sent to Claude
