@@ -11,7 +11,7 @@
   gtag('config', '{{GA_ID}}');
 </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Shop Golf Carts | Full Inventory | {{BUSINESS_NAME}}</title>
+  <title>Shop {{CATALOG_PAGE_LABEL}} | {{BUSINESS_NAME}}</title>
   <meta name="description" content="Browse {{BUSINESS_NAME}}'s full lineup. {{INVENTORY_DESCRIPTOR}} — all priced upfront. {{TRUST_QUALIFIER}} in {{CITY_STATE}}." />
   <meta name="theme-color" content="{{PRIMARY_COLOR}}" />
   <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
@@ -93,7 +93,7 @@
 
 
 <!-- FILTER BAR — buttons injected dynamically from inventory.json filters block -->
-<div class="shop-filters" role="search" aria-label="Filter carts">
+<div class="shop-filters" role="search" aria-label="Filter {{PRODUCT_NOUN}}">
   <div class="container shop-filters-inner">
     <div class="filter-group" id="filter-group-seats">
       <span class="filter-group-label">Seats</span>
@@ -203,7 +203,7 @@
     <div class="footer-col">
       <h4 class="footer-col-title">Quick Links</h4>
       <ul class="footer-links">
-        <li><a href="shop.html">Shop Carts</a></li>
+        <li><a href="shop.html">Shop {{CATALOG_PAGE_LABEL}}</a></li>
         <li><a href="rentals.html">Rentals</a></li>
         <li><a href="services.html">Services</a></li>
         <li><a href="about.html">{{ABOUT_NAV_LABEL}}</a></li>

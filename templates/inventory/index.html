@@ -447,51 +447,10 @@
 </script>
 
 
-<!-- ===== LIFESTYLE PHOTO GRID ===== -->
-<section class="section lifestyle-section" id="lifestyle" aria-labelledby="lifestyle-heading">
-  <div class="container">
-    <div class="section-header">
-      <p class="section-eyebrow">{{LIFESTYLE_SECTION_EYEBROW}}</p>
-      <h2 class="section-title" id="lifestyle-heading">Built For Your Life</h2>
-      <p class="section-sub">From lake houses to campgrounds to wedding days — there's a cart for every moment.</p>
-    </div>
-   <div class="lifestyle-grid">
-
-      <div class="lifestyle-tile lifestyle-tile--lake" data-animate="fade-up">
-        <img src="images/dock.png" alt="Luxury golf cart at a New Hampshire lakefront dock" loading="lazy" />
-        <div class="lifestyle-overlay">
-          <h3>Lake Houses</h3>
-          <p>Glide the shoreline in style</p>
-        </div>
-      </div>
-
-      <div class="lifestyle-tile lifestyle-tile--campground" data-animate="fade-up" data-delay="100">
-        <img src="images/camping.png" alt="Family loading a golf cart at a New England campground" loading="lazy" />
-        <div class="lifestyle-overlay">
-          <h3>Campgrounds</h3>
-          <p>Fleet packages for operators</p>
-        </div>
-      </div>
-
-      <div class="lifestyle-tile lifestyle-tile--wedding" data-animate="fade-up" data-delay="200">
-        <img src="images/wedding.png" alt="Bride and groom stepping into a decorated golf cart at a wedding venue" loading="lazy" />
-        <div class="lifestyle-overlay">
-          <h3>Weddings</h3>
-          <p>Arrive in unforgettable style</p>
-        </div>
-      </div>
-
-      <div class="lifestyle-tile lifestyle-tile--neighborhood" data-animate="fade-up" data-delay="300">
-        <img src="images/street.png" alt="Family cruising a New Hampshire neighborhood street in a luxury golf cart" loading="lazy" />
-        <div class="lifestyle-overlay">
-          <h3>Neighborhoods</h3>
-          <p>Your road. Your cart. Your rules.</p>
-        </div>
-      </div>
-
-    </div>
- 
-</section>
+<!-- ===== LIFESTYLE PHOTO GRID =====
+     Inner content rendered by the generator from research.business.lifestyleUseCases.
+     If empty, the resolver returns an empty string and the section collapses to nothing. -->
+{{LIFESTYLE_SECTION_HTML}}
 
 
 <!-- ===== CTA STRIP ===== -->
@@ -522,7 +481,7 @@
     <div class="footer-col">
       <h4 class="footer-col-title">Quick Links</h4>
       <ul class="footer-links">
-        <li><a href="shop.html">Shop Carts</a></li>
+        <li><a href="shop.html">Shop {{CATALOG_PAGE_LABEL}}</a></li>
         <li><a href="rentals.html">Rentals</a></li>
         <li><a href="services.html">Services</a></li>
         <li><a href="about.html">{{ABOUT_NAV_LABEL}}</a></li>
