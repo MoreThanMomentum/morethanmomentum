@@ -1144,14 +1144,13 @@ async function runDealerTemplate({ research, requestedPages, origin, log }) {
   // Manual text+sanitize+parse instead of resp.json() so a stray control
   // character in tokens.json doesn't break the dealer build.
   const tokensText = await tokensResp.text();
-  let tokensSpec;
-  try {
-    tokensSpec = JSON.parse(sanitizeJsonString(tokensText));
-  } catch (e) {
-    console.error(`[wgen][T] FAILED to parse tokens.json: ${e.message}`);
-    console.error(`[wgen][T] tokens.json length=${tokensText.length}; first 200 chars: ${JSON.stringify(tokensText.slice(0, 200))}`);
-    throw new Error(`Could not parse tokens.json: ${e.message}`);
-  }
+let tokensSpec;
+try {
+  tokensSpec = JSON.parse(sanitizeJsonString(tokensText));
+} catch (e) {
+  console.error(`[wgen][T] FAILED to parse tokens.json: ${e.message}`);
+  throw new Error(`Could not parse tokens.json: ${e.message}`);
+}
   log(`tokens.json loaded — version ${tokensSpec.version}`);
 
   // ── 2. Generate the per-client admin password (random, secure) ──
@@ -2009,23 +2008,6 @@ function robustJsonParse(text) {
       console.error(`[wgen][robustJsonParse] Char at pos ${pos}: ${JSON.stringify(offending)} (codepoint ${codepoint})`);
       console.error(`[wgen][robustJsonParse] Context (250 chars before): ${JSON.stringify(before)}`);
       console.error(`[wgen][robustJsonParse] Context (250 chars after):  ${JSON.stringify(after)}`);
-    } else {
-      console.error(`[wgen][robustJsonParse] No position info in error. First 500 chars of cleaned: ${cleaned.slice(0, 500)}`);
-      console.error(`[wgen][robustJsonParse] Last 500 chars of cleaned:  ${cleaned.slice(-500)}`);
-    }
-  }
-
-  return null;
-}
-
-function slugify(name) {
-  return (name || 'business')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 50);
-}
-ole.error(`[wgen][robustJsonParse] Context (250 chars after):  ${JSON.stringify(after)}`);
     } else {
       console.error(`[wgen][robustJsonParse] No position info in error. First 500 chars of cleaned: ${cleaned.slice(0, 500)}`);
       console.error(`[wgen][robustJsonParse] Last 500 chars of cleaned:  ${cleaned.slice(-500)}`);
