@@ -524,6 +524,14 @@
         <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
       </div>
 
+      <!-- Tool 07 — Lead Scoring & Outreach -->
+      <div class="tool-card active" onclick="openLeadScoringPanel()">
+        <div class="tool-card-icon">🎯</div>
+        <div class="tool-card-header"><div class="tool-card-name">Lead Scoring &amp; Outreach</div><span class="tool-card-badge badge-live">Live</span></div>
+        <p class="tool-card-desc">Upload a CSV of local businesses. AI fetches each website, scores how badly they need MTM (0–100), and ranks them Hot / Warm / Cold with contact details. Work down the list — phone &amp; email at one click.</p>
+        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+      </div>
+
     </div>
   </main>
 </div>
@@ -3849,5 +3857,507 @@ async function downloadWebsiteZip() {
 
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- ════════════════════════════════════════════════════════════════════
+     TOOL 07 — LEAD SCORING & OUTREACH (self-contained module)
+     ════════════════════════════════════════════════════════════════════ -->
+<style>
+  /* Tool 07 — pinned to MTM brand colors */
+  #ls-panel .panel-inner { max-width: 1200px; }
+  #ls-panel .ls-tabs { display: flex; gap: 4px; padding: 0 28px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  #ls-panel .ls-tab { background: transparent; border: none; padding: 14px 18px; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--gray); cursor: pointer; border-bottom: 2px solid transparent; transition: color .15s, border-color .15s; }
+  #ls-panel .ls-tab:hover { color: var(--white); }
+  #ls-panel .ls-tab.active { color: var(--white); border-bottom-color: var(--accent); }
+  #ls-panel .ls-tab-badge { display: inline-block; background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 1px 7px; font-size: 11px; margin-left: 6px; color: var(--gray); }
+  #ls-panel .ls-tab.active .ls-tab-badge { background: rgba(45,107,228,.15); border-color: rgba(45,107,228,.3); color: var(--accent-light); }
+
+  #ls-panel .ls-pane { display: none; padding: 24px 28px; flex: 1; overflow-y: auto; flex-direction: column; gap: 16px; }
+  #ls-panel .ls-pane.active { display: flex; }
+
+  /* Summary strip */
+  #ls-panel .ls-summary { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+  #ls-panel .ls-summary-card { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; }
+  #ls-panel .ls-summary-card.hot { border-color: rgba(245,90,90,.4); }
+  #ls-panel .ls-summary-card.warm { border-color: rgba(245,197,24,.4); }
+  #ls-panel .ls-summary-card.cold { border-color: rgba(74,222,128,.3); }
+  #ls-panel .ls-summary-label { font-size: 10px; color: var(--gray); letter-spacing: .08em; text-transform: uppercase; }
+  #ls-panel .ls-summary-num { font-family: var(--speed); font-weight: 700; font-size: 24px; color: var(--white); margin-top: 2px; }
+
+  /* Upload area */
+  #ls-panel .ls-uploader { background: var(--card); border: 1px dashed var(--border); border-radius: 12px; padding: 32px; text-align: center; transition: border-color .2s, background .2s; cursor: pointer; }
+  #ls-panel .ls-uploader.drag { border-color: var(--accent); background: rgba(45,107,228,.07); }
+  #ls-panel .ls-uploader-icon { font-size: 28px; margin-bottom: 8px; }
+  #ls-panel .ls-uploader-title { font-family: var(--speed); font-weight: 700; font-size: 18px; color: var(--white); }
+  #ls-panel .ls-uploader-sub { font-size: 12px; color: var(--gray); margin-top: 6px; }
+
+  #ls-panel .ls-textarea { width: 100%; min-height: 160px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-family: 'SF Mono', Menlo, monospace; font-size: 12px; color: var(--white); outline: none; resize: vertical; line-height: 1.5; }
+  #ls-panel .ls-textarea:focus { border-color: var(--accent); }
+
+  #ls-panel .ls-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  #ls-panel .ls-btn { background: var(--accent); color: var(--white); border: none; border-radius: 8px; padding: 10px 18px; font-family: var(--sans); font-size: 13px; font-weight: 500; cursor: pointer; transition: background .15s; white-space: nowrap; }
+  #ls-panel .ls-btn:hover { background: #2460cc; }
+  #ls-panel .ls-btn:disabled { background: var(--mid); cursor: not-allowed; }
+  #ls-panel .ls-btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--white); }
+  #ls-panel .ls-btn-secondary:hover { border-color: var(--gray); background: var(--card); }
+  #ls-panel .ls-btn-yellow { background: var(--yellow); color: var(--black); font-weight: 600; }
+  #ls-panel .ls-btn-yellow:hover { background: #d9ad14; }
+
+  #ls-panel .ls-status-box { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; font-size: 13px; color: var(--white); display: none; }
+  #ls-panel .ls-status-box.show { display: block; }
+  #ls-panel .ls-status-box.error { border-color: rgba(220,50,50,.4); color: #f87171; }
+  #ls-panel .ls-status-box.success { border-color: rgba(74,222,128,.4); color: var(--green); }
+
+  /* Filters */
+  #ls-panel .ls-filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  #ls-panel .ls-chip { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 6px 14px; font-size: 12px; color: var(--gray); cursor: pointer; transition: all .15s; }
+  #ls-panel .ls-chip:hover { color: var(--white); border-color: var(--gray); }
+  #ls-panel .ls-chip.active { background: rgba(45,107,228,.15); border-color: var(--accent); color: var(--white); }
+
+  /* Ranked table */
+  #ls-panel .ls-table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 10px; overflow: auto; max-height: 65vh; }
+  #ls-panel .ls-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  #ls-panel .ls-table thead th { position: sticky; top: 0; background: var(--dark); padding: 11px 12px; text-align: left; font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--gray); border-bottom: 1px solid var(--border); white-space: nowrap; cursor: pointer; user-select: none; }
+  #ls-panel .ls-table thead th:hover { color: var(--white); }
+  #ls-panel .ls-table tbody td { padding: 11px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  #ls-panel .ls-table tbody tr:hover { background: rgba(255,255,255,.02); }
+  #ls-panel .ls-table tbody tr.contacted { opacity: .55; }
+  #ls-panel .ls-rank { font-family: var(--speed); font-weight: 700; font-size: 16px; color: var(--gray); width: 40px; }
+  #ls-panel .ls-name { font-weight: 500; color: var(--white); }
+  #ls-panel .ls-cat { font-size: 12px; color: var(--gray); }
+  #ls-panel .ls-reason { font-size: 12px; color: var(--gray); max-width: 260px; }
+  #ls-panel .ls-tier-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: .04em; }
+  #ls-panel .ls-tier-Hot  { background: rgba(245,90,90,.15);  color: #f87171; border: 1px solid rgba(245,90,90,.35); }
+  #ls-panel .ls-tier-Warm { background: rgba(245,197,24,.15); color: var(--yellow); border: 1px solid rgba(245,197,24,.35); }
+  #ls-panel .ls-tier-Cold { background: rgba(74,222,128,.12); color: var(--green); border: 1px solid rgba(74,222,128,.3); }
+  #ls-panel .ls-link { color: var(--accent-light); text-decoration: none; }
+  #ls-panel .ls-link:hover { text-decoration: underline; }
+  #ls-panel .ls-no-site { color: #f87171; font-size: 12px; }
+  #ls-panel .ls-checkbox { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
+
+  #ls-panel .ls-empty { padding: 60px 24px; text-align: center; color: var(--gray); font-size: 13px; }
+  #ls-panel .ls-progress { display: none; flex-direction: column; gap: 8px; }
+  #ls-panel .ls-progress.show { display: flex; }
+  #ls-panel .ls-progress-bar { width: 100%; height: 6px; background: var(--card); border-radius: 3px; overflow: hidden; }
+  #ls-panel .ls-progress-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent-light)); width: 0%; transition: width .3s; }
+
+  @media (max-width: 720px) {
+    #ls-panel .ls-summary { grid-template-columns: repeat(2, 1fr); }
+    #ls-panel .ls-pane { padding: 18px; }
+    #ls-panel .ls-tabs { padding: 0 18px; }
+  }
+</style>
+
+<!-- ── LEAD SCORING PANEL (Tool 07) ─────────────────────────────────── -->
+<div id="ls-panel" class="panel-overlay" onclick="handleLSBackdrop(event)">
+  <div class="panel-inner">
+    <div class="panel-header">
+      <div><div class="panel-tag">Tool 07</div><div class="panel-title">Lead Scoring &amp; Outreach</div></div>
+      <button class="panel-close" onclick="closeLeadScoringPanel()">✕</button>
+    </div>
+
+    <div class="ls-tabs">
+      <button class="ls-tab active" data-pane="upload" onclick="lsSwitchPane('upload')">Upload</button>
+      <button class="ls-tab" data-pane="score" onclick="lsSwitchPane('score')">Score Queue<span class="ls-tab-badge" id="ls-badge-unscored">0</span></button>
+      <button class="ls-tab" data-pane="rank" onclick="lsSwitchPane('rank')">Ranked Leads<span class="ls-tab-badge" id="ls-badge-total">0</span></button>
+    </div>
+
+    <!-- ──────────── UPLOAD PANE ──────────── -->
+    <div class="ls-pane active" id="ls-pane-upload">
+      <div class="ls-summary">
+        <div class="ls-summary-card"><div class="ls-summary-label">Total</div><div class="ls-summary-num" id="ls-sum-total">—</div></div>
+        <div class="ls-summary-card hot"><div class="ls-summary-label">Hot</div><div class="ls-summary-num" id="ls-sum-hot">—</div></div>
+        <div class="ls-summary-card warm"><div class="ls-summary-label">Warm</div><div class="ls-summary-num" id="ls-sum-warm">—</div></div>
+        <div class="ls-summary-card cold"><div class="ls-summary-label">Cold</div><div class="ls-summary-num" id="ls-sum-cold">—</div></div>
+        <div class="ls-summary-card"><div class="ls-summary-label">Contacted</div><div class="ls-summary-num" id="ls-sum-contacted">—</div></div>
+      </div>
+
+      <div class="ls-uploader" id="ls-dropzone">
+        <div class="ls-uploader-icon">📥</div>
+        <div class="ls-uploader-title">Drop a CSV or JSON file here</div>
+        <div class="ls-uploader-sub">or click to browse — must contain a <code>business_name</code> column. Optional: category, address, phone, website, email.</div>
+        <input type="file" id="ls-file-input" accept=".csv,.json,.txt" style="display:none"/>
+      </div>
+
+      <div>
+        <label class="panel-label" for="ls-batch-label">Batch label <span>(optional — helps you separate cities / runs)</span></label>
+        <input type="text" id="ls-batch-label" class="panel-input" placeholder="e.g. Manchester-NH-2026-05-03"/>
+      </div>
+
+      <div>
+        <label class="panel-label">…or paste raw CSV / JSON</label>
+        <textarea id="ls-paste" class="ls-textarea" placeholder="business_name,category,address,phone,website,email&#10;Riverside HVAC,HVAC,&quot;123 Elm St, Manchester NH&quot;,603-555-0101,riversidehvac.com,info@riversidehvac.com"></textarea>
+      </div>
+
+      <div class="ls-row">
+        <button class="ls-btn" id="ls-upload-btn" onclick="lsUpload()">Upload &amp; Save to Database →</button>
+        <button class="ls-btn ls-btn-secondary" onclick="document.getElementById('ls-paste').value=''">Clear</button>
+      </div>
+
+      <div class="ls-status-box" id="ls-upload-status"></div>
+    </div>
+
+    <!-- ──────────── SCORE PANE ──────────── -->
+    <div class="ls-pane" id="ls-pane-score">
+      <div class="ls-status-box show" style="display:block">
+        AI scoring uses Claude Sonnet to fetch each business's website and rate how badly they need MTM (0–100). Runs in batches of 10. Each batch takes 30–60 seconds.
+      </div>
+
+      <div class="ls-row">
+        <label class="panel-label" style="margin:0">Batch size</label>
+        <select id="ls-batch-size" class="panel-input" style="width:90px">
+          <option value="5">5</option>
+          <option value="10" selected>10</option>
+          <option value="15">15</option>
+          <option value="25">25</option>
+        </select>
+        <button class="ls-btn" id="ls-score-btn" onclick="lsRunScoring()">Run Scoring on Next Batch →</button>
+        <button class="ls-btn ls-btn-secondary" onclick="lsRefreshSummary()">Refresh</button>
+      </div>
+
+      <div class="ls-progress" id="ls-progress">
+        <div class="ls-progress-bar"><div class="ls-progress-fill" id="ls-progress-fill"></div></div>
+        <div style="font-size:12px;color:var(--gray)" id="ls-progress-text">Working…</div>
+      </div>
+
+      <div class="ls-status-box" id="ls-score-status"></div>
+
+      <div>
+        <div style="font-size:11px;color:var(--gray);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Recent results (this session)</div>
+        <div id="ls-recent-results" style="display:flex;flex-direction:column;gap:6px;font-size:12px"></div>
+      </div>
+    </div>
+
+    <!-- ──────────── RANKED PANE ──────────── -->
+    <div class="ls-pane" id="ls-pane-rank">
+      <div class="ls-row" style="justify-content:space-between">
+        <div class="ls-filters">
+          <button class="ls-chip active" data-filter="all"  onclick="lsFilter('all')">All</button>
+          <button class="ls-chip"        data-filter="Hot"  onclick="lsFilter('Hot')">Hot</button>
+          <button class="ls-chip"        data-filter="Warm" onclick="lsFilter('Warm')">Warm</button>
+          <button class="ls-chip"        data-filter="Cold" onclick="lsFilter('Cold')">Cold</button>
+        </div>
+        <div class="ls-row">
+          <button class="ls-btn ls-btn-secondary" onclick="lsLoadLeads()">↻ Reload</button>
+          <button class="ls-btn ls-btn-yellow" onclick="lsExportCsv()">⇩ Export CSV</button>
+        </div>
+      </div>
+
+      <div class="ls-table-wrap">
+        <table class="ls-table" id="ls-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th data-sort="business_name">Business</th>
+              <th data-sort="score">Score</th>
+              <th>Tier</th>
+              <th>Reason</th>
+              <th>Phone</th>
+              <th>Email</th>
+              <th>Website</th>
+              <th>Done</th>
+            </tr>
+          </thead>
+          <tbody id="ls-tbody">
+            <tr><td colspan="9" class="ls-empty">No leads loaded yet — upload a CSV from the Upload tab.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   TOOL 07 — LEAD SCORING & OUTREACH (front-end)
+══════════════════════════════════════════════ */
+const LS_TOKEN_KEY = 'mtm_tools_token';
+let lsState = {
+  filter: 'all',
+  sort: 'score',
+  dir: 'desc',
+  leads: [],
+  summary: { hot:0, warm:0, cold:0, unscored:0, contacted:0, total:0 },
+};
+
+function lsAuthHeader() {
+  const t = sessionStorage.getItem(LS_TOKEN_KEY) || '';
+  return t ? { 'Authorization': 'Bearer ' + t } : {};
+}
+
+function openLeadScoringPanel() {
+  document.getElementById('ls-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  lsRefreshSummary();
+  lsLoadLeads();
+}
+function closeLeadScoringPanel() {
+  document.getElementById('ls-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleLSBackdrop(e) { if (e.target === e.currentTarget) closeLeadScoringPanel(); }
+
+function lsSwitchPane(name) {
+  document.querySelectorAll('#ls-panel .ls-tab').forEach(t => t.classList.toggle('active', t.dataset.pane === name));
+  document.querySelectorAll('#ls-panel .ls-pane').forEach(p => p.classList.toggle('active', p.id === 'ls-pane-' + name));
+  if (name === 'rank') lsLoadLeads();
+  if (name === 'score' || name === 'upload') lsRefreshSummary();
+}
+
+/* ───── Upload pane ───── */
+const lsDrop = () => document.getElementById('ls-dropzone');
+const lsFileInput = () => document.getElementById('ls-file-input');
+
+document.addEventListener('DOMContentLoaded', () => {
+  const dz = lsDrop(), fi = lsFileInput();
+  if (!dz) return;
+  dz.addEventListener('click', () => fi.click());
+  fi.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (f) lsReadFile(f);
+  });
+  ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); }));
+  ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); }));
+  dz.addEventListener('drop', e => {
+    const f = e.dataTransfer.files[0];
+    if (f) lsReadFile(f);
+  });
+});
+
+function lsReadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => { document.getElementById('ls-paste').value = e.target.result; };
+  reader.readAsText(file);
+}
+
+async function lsUpload() {
+  const raw = document.getElementById('ls-paste').value.trim();
+  const batch = document.getElementById('ls-batch-label').value.trim();
+  const status = document.getElementById('ls-upload-status');
+  const btn = document.getElementById('ls-upload-btn');
+  if (!raw) { lsShow(status, 'error', 'Paste data or drop a file first.'); return; }
+
+  let format = 'csv', data = raw;
+  const trimmed = raw.trim();
+  if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+    try { data = JSON.parse(trimmed); format = 'json'; }
+    catch (err) { lsShow(status, 'error', 'JSON parse error: ' + err.message); return; }
+  }
+
+  btn.disabled = true; btn.textContent = 'Uploading…';
+  lsShow(status, '', 'Uploading…');
+  try {
+    const r = await fetch('/api/leads/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...lsAuthHeader() },
+      body: JSON.stringify({ format, data, batch }),
+    });
+    const j = await r.json();
+    if (!r.ok || !j.success) throw new Error(j.error || 'Upload failed');
+    lsShow(status, 'success', 'Inserted ' + j.inserted + ' • Skipped ' + j.skipped + (j.errors && j.errors.length ? ' — first issue: row ' + j.errors[0].row + ' (' + j.errors[0].reason + ')' : ''));
+    document.getElementById('ls-paste').value = '';
+    lsRefreshSummary();
+  } catch (err) {
+    lsShow(status, 'error', err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Upload & Save to Database →';
+  }
+}
+
+/* ───── Score pane ───── */
+async function lsRunScoring() {
+  const btn = document.getElementById('ls-score-btn');
+  const status = document.getElementById('ls-score-status');
+  const prog = document.getElementById('ls-progress');
+  const fill = document.getElementById('ls-progress-fill');
+  const ptxt = document.getElementById('ls-progress-text');
+  const recent = document.getElementById('ls-recent-results');
+  const batchSize = parseInt(document.getElementById('ls-batch-size').value, 10) || 10;
+
+  btn.disabled = true; btn.textContent = 'Scoring…';
+  status.classList.remove('show');
+  prog.classList.add('show');
+  fill.style.width = '15%';
+  ptxt.textContent = 'Fetching websites and asking Claude to score them (batch of ' + batchSize + ')…';
+
+  try {
+    const r = await fetch('/api/leads/score', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...lsAuthHeader() },
+      body: JSON.stringify({ batchSize }),
+    });
+    fill.style.width = '90%';
+    const j = await r.json();
+    if (!r.ok || !j.success) throw new Error(j.error || 'Scoring failed');
+    fill.style.width = '100%';
+
+    const sample = (j.results || []).slice(0, 25).map(x => {
+      if (x.ok) return '<div><span class="ls-tier-badge ls-tier-' + x.tier + '" style="margin-right:6px">' + x.score + '</span> ' + escapeHtml(x.business_name) + ' — <span style="color:var(--gray)">' + escapeHtml(x.reason || '') + '</span></div>';
+      return '<div style="color:#f87171">✗ ' + escapeHtml(x.business_name) + ' — ' + escapeHtml(x.error || 'failed') + '</div>';
+    }).join('');
+    recent.innerHTML = sample || '<span style="color:var(--gray)">No results returned.</span>';
+
+    if ((j.attempted || 0) === 0) {
+      lsShow(status, '', 'No unscored leads remaining — upload more or check the Ranked tab.');
+    } else {
+      lsShow(status, 'success', 'Scored ' + j.scored + ' of ' + j.attempted + (j.failed ? ' • ' + j.failed + ' failed' : '') + '.');
+    }
+    lsRefreshSummary();
+  } catch (err) {
+    lsShow(status, 'error', err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Run Scoring on Next Batch →';
+    setTimeout(() => prog.classList.remove('show'), 1500);
+  }
+}
+
+/* ───── Ranked pane ───── */
+function lsFilter(tier) {
+  lsState.filter = tier;
+  document.querySelectorAll('#ls-panel .ls-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === tier));
+  lsLoadLeads();
+}
+
+async function lsLoadLeads() {
+  const tbody = document.getElementById('ls-tbody');
+  tbody.innerHTML = '<tr><td colspan="9" class="ls-empty">Loading…</td></tr>';
+  const params = new URLSearchParams();
+  if (lsState.filter !== 'all') params.set('tier', lsState.filter);
+  params.set('sort', lsState.sort);
+  params.set('dir', lsState.dir);
+  params.set('limit', '500');
+  try {
+    const r = await fetch('/api/leads/list?' + params.toString(), { headers: lsAuthHeader() });
+    const j = await r.json();
+    if (!r.ok || !j.success) throw new Error(j.error || 'Load failed');
+    lsState.leads = j.results || [];
+    lsState.summary = j.summary || lsState.summary;
+    lsApplySummary();
+    lsRenderTable();
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="9" class="ls-empty" style="color:#f87171">Failed to load: ' + escapeHtml(err.message) + '</td></tr>';
+  }
+}
+
+function lsRenderTable() {
+  const tbody = document.getElementById('ls-tbody');
+  if (!lsState.leads.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="ls-empty">No leads match this filter yet.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lsState.leads.map((lead, i) => {
+    const phone = lead.phone ? '<a class="ls-link" href="tel:' + escapeAttr(lead.phone) + '">' + escapeHtml(lead.phone) + '</a>' : '<span style="color:var(--mid)">—</span>';
+    const email = lead.email ? '<a class="ls-link" href="mailto:' + escapeAttr(lead.email) + '">' + escapeHtml(lead.email) + '</a>' : '<span style="color:var(--mid)">—</span>';
+    const site  = lead.website_url
+      ? '<a class="ls-link" href="' + escapeAttr(lead.website_url) + '" target="_blank" rel="noopener">' + escapeHtml(short(lead.website_url, 32)) + '</a>'
+      : '<span class="ls-no-site">No website</span>';
+    const tierBadge = lead.tier ? '<span class="ls-tier-badge ls-tier-' + lead.tier + '">' + lead.tier + '</span>' : '<span style="color:var(--mid)">—</span>';
+    const score = lead.score != null ? lead.score : '—';
+    return '<tr class="' + (lead.contacted ? 'contacted' : '') + '" data-id="' + lead.id + '">'
+      + '<td class="ls-rank">' + (i + 1) + '</td>'
+      + '<td><div class="ls-name">' + escapeHtml(lead.business_name) + '</div><div class="ls-cat">' + escapeHtml(lead.category || '') + '</div></td>'
+      + '<td><strong style="color:var(--white)">' + score + '</strong></td>'
+      + '<td>' + tierBadge + '</td>'
+      + '<td class="ls-reason">' + escapeHtml(lead.score_reason || '') + '</td>'
+      + '<td>' + phone + '</td>'
+      + '<td>' + email + '</td>'
+      + '<td>' + site + '</td>'
+      + '<td><input type="checkbox" class="ls-checkbox" ' + (lead.contacted ? 'checked' : '') + ' onchange="lsToggleContacted(' + lead.id + ', this.checked, this)"/></td>'
+      + '</tr>';
+  }).join('');
+}
+
+async function lsToggleContacted(id, checked, el) {
+  el.disabled = true;
+  try {
+    const r = await fetch('/api/leads/contacted', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...lsAuthHeader() },
+      body: JSON.stringify({ id, contacted: checked }),
+    });
+    const j = await r.json();
+    if (!r.ok || !j.success) throw new Error(j.error || 'Update failed');
+    el.closest('tr').classList.toggle('contacted', checked);
+    const idx = lsState.leads.findIndex(l => l.id === id);
+    if (idx >= 0) lsState.leads[idx].contacted = checked ? 1 : 0;
+    lsRefreshSummary();
+  } catch (err) {
+    el.checked = !checked;
+    alert('Could not update: ' + err.message);
+  } finally {
+    el.disabled = false;
+  }
+}
+
+async function lsExportCsv() {
+  const params = new URLSearchParams();
+  if (lsState.filter !== 'all') params.set('tier', lsState.filter);
+  try {
+    const r = await fetch('/api/leads/export?' + params.toString(), { headers: lsAuthHeader() });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      throw new Error(j.error || ('Export failed: HTTP ' + r.status));
+    }
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mtm_leads_' + lsState.filter + '_' + new Date().toISOString().slice(0,10) + '.csv';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch (err) {
+    alert('Export failed: ' + err.message);
+  }
+}
+
+async function lsRefreshSummary() {
+  try {
+    const r = await fetch('/api/leads/list?limit=1', { headers: lsAuthHeader() });
+    const j = await r.json();
+    if (j.success) { lsState.summary = j.summary; lsApplySummary(); }
+  } catch (e) { /* silent */ }
+}
+
+function lsApplySummary() {
+  const s = lsState.summary;
+  document.getElementById('ls-sum-total').textContent     = s.total;
+  document.getElementById('ls-sum-hot').textContent       = s.hot;
+  document.getElementById('ls-sum-warm').textContent      = s.warm;
+  document.getElementById('ls-sum-cold').textContent      = s.cold;
+  document.getElementById('ls-sum-contacted').textContent = s.contacted;
+  document.getElementById('ls-badge-unscored').textContent = s.unscored;
+  document.getElementById('ls-badge-total').textContent    = s.total;
+}
+
+/* ───── Sortable headers ───── */
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('#ls-table thead th[data-sort]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.sort;
+      if (lsState.sort === col) { lsState.dir = lsState.dir === 'asc' ? 'desc' : 'asc'; }
+      else { lsState.sort = col; lsState.dir = col === 'business_name' ? 'asc' : 'desc'; }
+      lsLoadLeads();
+    });
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLeadScoringPanel(); });
+});
+
+/* ───── Tiny helpers ───── */
+function lsShow(el, kind, msg) {
+  el.classList.remove('error', 'success');
+  if (kind) el.classList.add(kind);
+  el.textContent = msg;
+  el.classList.add('show');
+  el.style.display = 'block';
+}
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+function short(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+</script>
+
 </body>
 </html>
+
