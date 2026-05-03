@@ -3956,13 +3956,83 @@ async function downloadWebsiteZip() {
     </div>
 
     <div class="ls-tabs">
-      <button class="ls-tab active" data-pane="upload" onclick="lsSwitchPane('upload')">Upload</button>
+      <button class="ls-tab active" data-pane="source" onclick="lsSwitchPane('source')">Source Leads</button>
+      <button class="ls-tab" data-pane="upload" onclick="lsSwitchPane('upload')">Upload</button>
       <button class="ls-tab" data-pane="score" onclick="lsSwitchPane('score')">Score Queue<span class="ls-tab-badge" id="ls-badge-unscored">0</span></button>
       <button class="ls-tab" data-pane="rank" onclick="lsSwitchPane('rank')">Ranked Leads<span class="ls-tab-badge" id="ls-badge-total">0</span></button>
     </div>
 
+
+    <!-- ──────────── SOURCE LEADS PANE ──────────── -->
+    <div class="ls-pane active" id="ls-pane-source">
+      <div style="font-size:12px;color:var(--gray);line-height:1.55">
+        Search Google Maps by category and location. Businesses are automatically added to your Score Queue — duplicates and opt-outs are filtered automatically.
+      </div>
+
+      <div class="ls-status-box" id="ls-src-error" style="border-color:rgba(220,50,50,.4);color:#f87171;background:rgba(220,50,50,.06)"></div>
+
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label class="panel-label" for="ls-src-term">Business Category</label>
+            <input type="text" id="ls-src-term" class="panel-input" placeholder="e.g. HVAC, Plumber, Landscaping"/>
+          </div>
+          <div>
+            <label class="panel-label" for="ls-src-loc">Location</label>
+            <input type="text" id="ls-src-loc" class="panel-input" placeholder="City, State" value="Keene, NH"/>
+          </div>
+          <div>
+            <label class="panel-label" for="ls-src-radius">Search Radius</label>
+            <select id="ls-src-radius" class="panel-input">
+              <option value="16093">10 miles</option>
+              <option value="40234" selected>25 miles</option>
+              <option value="50000">50 miles</option>
+            </select>
+          </div>
+          <div>
+            <label class="panel-label" for="ls-src-max">Max Results</label>
+            <select id="ls-src-max" class="panel-input">
+              <option value="10">10</option>
+              <option value="20" selected>20</option>
+              <option value="40">40</option>
+              <option value="60">60</option>
+            </select>
+          </div>
+        </div>
+        <button class="ls-btn" id="ls-src-btn" onclick="lsRunSource()" style="width:100%;padding:13px">Search Google Maps</button>
+      </div>
+
+      <div id="ls-src-results-wrap" style="display:none;flex-direction:column;gap:14px">
+        <div class="ls-row" id="ls-src-stats" style="gap:8px">
+          <span class="ls-chip ls-src-chip"  id="ls-src-chip-pulled">✅ Pulled: 0</span>
+          <span class="ls-chip ls-src-chip"  id="ls-src-chip-added"  style="border-color:rgba(74,222,128,.4);color:var(--green)">➕ Added: 0</span>
+          <span class="ls-chip ls-src-chip"  id="ls-src-chip-dup"    style="border-color:rgba(245,197,24,.4);color:var(--yellow)">⏭ Duplicates Skipped: 0</span>
+          <span class="ls-chip ls-src-chip"  id="ls-src-chip-opt"    style="border-color:rgba(245,90,90,.4);color:#f87171">🚫 Opt-Outs Skipped: 0</span>
+        </div>
+
+        <div class="ls-table-wrap" style="max-height:48vh">
+          <table class="ls-table" id="ls-src-table">
+            <thead><tr>
+              <th>Business Name</th>
+              <th>Category</th>
+              <th>Address</th>
+              <th>Phone</th>
+              <th>Website</th>
+            </tr></thead>
+            <tbody id="ls-src-tbody"></tbody>
+          </table>
+        </div>
+
+        <button class="ls-btn" onclick="lsSwitchPane('score')" style="align-self:flex-start">Go to Score Queue →</button>
+      </div>
+
+      <div id="ls-src-empty" style="text-align:center;color:var(--gray);padding:48px 24px;background:var(--card);border:1px dashed var(--border);border-radius:8px">
+        <div style="font-size:32px;margin-bottom:10px">🗺️</div>
+        <div style="font-size:13px">No results yet. Run a search above to pull businesses from Google Maps.</div>
+      </div>
+    </div>
     <!-- ──────────── UPLOAD PANE ──────────── -->
-    <div class="ls-pane active" id="ls-pane-upload">
+    <div class="ls-pane" id="ls-pane-upload">
       <div class="ls-summary">
         <div class="ls-summary-card"><div class="ls-summary-label">Total</div><div class="ls-summary-num" id="ls-sum-total">—</div></div>
         <div class="ls-summary-card hot"><div class="ls-summary-label">Hot</div><div class="ls-summary-num" id="ls-sum-hot">—</div></div>
@@ -4356,6 +4426,76 @@ function escapeHtml(s) {
 }
 function escapeAttr(s) { return escapeHtml(s); }
 function short(s, n) { s = String(s || ''); return s.length > n ? s.slice(0, n - 1) + '…' : s; }
+
+/* ══════════════════════════════════════════════
+   TOOL 07 — SOURCE LEADS (Google Places)
+══════════════════════════════════════════════ */
+async function lsRunSource() {
+  const term   = document.getElementById('ls-src-term').value.trim();
+  const loc    = document.getElementById('ls-src-loc').value.trim();
+  const radius = parseInt(document.getElementById('ls-src-radius').value, 10) || 40234;
+  const maxN   = parseInt(document.getElementById('ls-src-max').value, 10) || 20;
+  const btn    = document.getElementById('ls-src-btn');
+  const errBox = document.getElementById('ls-src-error');
+  const wrap   = document.getElementById('ls-src-results-wrap');
+  const empty  = document.getElementById('ls-src-empty');
+
+  errBox.classList.remove('show'); errBox.style.display = 'none';
+
+  if (!term) { lsSrcError('Enter a business category (e.g. HVAC).'); return; }
+  if (!loc)  { lsSrcError('Enter a location (e.g. Keene, NH).'); return; }
+
+  btn.disabled = true; btn.textContent = 'Searching…';
+  try {
+    const r = await fetch('/api/leads/source', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...lsAuthHeader() },
+      body: JSON.stringify({ searchTerm: term, location: loc, radius, maxResults: maxN }),
+    });
+    const j = await r.json();
+    if (!r.ok || !j.success) throw new Error(j.error || 'Search failed');
+
+    document.getElementById('ls-src-chip-pulled').textContent = '✅ Pulled: '             + (j.pulled            || 0);
+    document.getElementById('ls-src-chip-added').textContent  = '➕ Added: '              + (j.inserted          || 0);
+    document.getElementById('ls-src-chip-dup').textContent    = '⏭ Duplicates Skipped: ' + (j.skipped_duplicate || 0);
+    document.getElementById('ls-src-chip-opt').textContent    = '🚫 Opt-Outs Skipped: '  + (j.skipped_optout    || 0);
+
+    const tbody = document.getElementById('ls-src-tbody');
+    const rows = j.businesses || [];
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--gray);padding:18px">No new businesses inserted (all were duplicates or opt-outs).</td></tr>';
+    } else {
+      tbody.innerHTML = rows.map(b => {
+        const phone = b.phone ? '<a class="ls-link" href="tel:' + escapeAttr(b.phone) + '">' + escapeHtml(b.phone) + '</a>' : '<span style="color:var(--mid)">—</span>';
+        const site  = b.website_url
+          ? '<a class="ls-link" href="' + escapeAttr(b.website_url) + '" target="_blank" rel="noopener">' + escapeHtml(short(b.website_url, 32)) + '</a>'
+          : '<span class="ls-no-site">No Website</span>';
+        return '<tr>'
+          + '<td><div class="ls-name">' + escapeHtml(b.business_name) + '</div></td>'
+          + '<td><span class="ls-cat">' + escapeHtml(b.category || '') + '</span></td>'
+          + '<td style="font-size:12px;color:var(--gray)">' + escapeHtml(b.address || '') + '</td>'
+          + '<td>' + phone + '</td>'
+          + '<td>' + site + '</td>'
+          + '</tr>';
+      }).join('');
+    }
+
+    wrap.style.display = 'flex';
+    empty.style.display = 'none';
+    lsRefreshSummary();
+  } catch (err) {
+    lsSrcError(err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Search Google Maps';
+  }
+}
+
+function lsSrcError(msg) {
+  const el = document.getElementById('ls-src-error');
+  el.textContent = '⚠ ' + msg;
+  el.classList.add('show');
+  el.style.display = 'block';
+}
 </script>
 
 </body>
