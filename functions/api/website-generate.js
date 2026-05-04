@@ -848,6 +848,21 @@ async function runGenerationStreaming({ research, siteType, apiKey, onProgress =
   validateFiles(files, research);
   log('validation passed');
 
+  // ─── SEO INFRASTRUCTURE ────────────────────────────────────────────────────
+  // Post-process: inject canonical SEO tags into each HTML page (strip-then-
+  // reinject to avoid duplicates if the AI emitted its own), generate
+  // sitemap.xml + robots.txt, and append a Going Live Checklist to README.md.
+  const seoSlug = slugify(research.business?.name || research.slug || 'business');
+  const seoToday = new Date().toISOString().slice(0, 10);
+
+  for (const page of ['index.html', 'services.html', 'about.html', 'contact.html']) {
+    if (files[page]) files[page] = injectSeoTags(files[page], page, research, seoSlug);
+  }
+  files['sitemap.xml'] = generateAiSitemapXml(seoSlug, seoToday);
+  files['robots.txt'] = generateRobotsTxt(seoSlug);
+  if (files['README.md']) files['README.md'] = appendGoingLiveChecklist(files['README.md'], seoSlug);
+  log(`SEO infra injected — sitemap.xml, robots.txt, head tags on 4 HTML pages`);
+
   return files;
 }
 
@@ -1656,6 +1671,253 @@ ${entries}
 
 </urlset>
 `;
+}
+
+// ─── AI-PATH SEO HELPERS ──────────────────────────────────────────────────────
+// Used by runGenerationStreaming to attach SEO infrastructure to the AI-emitted
+// brochure / service-business / hospitality bundles. The dealer path uses
+// generateSitemapXml above (token-driven, dynamic page list); the AI path is
+// always 4 pages (index, services, about, contact) with the preview subdomain
+// URL baked in.
+
+const PREVIEW_HOST_SUFFIX = '.preview.morethanmomentum.com';
+const DEFAULT_OG_IMAGE = 'https://assets.morethanmomentum.com/og-default.jpg';
+
+function previewBaseUrl(slug) {
+  return `https://${slug}${PREVIEW_HOST_SUFFIX}`;
+}
+
+function generateAiSitemapXml(slug, today) {
+  const base = previewBaseUrl(slug);
+  const urls = [
+    { loc: `${base}/`,             changefreq: 'weekly',  priority: '1.0' },
+    { loc: `${base}/services.html`, changefreq: 'monthly', priority: '0.8' },
+    { loc: `${base}/about.html`,    changefreq: 'monthly', priority: '0.6' },
+    { loc: `${base}/contact.html`,  changefreq: 'monthly', priority: '0.6' },
+  ];
+  const entries = urls.map(u => `  <url>
+    <loc>${escapeHtml(u.loc)}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${u.changefreq}</changefreq>
+    <priority>${u.priority}</priority>
+  </url>`).join('\n\n');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+${entries}
+
+</urlset>
+`;
+}
+
+function generateRobotsTxt(slug) {
+  return `User-agent: *
+Allow: /
+
+Sitemap: ${previewBaseUrl(slug)}/sitemap.xml
+`;
+}
+
+// Build the canonical <head> SEO block for a given page, then strip-and-replace
+// any AI-emitted versions of the same tags so the final HTML has exactly one of
+// each. JSON-LD is injected only on index.html.
+function injectSeoTags(html, page, research, slug) {
+  const b = research.business || {};
+  const businessName = b.name || 'Local Business';
+  const city = b.location?.city || '';
+  const state = b.location?.state || '';
+  const cityState = (city && state) ? `${city}, ${state}` : (city || state || '');
+  const industry = b.industry || 'local business';
+  const tagline = b.tagline || '';
+
+  const base = previewBaseUrl(slug);
+  const canonical = page === 'index.html' ? `${base}/` : `${base}/${page}`;
+
+  let title;
+  if (page === 'index.html')         title = cityState ? `${businessName} | ${cityState}` : businessName;
+  else if (page === 'services.html') title = `Services | ${businessName}`;
+  else if (page === 'about.html')    title = `About | ${businessName}`;
+  else                                title = `Contact | ${businessName}`;
+
+  // Description: prefer metaDescription if it's in the SEO sweet spot (80-200
+  // chars). Otherwise build from name + city + industry + tagline, truncated.
+  let description = b.metaDescription || '';
+  if (description.length < 80 || description.length > 200) {
+    const parts = [`${businessName}${cityState ? ` in ${cityState}` : ''} — ${industry}.`];
+    if (tagline) parts.push(tagline);
+    description = parts.join(' ').slice(0, 160).trim();
+  }
+
+  const ogImage = (research.images && research.images.hero) || DEFAULT_OG_IMAGE;
+
+  // Strip any AI-emitted versions of the tags we're about to inject.
+  let stripped = html
+    .replace(/<title>[\s\S]*?<\/title>/gi, '')
+    .replace(/<meta\s+name=["']description["'][^>]*>/gi, '')
+    .replace(/<meta\s+name=["']robots["'][^>]*>/gi, '')
+    .replace(/<meta\s+name=["']viewport["'][^>]*>/gi, '')
+    .replace(/<meta\s+property=["']og:[^"']+["'][^>]*>/gi, '')
+    .replace(/<link\s+rel=["']canonical["'][^>]*>/gi, '')
+    .replace(/<script\s+type=["']application\/ld\+json["'][\s\S]*?<\/script>/gi, '');
+
+  const seoBlock = [
+    `<meta name="viewport" content="width=device-width, initial-scale=1.0">`,
+    `<title>${escapeHtml(title)}</title>`,
+    `<meta name="description" content="${escapeHtml(description)}">`,
+    `<meta name="robots" content="index, follow">`,
+    `<link rel="canonical" href="${escapeHtml(canonical)}">`,
+    ``,
+    `<meta property="og:type" content="website">`,
+    `<meta property="og:title" content="${escapeHtml(title)}">`,
+    `<meta property="og:description" content="${escapeHtml(description)}">`,
+    `<meta property="og:url" content="${escapeHtml(canonical)}">`,
+    `<meta property="og:locale" content="en_US">`,
+    `<meta property="og:image" content="${escapeHtml(ogImage)}">`,
+  ].join('\n  ');
+
+  let injected = `\n  ${seoBlock}\n`;
+  if (page === 'index.html') {
+    const jsonLd = buildJsonLd(research, slug, description);
+    if (jsonLd) injected += `\n  ${jsonLd}\n`;
+  }
+
+  // Insert right after the opening <head> tag. If <head> is missing (it
+  // shouldn't be — validateFiles enforces well-formed HTML), prepend.
+  if (/<head[^>]*>/i.test(stripped)) {
+    return stripped.replace(/(<head[^>]*>)/i, `$1${injected}`);
+  }
+  return injected + stripped;
+}
+
+function buildJsonLd(research, slug, description) {
+  const b = research.business || {};
+  const businessName = b.name;
+  if (!businessName) return null;
+
+  const obj = {
+    '@context': 'https://schema.org',
+    '@type': inferSchemaType(b.industry || ''),
+    name: businessName,
+    url: `${previewBaseUrl(slug)}/`,
+  };
+
+  const phone = b.contact?.phone;
+  if (phone && !/^\(?0+\)?[\s\-]?0+/.test(phone)) {
+    obj.telephone = phone;
+  }
+
+  const street = b.location?.address;
+  const city = b.location?.city;
+  const state = b.location?.state;
+  const zip = b.location?.zip;
+  if (city || state || street) {
+    const addr = { '@type': 'PostalAddress', addressCountry: 'US' };
+    if (street) addr.streetAddress = street;
+    if (city) addr.addressLocality = city;
+    if (state) addr.addressRegion = state;
+    if (zip) addr.postalCode = String(zip);
+    obj.address = addr;
+  }
+
+  if (description) obj.description = description;
+
+  const hours = parseHoursToSchema(b.hours);
+  if (hours.length) obj.openingHours = hours;
+
+  const rating = parseReviewSnapshot(research.researchNotes?.reviewSnapshot);
+  if (rating) {
+    obj.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: rating.ratingValue,
+      reviewCount: rating.reviewCount,
+    };
+  }
+
+  // Pretty-print so the generated HTML stays readable on inspection.
+  return `<script type="application/ld+json">\n${JSON.stringify(obj, null, 2)}\n  </script>`;
+}
+
+function inferSchemaType(industryRaw) {
+  const i = industryRaw.toLowerCase();
+  const has = (...keys) => keys.some(k => i.includes(k));
+  if (has('bar', 'pub', 'tavern', 'lounge', 'brewery', 'taproom')) return 'BarOrPub';
+  if (has('restaurant', 'cafe', 'coffee', 'diner', 'bistro', 'food truck', 'ice cream')) return 'Restaurant';
+  if (has('dealer', 'dealership', 'cart', 'boat', 'rv ', ' rv', 'motorcycle', 'vehicle')) return 'AutoDealer';
+  if (has('hvac', 'plumbing', 'roofing', 'electrical', 'landscaping', 'cleaning', 'contractor', 'construction')) return 'HomeAndConstructionBusiness';
+  if (has('salon', 'spa', 'barber', 'beauty', 'nail')) return 'HealthAndBeautyBusiness';
+  if (has('dental', 'dentist')) return 'Dentist';
+  if (has('vet', 'veterinary')) return 'VeterinaryCare';
+  if (has('fitness', 'gym', 'yoga', 'pilates', 'crossfit')) return 'ExerciseGym';
+  if (has('store', 'shop', 'boutique', 'retail')) return 'Store';
+  return 'LocalBusiness';
+}
+
+// Convert research.business.hours ({ Mon: "8am-5pm", Tue: "Closed", ... }) to
+// schema.org openingHours array (["Mo 08:00-17:00", ...]). Skip days that are
+// "Closed", null, or unparseable.
+function parseHoursToSchema(hoursObj) {
+  if (!hoursObj || typeof hoursObj !== 'object') return [];
+  const dayMap = { Mon: 'Mo', Tue: 'Tu', Wed: 'We', Thu: 'Th', Fri: 'Fr', Sat: 'Sa', Sun: 'Su' };
+  const out = [];
+  for (const [day, range] of Object.entries(hoursObj)) {
+    const code = dayMap[day];
+    if (!code) continue;
+    if (!range || /closed/i.test(range)) continue;
+    const parsed = parseHourRange(range);
+    if (parsed) out.push(`${code} ${parsed}`);
+  }
+  return out;
+}
+
+// "8am-5pm" → "08:00-17:00". Handles "9am-9pm", "10:30am-11pm", "9-5", etc.
+function parseHourRange(s) {
+  const m = String(s).match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)?\s*[-–—]\s*(\d{1,2})(?::(\d{2}))?\s*(am|pm)?/i);
+  if (!m) return null;
+  const t1 = to24h(m[1], m[2], m[3], m[6]);
+  const t2 = to24h(m[4], m[5], m[6], null);
+  if (!t1 || !t2) return null;
+  return `${t1}-${t2}`;
+}
+
+function to24h(h, mm, ampm, fallbackAmpm) {
+  let hour = parseInt(h, 10);
+  if (Number.isNaN(hour) || hour < 0 || hour > 24) return null;
+  const minute = mm ? mm : '00';
+  const period = (ampm || fallbackAmpm || '').toLowerCase();
+  if (period === 'pm' && hour < 12) hour += 12;
+  if (period === 'am' && hour === 12) hour = 0;
+  return `${String(hour).padStart(2, '0')}:${minute}`;
+}
+
+// "47 reviews · 4.8 stars" → { ratingValue: "4.8", reviewCount: "47" }
+function parseReviewSnapshot(snapshot) {
+  if (!snapshot || /not found/i.test(snapshot)) return null;
+  const m = String(snapshot).match(/(\d+)\s*reviews?[\s\S]*?(\d+(?:\.\d+)?)\s*stars?/i);
+  if (!m) return null;
+  const reviewCount = m[1];
+  const ratingValue = m[2];
+  if (!reviewCount || !ratingValue) return null;
+  return { reviewCount, ratingValue };
+}
+
+function appendGoingLiveChecklist(readme, slug) {
+  const previewBase = previewBaseUrl(slug);
+  const section = `
+
+## Going Live Checklist
+
+Before pointing DNS to the client's real domain, regenerate or manually update the SEO infrastructure so it doesn't ship to production with the preview URLs hard-coded:
+
+- **\`sitemap.xml\`** — every \`<loc>\` currently points at \`${previewBase}/...\`. Replace with the real domain (e.g. \`https://realdomain.com/...\`) and refresh \`<lastmod>\`.
+- **\`robots.txt\`** — update the \`Sitemap:\` line to the real domain.
+- **\`<link rel="canonical">\`** in every HTML \`<head>\` — replace the preview URL with the page's real URL on the production domain.
+- **\`<meta property="og:url">\`** in every HTML \`<head>\` — same swap.
+- **JSON-LD \`url\`** in \`index.html\`'s \`<script type="application/ld+json">\` block — same swap.
+
+Why this matters: if you launch with the preview URLs baked in, Google indexes the preview subdomain instead of the real domain. Cleaning that up after the fact requires 301 redirects and re-crawl requests — much easier to fix the strings before DNS cuts over.
+`;
+  return readme.replace(/\s+$/, '') + section;
 }
 
 function generateSetupReadme({ research, tokenMap, adminPassword, pages }) {

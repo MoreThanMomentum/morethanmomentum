@@ -3852,6 +3852,8 @@ function renderWgenResult(data) {
     if (path.endsWith('.css'))  return '🟦';
     if (path.endsWith('.js'))   return '🟨';
     if (path.endsWith('.md'))   return '📄';
+    if (path.endsWith('.xml'))  return '🗺️';
+    if (path.endsWith('.txt'))  return '🤖';
     if (path === '_redirects')  return '⚙️';
     return '📁';
   };
