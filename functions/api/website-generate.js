@@ -652,8 +652,8 @@ For typewriterPhrases: 4-6 short phrases (≤30 chars each, ending in period). T
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 12000,  // expanded schema needs more output room
+      model: 'claude-opus-4-7',
+      max_tokens: 16000,  // expanded schema needs more output room; +33% headroom for opus-4-7 tokenizer growth
       // Prompt caching on the (large, static) system prompt — input tokens for
       // it count once per 5-min window, big ITPM relief.
       system: [
@@ -748,7 +748,7 @@ async function runGenerationStreaming({ research, siteType, apiKey, onProgress =
   // head start before stacking another large input-token call onto it.
   await new Promise(r => setTimeout(r, 1500));
 
-  log('fetch -> api.anthropic.com (generation, stream:true, max_tokens=32000)');
+  log('fetch -> api.anthropic.com (generation, stream:true, max_tokens=48000)');
   const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -757,8 +757,8 @@ async function runGenerationStreaming({ research, siteType, apiKey, onProgress =
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 32000,
+      model: 'claude-opus-4-7',
+      max_tokens: 48000,  // +50% headroom for opus-4-7 tokenizer growth so HTML output isn't truncated
       stream: true,
       messages: [{ role: 'user', content: [
         { type: 'text', text: prompt, cache_control: { type: 'ephemeral' } }
