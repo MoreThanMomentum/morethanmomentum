@@ -641,7 +641,9 @@ For lifestyleUseCases: pick 4 use cases that fit THIS business's ideal customer.
 
 For trustSignals: include any explicit trust phrases the business uses. Don't invent. If GROUND TRUTH listed phrases, those MUST appear in your trustSignals array.
 
-For typewriterPhrases: 4-6 short phrases (≤30 chars each, ending in period). Tied to brand identity.`;
+For typewriterPhrases: 4-6 short phrases (≤30 chars each, ending in period). Tied to brand identity.
+
+Return ONLY the raw JSON object. Do not include any preamble, commentary, explanation, or text before or after the JSON. Your entire response must be parseable by JSON.parse(). Do not say things like "I have enough information" or "Here is the JSON" — start your response with { and end with }.`;
 
   log('fetch -> api.anthropic.com (research)');
   const apiResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -652,8 +654,8 @@ For typewriterPhrases: 4-6 short phrases (≤30 chars each, ending in period). T
       'anthropic-version': '2023-06-01',
     },
     body: JSON.stringify({
-      model: 'claude-opus-4-7',
-      max_tokens: 16000,  // expanded schema needs more output room; +33% headroom for opus-4-7 tokenizer growth
+      model: 'claude-sonnet-4-6',
+      max_tokens: 12000,  // expanded schema needs more output room
       // Prompt caching on the (large, static) system prompt — input tokens for
       // it count once per 5-min window, big ITPM relief.
       system: [
@@ -691,7 +693,13 @@ For typewriterPhrases: 4-6 short phrases (≤30 chars each, ending in period). T
     throw new Error('Research stage returned no text content. Try again.');
   }
 
-  const research = robustJsonParse(textContent);
+  // Defensive strip — if the model leaks any preamble/commentary outside the
+  // JSON object, slice from the first { to the last } before parsing.
+  const start = textContent.indexOf('{');
+  const end = textContent.lastIndexOf('}');
+  const jsonText = (start !== -1 && end !== -1 && end > start) ? textContent.slice(start, end + 1) : textContent;
+
+  const research = robustJsonParse(jsonText);
   if (!research) {
     throw new Error(`Research stage returned unparseable JSON. First 300 chars: ${textContent.slice(0, 300)}`);
   }
