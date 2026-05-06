@@ -98,6 +98,11 @@
     .tool-card.coming-soon .tool-card-action { color: var(--mid); }
     .tool-card-action-arrow { transition: transform .2s; }
     .tool-card.active:hover .tool-card-action-arrow { transform: translateX(4px); }
+    .tools-section { margin: 0; }
+    .tools-section-header { margin-bottom: 24px; }
+    .tools-section-title { font-family: var(--speed); font-weight: 700; font-size: 28px; letter-spacing: .04em; text-transform: uppercase; color: var(--white); line-height: 1.1; margin: 0 0 8px 0; }
+    .tools-section-sub { font-size: 14px; color: var(--gray); font-weight: 400; margin: 0; }
+    .tools-section-divider { border: 0; border-top: 1px solid rgba(230,230,228,.08); margin: 56px 0; }
 
     /* PANEL — shared */
     .panel-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 200; align-items: flex-start; justify-content: flex-end; backdrop-filter: blur(4px); }
@@ -466,73 +471,107 @@
       <h1 class="dash-intro-heading">MTM <em>Tools</em></h1>
       <p class="dash-intro-sub">AI-powered internal tools for the MTM team. Run prospect research, generate reports, and build onboarding workflows — all in one place.</p>
     </div>
-    <div class="tools-grid">
-
-      <!-- Tool 01 — Prospect Intelligence -->
-      <div class="tool-card active" onclick="openPanel()">
-        <div class="tool-card-icon">🔍</div>
-        <div class="tool-card-header"><div class="tool-card-name">Prospect Intelligence</div><span class="tool-card-badge badge-live">Live</span></div>
-        <p class="tool-card-desc">Enter a business name and city. Get a full digital audit, gap analysis, tailored discovery questions, and estimated metrics — ready before your call.</p>
-        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+    <!-- ── SECTION 1 — Client Acquisition ───────────────────────────── -->
+    <section class="tools-section">
+      <div class="tools-section-header">
+        <h2 class="tools-section-title">Client Acquisition</h2>
+        <p class="tools-section-sub">Tools to find, research, and close new clients</p>
       </div>
+      <div class="tools-grid">
 
-      <!-- Tool 02 — Call Intelligence -->
-      <div class="tool-card active" onclick="openNotesPanel()">
-        <div class="tool-card-icon">🎙</div>
-        <div class="tool-card-header"><div class="tool-card-name">Call Intelligence</div><span class="tool-card-badge badge-live">Live</span></div>
-        <p class="tool-card-desc">Your recent calls hub. AI notetaker auto-joins every Google Meet — view your last calls, download a summary PDF, or send discovery calls straight to Tool 03.</p>
-        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+        <!-- Tool 07 — Lead Scoring & Outreach -->
+        <div class="tool-card active" onclick="openLeadScoringPanel()">
+          <div class="tool-card-icon">🎯</div>
+          <div class="tool-card-header"><div class="tool-card-name">Lead Scoring &amp; Outreach</div><span class="tool-card-badge badge-live">Live</span></div>
+          <p class="tool-card-desc">Upload a CSV of local businesses. AI fetches each website, scores how badly they need MTM (0–100), and ranks them Hot / Warm / Cold with contact details. Work down the list — phone &amp; email at one click.</p>
+          <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+        </div>
+
+        <!-- Tool 01 — Prospect Intelligence -->
+        <div class="tool-card active" onclick="openPanel()">
+          <div class="tool-card-icon">🔍</div>
+          <div class="tool-card-header"><div class="tool-card-name">Prospect Intelligence</div><span class="tool-card-badge badge-live">Live</span></div>
+          <p class="tool-card-desc">Enter a business name and city. Get a full digital audit, gap analysis, tailored discovery questions, and estimated metrics — ready before your call.</p>
+          <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+        </div>
+
+        <!-- Tool 06 — Website Generator -->
+        <div class="tool-card active" onclick="openWebsiteGenPanel()">
+          <div class="tool-card-icon">🌐</div>
+          <div class="tool-card-header"><div class="tool-card-name">Website Generator</div><span class="tool-card-badge badge-live">Live</span></div>
+          <p class="tool-card-desc">Enter a prospect's name and city. AI researches their business via Google + socials + their existing site, then generates a complete multi-page MTM-template website — downloadable as a ZIP, ready for Cloudflare Pages. GHL embeds left blank for Phase 2.</p>
+          <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+        </div>
+
+        <!-- Tool 02 — Call Intelligence -->
+        <div class="tool-card active" onclick="openNotesPanel()">
+          <div class="tool-card-icon">🎙</div>
+          <div class="tool-card-header"><div class="tool-card-name">Call Intelligence</div><span class="tool-card-badge badge-live">Live</span></div>
+          <p class="tool-card-desc">Your recent calls hub. AI notetaker auto-joins every Google Meet — view your last calls, download a summary PDF, or send discovery calls straight to Tool 03.</p>
+          <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+        </div>
+
+        <!-- Tool 03 — Proposal Generator -->
+        <div class="tool-card active" onclick="openProposalPanel()">
+          <div class="tool-card-icon">📝</div>
+          <div class="tool-card-header"><div class="tool-card-name">Proposal Generator</div><span class="tool-card-badge badge-live">Live</span></div>
+          <p class="tool-card-desc">Enter discovery call details and generate a custom Grand Slam Offer — AI-powered proposal + contract with guarantee-based pricing tailored to the prospect's pain and desired outcome.</p>
+          <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+        </div>
+
       </div>
+    </section>
 
-      <!-- Tool 03 — Proposal Generator -->
-      <div class="tool-card active" onclick="openProposalPanel()">
-        <div class="tool-card-icon">📝</div>
-        <div class="tool-card-header"><div class="tool-card-name">Proposal Generator</div><span class="tool-card-badge badge-live">Live</span></div>
-        <p class="tool-card-desc">Enter discovery call details and generate a custom Grand Slam Offer — AI-powered proposal + contract with guarantee-based pricing tailored to the prospect's pain and desired outcome.</p>
-        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+    <hr class="tools-section-divider"/>
+
+    <!-- ── SECTION 2 — Current Clients ──────────────────────────────── -->
+    <section class="tools-section">
+      <div class="tools-section-header">
+        <h2 class="tools-section-title">Current Clients</h2>
+        <p class="tools-section-sub">Tools to manage, report on, and grow active client accounts</p>
       </div>
+      <div class="tools-grid">
 
-      <!-- Tool 04 — Client Report Generator -->
-      <div class="tool-card active" onclick="openReportPanel()">
-        <div class="tool-card-icon">📊</div>
-        <div class="tool-card-header"><div class="tool-card-name">Client Report Generator</div><span class="tool-card-badge badge-live">Live</span></div>
-        <p class="tool-card-desc">Pull live GHL and GA4 data for any client and generate a full monthly performance report — leads, pipeline, revenue, website, and AI takeaways — as a branded PDF in seconds.</p>
-        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+        <!-- Tool 04 — Client Report Generator -->
+        <div class="tool-card active" onclick="openReportPanel()">
+          <div class="tool-card-icon">📊</div>
+          <div class="tool-card-header"><div class="tool-card-name">Client Report Generator</div><span class="tool-card-badge badge-live">Live</span></div>
+          <p class="tool-card-desc">Pull live GHL and GA4 data for any client and generate a full monthly performance report — leads, pipeline, revenue, website, and AI takeaways — as a branded PDF in seconds.</p>
+          <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+        </div>
+
+        <!-- Tool 04 — Onboarding Checklist (coming soon) -->
+        <div class="tool-card coming-soon">
+          <div class="tool-card-icon">📋</div>
+          <div class="tool-card-header"><div class="tool-card-name">Onboarding Checklist</div><span class="tool-card-badge badge-soon">Soon</span></div>
+          <p class="tool-card-desc">Input a new client's business type and services purchased. Get a complete, scoped onboarding SOP — step by step, ready to execute without reinventing the wheel.</p>
+          <div class="tool-card-action">Coming Soon <span class="tool-card-action-arrow">→</span></div>
+        </div>
+
       </div>
+    </section>
 
-      <!-- Tool 04 — Onboarding Checklist (coming soon) -->
-      <div class="tool-card coming-soon">
-        <div class="tool-card-icon">📋</div>
-        <div class="tool-card-header"><div class="tool-card-name">Onboarding Checklist</div><span class="tool-card-badge badge-soon">Soon</span></div>
-        <p class="tool-card-desc">Input a new client's business type and services purchased. Get a complete, scoped onboarding SOP — step by step, ready to execute without reinventing the wheel.</p>
-        <div class="tool-card-action">Coming Soon <span class="tool-card-action-arrow">→</span></div>
+    <hr class="tools-section-divider"/>
+
+    <!-- ── SECTION 3 — Personal Tools ───────────────────────────────── -->
+    <section class="tools-section">
+      <div class="tools-section-header">
+        <h2 class="tools-section-title">Personal Tools</h2>
+        <p class="tools-section-sub">Internal tools for running and growing More Than Momentum</p>
       </div>
+      <div class="tools-grid">
 
-      <!-- Tool 05 — Content Studio -->
-      <div class="tool-card active" onclick="openContentStudio()">
-        <div class="tool-card-icon">🎬</div>
-        <div class="tool-card-header"><div class="tool-card-name">Content Studio</div><span class="tool-card-badge badge-live">Live</span></div>
-        <p class="tool-card-desc">AI-powered content ideation, batch production schedule, and MTM pipeline analytics — everything you need to plan, produce, and track MTM's own social presence.</p>
-        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+        <!-- Tool 05 — Content Studio -->
+        <div class="tool-card active" onclick="openContentStudio()">
+          <div class="tool-card-icon">🎬</div>
+          <div class="tool-card-header"><div class="tool-card-name">Content Studio</div><span class="tool-card-badge badge-live">Live</span></div>
+          <p class="tool-card-desc">AI-powered content ideation, batch production schedule, and MTM pipeline analytics — everything you need to plan, produce, and track MTM's own social presence.</p>
+          <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
+        </div>
+
       </div>
+    </section>
 
-      <!-- Tool 06 — Website Generator -->
-      <div class="tool-card active" onclick="openWebsiteGenPanel()">
-        <div class="tool-card-icon">🌐</div>
-        <div class="tool-card-header"><div class="tool-card-name">Website Generator</div><span class="tool-card-badge badge-live">Live</span></div>
-        <p class="tool-card-desc">Enter a prospect's name and city. AI researches their business via Google + socials + their existing site, then generates a complete multi-page MTM-template website — downloadable as a ZIP, ready for Cloudflare Pages. GHL embeds left blank for Phase 2.</p>
-        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
-      </div>
-
-      <!-- Tool 07 — Lead Scoring & Outreach -->
-      <div class="tool-card active" onclick="openLeadScoringPanel()">
-        <div class="tool-card-icon">🎯</div>
-        <div class="tool-card-header"><div class="tool-card-name">Lead Scoring &amp; Outreach</div><span class="tool-card-badge badge-live">Live</span></div>
-        <p class="tool-card-desc">Upload a CSV of local businesses. AI fetches each website, scores how badly they need MTM (0–100), and ranks them Hot / Warm / Cold with contact details. Work down the list — phone &amp; email at one click.</p>
-        <div class="tool-card-action">Launch Tool <span class="tool-card-action-arrow">→</span></div>
-      </div>
-
-    </div>
   </main>
 </div>
 
