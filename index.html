@@ -16,6 +16,7 @@
   var ref = document.referrer;
   var isKnownReferral = ref && (
     ref.includes('google.') ||
+    ref.includes('google.com/search') ||
     ref.includes('bing.')   ||
     ref.includes('facebook.') ||
     ref.includes('instagram.') ||
@@ -23,7 +24,8 @@
     ref.includes('twitter.')  ||
     ref.includes('morethanmomentum.com')
   );
-  if (isMobile && !isKnownReferral) {
+  var isBot = /Googlebot|bingbot|Slurp|DuckDuckBot|Baiduspider|YandexBot|Sogou|Exabot|facebot|ia_archiver|Google-Extended|AdsBot|Mediapartners/i.test(navigator.userAgent);
+  if (isMobile && !isKnownReferral && !isBot) {
     window.location.replace('/intro.html');
   }
 })();
