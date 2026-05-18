@@ -7,11 +7,23 @@
  * success, marks the lead as contacted in D1 and stores the returned GHL
  * contact id so we can correlate later.
  *
- * Body — either:
+ * Body — one of:
  *   { leadIds: [1,2,3], dryRun?: false }
- * or batch mode:
+ * or tier mode (uncontacted leads only, unless includeContacted is true):
  *   { tier: "Hot" | "Warm" | "Cold", limit?: 20, dryRun?: false }
- * If both leadIds and tier are present, leadIds wins.
+ * or re-process mode (re-enrich + re-upsert every lead in a batch, *including*
+ * ones already marked contacted — no scraping happens, the existing D1 rows
+ * are sent back through the full enrichment chain and GHL upsert):
+ *   { sourceBatch: "Manchester-NH-2026-05-03", limit?: 100, dryRun?: false }
+ * Precedence when more than one is set: leadIds > sourceBatch > tier.
+ *
+ * includeContacted: false (default) — preserves the existing safety guards:
+ *   tier-mode SQL filters `contacted = 0` and leadIds-mode skips rows where
+ *   `contacted === 1` with `skipped: 'already_contacted'`. Set to true to
+ *   bypass both — needed when re-processing a bad push (e.g. after a fix
+ *   to the payload builder) where you want already-contacted leads to flow
+ *   back through the pipeline. sourceBatch mode always includes contacted,
+ *   so this flag is a no-op there.
  *
  * dryRun: true → builds the GHL payload and returns it without calling GHL
  * or touching D1. Use this to verify tag logic before going live.
@@ -103,12 +115,20 @@ export async function onRequestPost(context) {
   const explicitIds = Array.isArray(body.leadIds)
     ? body.leadIds.map(n => parseInt(n, 10)).filter(n => Number.isInteger(n) && n > 0)
     : null;
-  const tier  = body.tier && ['Hot', 'Warm', 'Cold'].includes(body.tier) ? body.tier : null;
-  const limit = Math.min(Math.max(parseInt(body.limit || DEFAULT_LIMIT, 10) || DEFAULT_LIMIT, 1), MAX_LIMIT);
+  const tier        = body.tier && ['Hot', 'Warm', 'Cold'].includes(body.tier) ? body.tier : null;
+  const sourceBatch = typeof body.sourceBatch === 'string' && body.sourceBatch.trim()
+    ? body.sourceBatch.trim()
+    : null;
+  const includeContacted = !!body.includeContacted;
 
-  if (!explicitIds?.length && !tier) {
+  // Re-process mode defaults to MAX_LIMIT so an entire batch (up to the cap)
+  // goes through in one call; tier mode keeps the smaller DEFAULT_LIMIT.
+  const defaultLimit = sourceBatch ? MAX_LIMIT : DEFAULT_LIMIT;
+  const limit = Math.min(Math.max(parseInt(body.limit || defaultLimit, 10) || defaultLimit, 1), MAX_LIMIT);
+
+  if (!explicitIds?.length && !tier && !sourceBatch) {
     return jsonResponse(
-      { error: 'Body must include either `leadIds` (array of ids) or `tier` ("Hot"|"Warm"|"Cold").' },
+      { error: 'Body must include `leadIds` (array of ids), `tier` ("Hot"|"Warm"|"Cold"), or `sourceBatch` (string).' },
       { status: 400 }
     );
   }
@@ -123,12 +143,29 @@ export async function onRequestPost(context) {
          FROM leads_outreach WHERE id IN (${placeholders})`
       ).bind(...explicitIds).all();
       leads = r.results || [];
-    } else {
+    } else if (sourceBatch) {
+      // Re-process: include already-contacted leads. The GHL upsert is idempotent
+      // (matches on email/phone) so this updates existing contacts rather than
+      // duplicating them. contacted_at gets refreshed to the current time.
       const r = await env.DB.prepare(
         `SELECT id, business_name, category, address, phone, email, website_url,
                 facebook_url, score, tier, score_reason, source_batch, contacted
          FROM leads_outreach
-         WHERE tier = ? AND contacted = 0
+         WHERE source_batch = ?
+         ORDER BY id ASC
+         LIMIT ?`
+      ).bind(sourceBatch, limit).all();
+      leads = r.results || [];
+    } else {
+      // tier-mode: by default we only push uncontacted leads. includeContacted
+      // = true drops that filter so re-processing a bad push (or refreshing a
+      // bunch of contacts after a payload-builder fix) can flow through.
+      const tierWhere = includeContacted ? 'WHERE tier = ?' : 'WHERE tier = ? AND contacted = 0';
+      const r = await env.DB.prepare(
+        `SELECT id, business_name, category, address, phone, email, website_url,
+                facebook_url, score, tier, score_reason, source_batch, contacted
+         FROM leads_outreach
+         ${tierWhere}
          ORDER BY score DESC, id ASC
          LIMIT ?`
       ).bind(tier, limit).all();
@@ -142,7 +179,11 @@ export async function onRequestPost(context) {
     return jsonResponse({
       success: true, attempted: 0, pushed: 0, failed: 0,
       skipped_already_contacted: 0, dryRun, results: [],
-      message: explicitIds?.length ? 'No matching leads.' : 'No uncontacted leads in that tier.',
+      message:
+        explicitIds?.length ? 'No matching leads.'
+        : sourceBatch     ? `No leads found with source_batch = "${sourceBatch}".`
+        : includeContacted ? 'No leads in that tier.'
+        :                    'No uncontacted leads in that tier.',
     });
   }
 
@@ -154,8 +195,10 @@ export async function onRequestPost(context) {
     const chunk = leads.slice(i, i + BATCH_CHUNK);
     await Promise.all(chunk.map(async (lead) => {
       // Skip rows that were explicitly requested but are already contacted —
-      // in batch (tier) mode the SQL already filters these out.
-      if (explicitIds?.length && lead.contacted === 1) {
+      // in tier mode the SQL filter does this (unless includeContacted is on).
+      // includeContacted = true bypasses this guard so the same leads can be
+      // re-pushed (idempotent upsert; existing GHL contact gets updated).
+      if (explicitIds?.length && lead.contacted === 1 && !includeContacted) {
         skippedContacted++;
         results.push({
           id: lead.id, business_name: lead.business_name, ok: false,
