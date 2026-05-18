@@ -4666,10 +4666,21 @@ async function downloadWebsiteZip() {
         </div>
       </div>
 
+      <!-- Quick-select shortcuts — pick a tier without clicking each row -->
+      <div class="ls-row" style="gap:14px;font-size:12px;color:var(--gray);padding:2px 2px 0">
+        <span style="color:var(--mid);letter-spacing:.04em">Quick select:</span>
+        <button type="button" class="ls-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0;color:#f87171" onclick="lsSelectAllTier('Hot')">Select all Hot</button>
+        <button type="button" class="ls-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0;color:var(--yellow)" onclick="lsSelectAllTier('Warm')">Select all Warm</button>
+        <button type="button" class="ls-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0;color:var(--green)" onclick="lsSelectAllTier('Cold')">Select all Cold</button>
+        <button type="button" class="ls-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0" onclick="lsClearSelection()">Clear</button>
+        <span id="ls-selection-count" style="margin-left:auto;color:var(--accent-light);font-weight:500"></span>
+      </div>
+
       <div class="ls-table-wrap">
         <table class="ls-table" id="ls-table">
           <thead>
             <tr>
+              <th style="width:36px;cursor:default"><input type="checkbox" class="ls-checkbox" id="ls-select-all" onchange="lsSelectAllVisible(this.checked)" title="Select / deselect all visible unpushed leads"/></th>
               <th>#</th>
               <th data-sort="business_name">Business</th>
               <th data-sort="score">Score</th>
@@ -4682,7 +4693,7 @@ async function downloadWebsiteZip() {
             </tr>
           </thead>
           <tbody id="ls-tbody">
-            <tr><td colspan="9" class="ls-empty">No leads loaded yet — upload a CSV from the Upload tab.</td></tr>
+            <tr><td colspan="10" class="ls-empty">No leads loaded yet — upload a CSV from the Upload tab.</td></tr>
           </tbody>
         </table>
       </div>
@@ -5448,7 +5459,7 @@ function lsFilter(tier) {
 
 async function lsLoadLeads() {
   const tbody = document.getElementById('ls-tbody');
-  tbody.innerHTML = '<tr><td colspan="9" class="ls-empty">Loading…</td></tr>';
+  tbody.innerHTML = '<tr><td colspan="10" class="ls-empty">Loading…</td></tr>';
   const params = new URLSearchParams();
   if (lsState.filter !== 'all') params.set('tier', lsState.filter);
   params.set('sort', lsState.sort);
@@ -5463,14 +5474,19 @@ async function lsLoadLeads() {
     lsApplySummary();
     lsRenderTable();
   } catch (err) {
-    tbody.innerHTML = '<tr><td colspan="9" class="ls-empty" style="color:#f87171">Failed to load: ' + escapeHtml(err.message) + '</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="ls-empty" style="color:#f87171">Failed to load: ' + escapeHtml(err.message) + '</td></tr>';
   }
 }
 
 function lsRenderTable() {
   const tbody = document.getElementById('ls-tbody');
+  // Reset the select-all header on every re-render — selection state lives in
+  // the DOM, so re-rendering wipes it.
+  const headerCb = document.getElementById('ls-select-all');
+  if (headerCb) { headerCb.checked = false; headerCb.indeterminate = false; }
+
   if (!lsState.leads.length) {
-    tbody.innerHTML = '<tr><td colspan="9" class="ls-empty">No leads match this filter yet.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="10" class="ls-empty">No leads match this filter yet.</td></tr>';
     lsUpdatePushCounts();
     return;
   }
@@ -5482,7 +5498,20 @@ function lsRenderTable() {
       : '<span class="ls-no-site">No website</span>';
     const tierBadge = lead.tier ? '<span class="ls-tier-badge ls-tier-' + lead.tier + '">' + lead.tier + '</span>' : '<span style="color:var(--mid)">—</span>';
     const score = lead.score != null ? lead.score : '—';
+
+    // Per-row "push selection" checkbox. Disabled when the lead is already
+    // contacted or already pushed to GHL — same exclusion rule the push UI
+    // uses for counts.
+    const isUnpushed = !lead.contacted && !lead.ghl_contact_id;
+    const selectCb = '<input type="checkbox" class="ls-checkbox ls-select-row"'
+      + ' data-id="' + lead.id + '"'
+      + ' data-tier="' + escapeAttr(lead.tier || '') + '"'
+      + (isUnpushed ? '' : ' disabled')
+      + (isUnpushed ? '' : ' title="Already contacted or already pushed to GHL"')
+      + ' onchange="lsOnRowSelectionChange()"/>';
+
     return '<tr class="' + (lead.contacted ? 'contacted' : '') + '" data-id="' + lead.id + '">'
+      + '<td>' + selectCb + '</td>'
       + '<td class="ls-rank">' + (i + 1) + '</td>'
       + '<td><div class="ls-name">' + escapeHtml(lead.business_name) + '</div><div class="ls-cat">' + escapeHtml(lead.category || '') + '</div></td>'
       + '<td><strong style="color:var(--white)">' + score + '</strong></td>'
@@ -5576,6 +5605,54 @@ function lsPushUnpushedIds(tier) {
     .map(l => l.id);
 }
 
+/* ───── Row-level selection helpers ───── */
+function lsGetSelectedIds() {
+  return Array.from(document.querySelectorAll('#ls-table tbody .ls-select-row:checked'))
+    .map(cb => parseInt(cb.dataset.id, 10))
+    .filter(n => Number.isInteger(n));
+}
+
+function lsSelectAllVisible(checked) {
+  document.querySelectorAll('#ls-table tbody .ls-select-row').forEach(cb => {
+    if (cb.disabled) return;
+    cb.checked = !!checked;
+  });
+  lsSyncSelectAllHeader();
+  lsUpdatePushCounts();
+}
+
+function lsSelectAllTier(tier) {
+  document.querySelectorAll('#ls-table tbody .ls-select-row').forEach(cb => {
+    if (cb.disabled) return;
+    cb.checked = (cb.dataset.tier === tier);
+  });
+  lsSyncSelectAllHeader();
+  lsUpdatePushCounts();
+}
+
+function lsClearSelection() {
+  document.querySelectorAll('#ls-table tbody .ls-select-row').forEach(cb => {
+    cb.checked = false;
+  });
+  lsSyncSelectAllHeader();
+  lsUpdatePushCounts();
+}
+
+function lsSyncSelectAllHeader() {
+  const header = document.getElementById('ls-select-all');
+  if (!header) return;
+  const boxes = Array.from(document.querySelectorAll('#ls-table tbody .ls-select-row')).filter(b => !b.disabled);
+  if (!boxes.length) { header.checked = false; header.indeterminate = false; return; }
+  const checked = boxes.filter(b => b.checked).length;
+  header.checked       = checked === boxes.length;
+  header.indeterminate = checked > 0 && checked < boxes.length;
+}
+
+function lsOnRowSelectionChange() {
+  lsSyncSelectAllHeader();
+  lsUpdatePushCounts();
+}
+
 function lsUpdatePushCounts() {
   const counts = { all: 0, Hot: 0, Warm: 0, Cold: 0 };
   for (const lead of (lsState.leads || [])) {
@@ -5591,10 +5668,23 @@ function lsUpdatePushCounts() {
   document.getElementById('ls-push-count-Warm').textContent = counts.Warm;
   document.getElementById('ls-push-count-Cold').textContent = counts.Cold;
 
-  const n = counts[lsState.pushFilter] || 0;
   const btn = document.getElementById('ls-push-btn');
-  btn.disabled = n === 0;
-  btn.textContent = 'Push ' + n + ' lead' + (n === 1 ? '' : 's') + ' to GHL →';
+  if (!btn) return;
+
+  // Selection wins over tier-filter count when the user has explicitly picked rows.
+  const selectedIds = lsGetSelectedIds();
+  const selCountEl  = document.getElementById('ls-selection-count');
+
+  if (selectedIds.length > 0) {
+    btn.disabled = false;
+    btn.textContent = 'Push ' + selectedIds.length + ' selected lead' + (selectedIds.length === 1 ? '' : 's') + ' to GHL →';
+    if (selCountEl) selCountEl.textContent = selectedIds.length + ' selected';
+  } else {
+    const n = counts[lsState.pushFilter] || 0;
+    btn.disabled = n === 0;
+    btn.textContent = 'Push ' + n + ' lead' + (n === 1 ? '' : 's') + ' to GHL →';
+    if (selCountEl) selCountEl.textContent = '';
+  }
 }
 
 function lsPushUpdateMode() {
@@ -5606,16 +5696,27 @@ async function lsPushToGhl() {
   const status = document.getElementById('ls-push-status');
   const btn    = document.getElementById('ls-push-btn');
   const dryRun = document.getElementById('ls-push-dryrun').checked;
-  const selectedTier   = lsState.pushFilter === 'all' ? null : lsState.pushFilter;
-  const selectedTierIds = lsPushUnpushedIds(lsState.pushFilter);
 
-  if (!selectedTierIds.length) { lsShow(status, 'error', 'No uncontacted, unpushed leads in the selected tier.'); return; }
+  // Selection wins. If no rows are checked, fall back to the tier filter.
+  const selectedIds = lsGetSelectedIds();
+  let leadIds, selectedTier, sourceLabel;
+  if (selectedIds.length > 0) {
+    leadIds      = selectedIds;
+    selectedTier = null; // explicit IDs — don't constrain server-side by tier
+    sourceLabel  = selectedIds.length + ' selected lead' + (selectedIds.length === 1 ? '' : 's');
+  } else {
+    leadIds      = lsPushUnpushedIds(lsState.pushFilter);
+    selectedTier = lsState.pushFilter === 'all' ? null : lsState.pushFilter;
+    sourceLabel  = leadIds.length + ' lead' + (leadIds.length === 1 ? '' : 's') + (selectedTier ? ' (' + selectedTier + ')' : '');
+  }
 
-  if (!dryRun && !confirm('Push ' + selectedTierIds.length + ' lead(s) to GHL? This will create real contacts.')) return;
+  if (!leadIds.length) { lsShow(status, 'error', 'No uncontacted, unpushed leads in the selected tier — and nothing checked.'); return; }
+
+  if (!dryRun && !confirm('Push ' + leadIds.length + ' lead(s) to GHL? This will create real contacts.')) return;
 
   btn.disabled = true;
   btn.textContent = dryRun ? 'Previewing…' : 'Pushing…';
-  lsShow(status, '', (dryRun ? 'Building payload preview' : 'Pushing to GHL') + ' for ' + selectedTierIds.length + ' lead(s)…');
+  lsShow(status, '', (dryRun ? 'Building payload preview' : 'Pushing to GHL') + ' for ' + sourceLabel + '…');
 
   try {
     const r = await fetch('/api/leads/outreach', {
@@ -5623,7 +5724,7 @@ async function lsPushToGhl() {
       headers: { 'Content-Type': 'application/json', ...lsAuthHeader() },
       body: JSON.stringify({
         tier: selectedTier || undefined,
-        leadIds: selectedTierIds,
+        leadIds: leadIds,
         dryRun: dryRun,
       }),
     });
