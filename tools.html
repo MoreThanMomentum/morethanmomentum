@@ -4686,6 +4686,57 @@ async function downloadWebsiteZip() {
           </tbody>
         </table>
       </div>
+
+      <!-- ──────────── PUSH TO GHL ──────────── -->
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;margin-top:8px">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <div style="font-family:var(--speed);font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--white)">Push to GHL</div>
+          <div style="font-size:12px;color:var(--gray)">Send uncontacted, unpushed leads to GoHighLevel as tagged contacts. Counts reflect currently loaded leads — use Reload above to refresh.</div>
+        </div>
+
+        <!-- Tier filter -->
+        <div class="ls-filters">
+          <button class="ls-chip active" data-pushfilter="all"  onclick="lsPushFilter('all')">All <span class="ls-tab-badge" id="ls-push-count-all">0</span></button>
+          <button class="ls-chip"        data-pushfilter="Hot"  onclick="lsPushFilter('Hot')">Hot <span class="ls-tab-badge" id="ls-push-count-Hot">0</span></button>
+          <button class="ls-chip"        data-pushfilter="Warm" onclick="lsPushFilter('Warm')">Warm <span class="ls-tab-badge" id="ls-push-count-Warm">0</span></button>
+          <button class="ls-chip"        data-pushfilter="Cold" onclick="lsPushFilter('Cold')">Cold <span class="ls-tab-badge" id="ls-push-count-Cold">0</span></button>
+        </div>
+
+        <!-- Dry run + live warning -->
+        <div class="ls-row" style="gap:14px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;color:var(--white)">
+            <input type="checkbox" id="ls-push-dryrun" class="ls-checkbox" checked onchange="lsPushUpdateMode()"/>
+            Dry run (preview only — no GHL push)
+          </label>
+          <div id="ls-push-live-warning" style="display:none;font-size:12px;color:var(--yellow);font-weight:500">⚠ Live mode — contacts will be created in GHL</div>
+        </div>
+
+        <!-- Action row -->
+        <div class="ls-row">
+          <button class="ls-btn" id="ls-push-btn" onclick="lsPushToGhl()" disabled>Push 0 leads to GHL →</button>
+          <button class="ls-btn ls-btn-secondary" onclick="lsPushClearResults()">Clear results</button>
+        </div>
+
+        <div class="ls-status-box" id="ls-push-status"></div>
+
+        <!-- Results -->
+        <div id="ls-push-results-wrap" style="display:none;flex-direction:column;gap:10px">
+          <div class="ls-filters" id="ls-push-totals"></div>
+          <div class="ls-table-wrap" style="max-height:50vh">
+            <table class="ls-table" id="ls-push-results-table">
+              <thead><tr>
+                <th>Business Name</th>
+                <th>Tier</th>
+                <th>Result</th>
+                <th>GHL Contact ID</th>
+                <th>Notes</th>
+              </tr></thead>
+              <tbody id="ls-push-results-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- ──────────── END PUSH TO GHL ──────────── -->
     </div><!-- end ls-pane-rank -->
 
     <!-- ──────────── PLAYBOOK PANE ──────────── -->
@@ -5420,6 +5471,7 @@ function lsRenderTable() {
   const tbody = document.getElementById('ls-tbody');
   if (!lsState.leads.length) {
     tbody.innerHTML = '<tr><td colspan="9" class="ls-empty">No leads match this filter yet.</td></tr>';
+    lsUpdatePushCounts();
     return;
   }
   tbody.innerHTML = lsState.leads.map((lead, i) => {
@@ -5442,6 +5494,7 @@ function lsRenderTable() {
       + '<td><input type="checkbox" class="ls-checkbox" ' + (lead.contacted ? 'checked' : '') + ' onchange="lsToggleContacted(' + lead.id + ', this.checked, this)"/></td>'
       + '</tr>';
   }).join('');
+  lsUpdatePushCounts();
 }
 
 async function lsToggleContacted(id, checked, el) {
@@ -5504,6 +5557,186 @@ function lsApplySummary() {
   document.getElementById('ls-sum-contacted').textContent = s.contacted;
   document.getElementById('ls-badge-unscored').textContent = s.unscored;
   document.getElementById('ls-badge-total').textContent    = s.total;
+}
+
+/* ───── Push to GHL ───── */
+lsState.pushFilter = 'all';
+
+function lsPushFilter(tier) {
+  lsState.pushFilter = tier;
+  document.querySelectorAll('#ls-panel [data-pushfilter]').forEach(c =>
+    c.classList.toggle('active', c.dataset.pushfilter === tier)
+  );
+  lsUpdatePushCounts();
+}
+
+function lsPushUnpushedIds(tier) {
+  return lsState.leads
+    .filter(l => !l.contacted && !l.ghl_contact_id && (tier === 'all' || l.tier === tier))
+    .map(l => l.id);
+}
+
+function lsUpdatePushCounts() {
+  const counts = { all: 0, Hot: 0, Warm: 0, Cold: 0 };
+  for (const lead of (lsState.leads || [])) {
+    if (lead.contacted) continue;
+    if (lead.ghl_contact_id) continue;
+    counts.all++;
+    if (lead.tier === 'Hot' || lead.tier === 'Warm' || lead.tier === 'Cold') counts[lead.tier]++;
+  }
+  const all = document.getElementById('ls-push-count-all');
+  if (!all) return; // panel not in DOM yet
+  all.textContent                                       = counts.all;
+  document.getElementById('ls-push-count-Hot').textContent  = counts.Hot;
+  document.getElementById('ls-push-count-Warm').textContent = counts.Warm;
+  document.getElementById('ls-push-count-Cold').textContent = counts.Cold;
+
+  const n = counts[lsState.pushFilter] || 0;
+  const btn = document.getElementById('ls-push-btn');
+  btn.disabled = n === 0;
+  btn.textContent = 'Push ' + n + ' lead' + (n === 1 ? '' : 's') + ' to GHL →';
+}
+
+function lsPushUpdateMode() {
+  const dry = document.getElementById('ls-push-dryrun').checked;
+  document.getElementById('ls-push-live-warning').style.display = dry ? 'none' : 'block';
+}
+
+async function lsPushToGhl() {
+  const status = document.getElementById('ls-push-status');
+  const btn    = document.getElementById('ls-push-btn');
+  const dryRun = document.getElementById('ls-push-dryrun').checked;
+  const selectedTier   = lsState.pushFilter === 'all' ? null : lsState.pushFilter;
+  const selectedTierIds = lsPushUnpushedIds(lsState.pushFilter);
+
+  if (!selectedTierIds.length) { lsShow(status, 'error', 'No uncontacted, unpushed leads in the selected tier.'); return; }
+
+  if (!dryRun && !confirm('Push ' + selectedTierIds.length + ' lead(s) to GHL? This will create real contacts.')) return;
+
+  btn.disabled = true;
+  btn.textContent = dryRun ? 'Previewing…' : 'Pushing…';
+  lsShow(status, '', (dryRun ? 'Building payload preview' : 'Pushing to GHL') + ' for ' + selectedTierIds.length + ' lead(s)…');
+
+  try {
+    const r = await fetch('/api/leads/outreach', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...lsAuthHeader() },
+      body: JSON.stringify({
+        tier: selectedTier || undefined,
+        leadIds: selectedTierIds,
+        dryRun: dryRun,
+      }),
+    });
+    const j = await r.json();
+    if (!r.ok) throw new Error(j.error || ('HTTP ' + r.status));
+
+    lsRenderPushResults(j, dryRun);
+
+    const msg = dryRun
+      ? 'Dry run complete: ' + j.pushed + ' would push, ' + j.failed + ' would fail/skip. No GHL calls made.'
+      : 'Pushed ' + j.pushed + ' of ' + j.attempted
+        + (j.failed ? ' • ' + j.failed + ' failed' : '')
+        + (j.skipped_already_contacted ? ' • ' + j.skipped_already_contacted + ' already contacted' : '')
+        + '.';
+    lsShow(status, j.failed > 0 ? 'error' : 'success', msg);
+
+    // After a real push, reload so contacted state + counts refresh.
+    if (!dryRun) lsLoadLeads();
+  } catch (err) {
+    lsShow(status, 'error', err.message);
+  } finally {
+    // lsUpdatePushCounts restores the button label + disabled state based on
+    // the (possibly refreshed) lead set.
+    lsUpdatePushCounts();
+  }
+}
+
+function lsRenderPushResults(j, dryRun) {
+  const wrap   = document.getElementById('ls-push-results-wrap');
+  const totals = document.getElementById('ls-push-totals');
+  const tbody  = document.getElementById('ls-push-results-tbody');
+  const results = j.results || [];
+
+  const pushedN  = results.filter(r => r.ok && !r.dryRun).length;
+  const dryRunN  = results.filter(r => r.dryRun).length;
+  const skippedN = results.filter(r => !r.ok && r.skipped).length;
+  const errorN   = results.filter(r => !r.ok && !r.skipped).length;
+
+  const chips = [];
+  if (dryRun) {
+    chips.push('<span class="ls-chip" style="border-color:rgba(160,160,180,.35);color:var(--gray)">DRY RUN · ' + dryRunN + '</span>');
+  } else {
+    chips.push('<span class="ls-chip" style="border-color:rgba(74,222,128,.4);color:var(--green)">✓ Pushed: ' + pushedN + '</span>');
+  }
+  chips.push('<span class="ls-chip" style="border-color:rgba(245,197,24,.4);color:var(--yellow)">⏭ Skipped: ' + skippedN + '</span>');
+  chips.push('<span class="ls-chip" style="border-color:rgba(245,90,90,.4);color:#f87171">✗ Errors: ' + errorN + '</span>');
+  totals.innerHTML = chips.join('');
+
+  tbody.innerHTML = results.map(r => {
+    const lead = lsState.leads.find(l => l.id === r.id) || {};
+    const tierBadge = lead.tier
+      ? '<span class="ls-tier-badge ls-tier-' + lead.tier + '">' + lead.tier + '</span>'
+      : '<span style="color:var(--mid)">—</span>';
+
+    let bgStyle = '', resultCell = '', notesCell = '';
+    if (r.dryRun) {
+      // Gray — dry run preview
+      bgStyle = 'background:rgba(255,255,255,.025)';
+      resultCell = '<span style="color:var(--gray)">DRY RUN</span>';
+      const tagsHtml = (r.tags_applied || [])
+        .map(t => '<code style="font-size:11px;color:var(--accent-light);background:rgba(45,107,228,.08);padding:1px 6px;border-radius:4px;margin-right:4px">' + escapeHtml(t) + '</code>')
+        .join('');
+      notesCell = tagsHtml || '<span style="color:var(--mid)">—</span>';
+    } else if (r.ok) {
+      // Green — real push succeeded
+      bgStyle = 'background:rgba(74,222,128,.06)';
+      resultCell = '<span style="color:var(--green)">✓ Pushed</span>';
+      const parts = [];
+      if (r.tags_applied) {
+        parts.push((r.tags_applied || [])
+          .map(t => '<code style="font-size:11px;color:var(--accent-light);background:rgba(45,107,228,.08);padding:1px 6px;border-radius:4px;margin-right:4px">' + escapeHtml(t) + '</code>')
+          .join(''));
+      }
+      if (r.custom_fields_updated === false) {
+        parts.push('<span style="color:var(--yellow)">Custom fields not written' + (r.custom_fields_error ? ': ' + escapeHtml(r.custom_fields_error) : '') + '</span>');
+      }
+      if (r.warning) parts.push('<span style="color:var(--yellow)">' + escapeHtml(r.warning) + '</span>');
+      notesCell = parts.join('<br>') || '<span style="color:var(--mid)">—</span>';
+    } else if (r.skipped) {
+      // Yellow — skipped (no contact info or already contacted)
+      bgStyle = 'background:rgba(245,197,24,.06)';
+      const label = r.skipped === 'skipped_no_contact_info' ? 'No phone/email'
+                  : r.skipped === 'already_contacted'       ? 'Already contacted'
+                  : escapeHtml(r.skipped);
+      resultCell = '<span style="color:var(--yellow)">⏭ ' + label + '</span>';
+      notesCell = r.error ? escapeHtml(r.error) : '<span style="color:var(--mid)">—</span>';
+    } else {
+      // Red — error
+      bgStyle = 'background:rgba(245,90,90,.06)';
+      resultCell = '<span style="color:#f87171">✗ Error</span>';
+      notesCell = escapeHtml(r.error || 'Unknown error');
+    }
+
+    return '<tr style="' + bgStyle + '">'
+      + '<td><div class="ls-name">' + escapeHtml(r.business_name || '') + '</div></td>'
+      + '<td>' + tierBadge + '</td>'
+      + '<td>' + resultCell + '</td>'
+      + '<td><code style="font-size:11px;color:var(--gray)">' + escapeHtml(r.ghl_contact_id || '—') + '</code></td>'
+      + '<td style="font-size:12px;color:var(--gray);max-width:340px">' + notesCell + '</td>'
+      + '</tr>';
+  }).join('');
+
+  wrap.style.display = 'flex';
+}
+
+function lsPushClearResults() {
+  document.getElementById('ls-push-results-wrap').style.display = 'none';
+  document.getElementById('ls-push-results-tbody').innerHTML = '';
+  document.getElementById('ls-push-totals').innerHTML = '';
+  const s = document.getElementById('ls-push-status');
+  s.classList.remove('show', 'error', 'success');
+  s.style.display = 'none';
+  s.textContent = '';
 }
 
 /* ───── Sortable headers ───── */
