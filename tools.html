@@ -4655,10 +4655,12 @@ async function downloadWebsiteZip() {
     <div class="ls-pane" id="ls-pane-rank">
       <div class="ls-row" style="justify-content:space-between">
         <div class="ls-filters">
-          <button class="ls-chip active" data-filter="all"  onclick="lsFilter('all')">All</button>
-          <button class="ls-chip"        data-filter="Hot"  onclick="lsFilter('Hot')">Hot</button>
-          <button class="ls-chip"        data-filter="Warm" onclick="lsFilter('Warm')">Warm</button>
-          <button class="ls-chip"        data-filter="Cold" onclick="lsFilter('Cold')">Cold</button>
+          <button class="ls-chip active" data-filter="all"  onclick="lsFilter('all')">All <span class="ls-tab-badge" id="ls-chip-count-all">0</span></button>
+          <button class="ls-chip"        data-filter="Hot"  onclick="lsFilter('Hot')">Hot <span class="ls-tab-badge" id="ls-chip-count-Hot">0</span></button>
+          <button class="ls-chip"        data-filter="Warm" onclick="lsFilter('Warm')">Warm <span class="ls-tab-badge" id="ls-chip-count-Warm">0</span></button>
+          <button class="ls-chip"        data-filter="Cold" onclick="lsFilter('Cold')">Cold <span class="ls-tab-badge" id="ls-chip-count-Cold">0</span></button>
+          <!-- Contacted is an archive view — muted styling via inline color, dashed border for separation -->
+          <button class="ls-chip"        data-filter="contacted" style="margin-left:8px;background:var(--card);color:var(--gray);border-style:dashed" onclick="lsFilter('contacted')" title="Archive — leads already marked contacted or pushed">Contacted <span class="ls-tab-badge" id="ls-chip-count-contacted">0</span></button>
         </div>
         <div class="ls-row">
           <button class="ls-btn ls-btn-secondary" onclick="lsLoadLeads()">↻ Reload</button>
@@ -4667,7 +4669,7 @@ async function downloadWebsiteZip() {
       </div>
 
       <!-- Quick-select shortcuts — pick a tier without clicking each row -->
-      <div class="ls-row" style="gap:14px;font-size:12px;color:var(--gray);padding:2px 2px 0">
+      <div class="ls-row" id="ls-select-controls" style="gap:14px;font-size:12px;color:var(--gray);padding:2px 2px 0">
         <span style="color:var(--mid);letter-spacing:.04em">Quick select:</span>
         <button type="button" class="ls-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0;color:#f87171" onclick="lsSelectAllTier('Hot')">Select all Hot</button>
         <button type="button" class="ls-link" style="background:none;border:none;cursor:pointer;font:inherit;padding:0;color:var(--yellow)" onclick="lsSelectAllTier('Warm')">Select all Warm</button>
@@ -4699,7 +4701,8 @@ async function downloadWebsiteZip() {
       </div>
 
       <!-- ──────────── PUSH TO GHL ──────────── -->
-      <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;margin-top:8px">
+      <!-- Shown in All / Hot / Warm / Cold views. Hidden in Contacted view (replaced by ls-push-card-readonly). -->
+      <div id="ls-push-card" style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:14px;margin-top:8px">
         <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
           <div style="font-family:var(--speed);font-weight:700;font-size:14px;letter-spacing:.08em;text-transform:uppercase;color:var(--white)">Push to GHL</div>
           <div style="font-size:12px;color:var(--gray)">Send uncontacted, unpushed leads to GoHighLevel as tagged contacts. Counts reflect currently loaded leads — use Reload above to refresh.</div>
@@ -4748,6 +4751,11 @@ async function downloadWebsiteZip() {
         </div>
       </div>
       <!-- ──────────── END PUSH TO GHL ──────────── -->
+
+      <!-- Shown in Contacted view in place of the push card. -->
+      <div id="ls-push-card-readonly" style="display:none;background:var(--card);border:1px dashed var(--border);border-radius:8px;padding:20px 22px;margin-top:8px;font-size:13px;color:var(--gray);line-height:1.55;text-align:center">
+        These leads have already been contacted. Use GHL to manage follow-up from here.
+      </div>
     </div><!-- end ls-pane-rank -->
 
     <!-- ──────────── PLAYBOOK PANE ──────────── -->
@@ -5453,18 +5461,25 @@ async function lsRunScoring() {
 /* ───── Ranked pane ───── */
 function lsFilter(tier) {
   lsState.filter = tier;
-  document.querySelectorAll('#ls-panel .ls-chip').forEach(c => c.classList.toggle('active', c.dataset.filter === tier));
-  lsLoadLeads();
+  // Only toggle the tier-filter chips (data-filter). The push panel uses
+  // data-pushfilter, so we scope by data-filter to avoid clobbering it.
+  document.querySelectorAll('#ls-panel [data-filter]').forEach(c =>
+    c.classList.toggle('active', c.dataset.filter === tier)
+  );
+  // Re-render only — leads are already loaded. lsLoadLeads is reserved for
+  // explicit Reload / first open / post-push refresh.
+  lsRenderTable();
 }
 
 async function lsLoadLeads() {
   const tbody = document.getElementById('ls-tbody');
   tbody.innerHTML = '<tr><td colspan="10" class="ls-empty">Loading…</td></tr>';
+  // Load the full set (no tier/contacted filter) — view filtering happens
+  // client-side in lsRenderTable so chip counts stay accurate across views.
   const params = new URLSearchParams();
-  if (lsState.filter !== 'all') params.set('tier', lsState.filter);
   params.set('sort', lsState.sort);
   params.set('dir', lsState.dir);
-  params.set('limit', '500');
+  params.set('limit', '1000');
   try {
     const r = await fetch('/api/leads/list?' + params.toString(), { headers: lsAuthHeader() });
     const j = await r.json();
@@ -5480,17 +5495,46 @@ async function lsLoadLeads() {
 
 function lsRenderTable() {
   const tbody = document.getElementById('ls-tbody');
+  const f = lsState.filter;
+  const isContactedView = (f === 'contacted');
+
   // Reset the select-all header on every re-render — selection state lives in
   // the DOM, so re-rendering wipes it.
   const headerCb = document.getElementById('ls-select-all');
-  if (headerCb) { headerCb.checked = false; headerCb.indeterminate = false; }
+  if (headerCb) {
+    headerCb.checked = false;
+    headerCb.indeterminate = false;
+    headerCb.disabled = isContactedView;
+  }
 
-  if (!lsState.leads.length) {
-    tbody.innerHTML = '<tr><td colspan="10" class="ls-empty">No leads match this filter yet.</td></tr>';
+  // Show/hide the push card + quick-select controls based on view.
+  const card     = document.getElementById('ls-push-card');
+  const readonly = document.getElementById('ls-push-card-readonly');
+  const selCtl   = document.getElementById('ls-select-controls');
+  if (card && readonly) {
+    card.style.display     = isContactedView ? 'none' : 'flex';
+    readonly.style.display = isContactedView ? 'block' : 'none';
+  }
+  if (selCtl) selCtl.style.display = isContactedView ? 'none' : 'flex';
+
+  // Client-side filter:
+  //   'all'                — uncontacted, any tier
+  //   'Hot' / 'Warm' / 'Cold' — uncontacted, that tier
+  //   'contacted'          — contacted=1
+  const visible = (lsState.leads || []).filter(l => {
+    if (isContactedView) return !!l.contacted;
+    if (f === 'all')     return !l.contacted;
+    return !l.contacted && l.tier === f;
+  });
+
+  if (!visible.length) {
+    const msg = isContactedView ? 'No contacted leads yet.' : 'No leads match this filter.';
+    tbody.innerHTML = '<tr><td colspan="10" class="ls-empty">' + msg + '</td></tr>';
     lsUpdatePushCounts();
     return;
   }
-  tbody.innerHTML = lsState.leads.map((lead, i) => {
+
+  tbody.innerHTML = visible.map((lead, i) => {
     const phone = lead.phone ? '<a class="ls-link" href="tel:' + escapeAttr(lead.phone) + '">' + escapeHtml(lead.phone) + '</a>' : '<span style="color:var(--mid)">—</span>';
     const email = lead.email ? '<a class="ls-link" href="mailto:' + escapeAttr(lead.email) + '">' + escapeHtml(lead.email) + '</a>' : '<span style="color:var(--mid)">—</span>';
     const site  = lead.website_url
@@ -5499,15 +5543,19 @@ function lsRenderTable() {
     const tierBadge = lead.tier ? '<span class="ls-tier-badge ls-tier-' + lead.tier + '">' + lead.tier + '</span>' : '<span style="color:var(--mid)">—</span>';
     const score = lead.score != null ? lead.score : '—';
 
-    // Per-row "push selection" checkbox. Disabled when the lead is already
-    // contacted or already pushed to GHL — same exclusion rule the push UI
-    // uses for counts.
-    const isUnpushed = !lead.contacted && !lead.ghl_contact_id;
+    // Per-row "push selection" checkbox. Disabled in Contacted view (no push
+    // controls there) AND when the lead is already contacted or already
+    // pushed to GHL.
+    const isUnpushed  = !lead.contacted && !lead.ghl_contact_id;
+    const cbDisabled  = isContactedView || !isUnpushed;
+    const cbTitle     = isContactedView
+      ? 'Contacted view — push controls disabled'
+      : (!isUnpushed ? 'Already contacted or already pushed to GHL' : '');
     const selectCb = '<input type="checkbox" class="ls-checkbox ls-select-row"'
       + ' data-id="' + lead.id + '"'
       + ' data-tier="' + escapeAttr(lead.tier || '') + '"'
-      + (isUnpushed ? '' : ' disabled')
-      + (isUnpushed ? '' : ' title="Already contacted or already pushed to GHL"')
+      + (cbDisabled ? ' disabled' : '')
+      + (cbTitle ? ' title="' + escapeAttr(cbTitle) + '"' : '')
       + ' onchange="lsOnRowSelectionChange()"/>';
 
     return '<tr class="' + (lead.contacted ? 'contacted' : '') + '" data-id="' + lead.id + '">'
@@ -5536,10 +5584,13 @@ async function lsToggleContacted(id, checked, el) {
     });
     const j = await r.json();
     if (!r.ok || !j.success) throw new Error(j.error || 'Update failed');
-    el.closest('tr').classList.toggle('contacted', checked);
     const idx = lsState.leads.findIndex(l => l.id === id);
     if (idx >= 0) lsState.leads[idx].contacted = checked ? 1 : 0;
     lsRefreshSummary();
+    // Re-render so the row moves to/from the Contacted view immediately.
+    // The row containing `el` will be unmounted — el.disabled below is a no-op
+    // but harmless.
+    lsRenderTable();
   } catch (err) {
     el.checked = !checked;
     alert('Could not update: ' + err.message);
@@ -5550,7 +5601,8 @@ async function lsToggleContacted(id, checked, el) {
 
 async function lsExportCsv() {
   const params = new URLSearchParams();
-  if (lsState.filter !== 'all') params.set('tier', lsState.filter);
+  // Only valid tier values for the backend — 'contacted' is a UI-only filter.
+  if (['Hot', 'Warm', 'Cold'].includes(lsState.filter)) params.set('tier', lsState.filter);
   try {
     const r = await fetch('/api/leads/export?' + params.toString(), { headers: lsAuthHeader() });
     if (!r.ok) {
@@ -5561,7 +5613,7 @@ async function lsExportCsv() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'mtm_leads_' + lsState.filter + '_' + new Date().toISOString().slice(0,10) + '.csv';
+    a.download = 'mtm_leads_' + (lsState.filter || 'all') + '_' + new Date().toISOString().slice(0,10) + '.csv';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   } catch (err) {
@@ -5585,7 +5637,12 @@ function lsApplySummary() {
   document.getElementById('ls-sum-cold').textContent      = s.cold;
   document.getElementById('ls-sum-contacted').textContent = s.contacted;
   document.getElementById('ls-badge-unscored').textContent = s.unscored;
-  document.getElementById('ls-badge-total').textContent    = s.total;
+  // Tab badge reflects uncontacted only — the default view's working set.
+  // Total is preserved as a tooltip for context.
+  const uncontacted = (s.total || 0) - (s.contacted || 0);
+  const tabBadge = document.getElementById('ls-badge-total');
+  tabBadge.textContent = uncontacted;
+  tabBadge.title       = uncontacted + ' uncontacted · ' + (s.total || 0) + ' total';
 }
 
 /* ───── Push to GHL ───── */
@@ -5654,24 +5711,57 @@ function lsOnRowSelectionChange() {
 }
 
 function lsUpdatePushCounts() {
-  const counts = { all: 0, Hot: 0, Warm: 0, Cold: 0 };
+  // Two count sets:
+  //   viewCounts  = table-view chip counts. "Uncontacted" only (filter shows
+  //                 these as All/Hot/Warm/Cold; the Contacted chip is the
+  //                 inverse).
+  //   pushCounts  = Push-to-GHL panel counts. Excludes BOTH contacted AND
+  //                 already-pushed (ghl_contact_id set). In practice the two
+  //                 sets are equal because a real push sets both flags, but
+  //                 a manually-marked-contacted row with no GHL push will
+  //                 differ — keep them separate for correctness.
+  const viewCounts = { all: 0, Hot: 0, Warm: 0, Cold: 0, contacted: 0 };
+  const pushCounts = { all: 0, Hot: 0, Warm: 0, Cold: 0 };
   for (const lead of (lsState.leads || [])) {
-    if (lead.contacted) continue;
-    if (lead.ghl_contact_id) continue;
-    counts.all++;
-    if (lead.tier === 'Hot' || lead.tier === 'Warm' || lead.tier === 'Cold') counts[lead.tier]++;
+    if (lead.contacted) { viewCounts.contacted++; continue; }
+    viewCounts.all++;
+    if (lead.tier === 'Hot' || lead.tier === 'Warm' || lead.tier === 'Cold') viewCounts[lead.tier]++;
+    if (!lead.ghl_contact_id) {
+      pushCounts.all++;
+      if (lead.tier === 'Hot' || lead.tier === 'Warm' || lead.tier === 'Cold') pushCounts[lead.tier]++;
+    }
   }
-  const all = document.getElementById('ls-push-count-all');
-  if (!all) return; // panel not in DOM yet
-  all.textContent                                       = counts.all;
-  document.getElementById('ls-push-count-Hot').textContent  = counts.Hot;
-  document.getElementById('ls-push-count-Warm').textContent = counts.Warm;
-  document.getElementById('ls-push-count-Cold').textContent = counts.Cold;
+
+  // Tier-filter chip badges (above the table).
+  const setText = (id, n) => { const el = document.getElementById(id); if (el) el.textContent = n; };
+  setText('ls-chip-count-all',        viewCounts.all);
+  setText('ls-chip-count-Hot',        viewCounts.Hot);
+  setText('ls-chip-count-Warm',       viewCounts.Warm);
+  setText('ls-chip-count-Cold',       viewCounts.Cold);
+  setText('ls-chip-count-contacted',  viewCounts.contacted);
+
+  // Push-panel chip badges (inside the push card).
+  const pAll = document.getElementById('ls-push-count-all');
+  if (!pAll) return; // push panel not in DOM yet
+  pAll.textContent                                          = pushCounts.all;
+  document.getElementById('ls-push-count-Hot').textContent  = pushCounts.Hot;
+  document.getElementById('ls-push-count-Warm').textContent = pushCounts.Warm;
+  document.getElementById('ls-push-count-Cold').textContent = pushCounts.Cold;
 
   const btn = document.getElementById('ls-push-btn');
   if (!btn) return;
 
-  // Selection wins over tier-filter count when the user has explicitly picked rows.
+  // In Contacted view the push UI is hidden — reset the button label so
+  // switching back doesn't show a stale count.
+  if (lsState.filter === 'contacted') {
+    btn.disabled = true;
+    btn.textContent = 'Push 0 leads to GHL →';
+    const sc = document.getElementById('ls-selection-count');
+    if (sc) sc.textContent = '';
+    return;
+  }
+
+  // Selection wins over the push-panel tier-filter count.
   const selectedIds = lsGetSelectedIds();
   const selCountEl  = document.getElementById('ls-selection-count');
 
@@ -5680,7 +5770,7 @@ function lsUpdatePushCounts() {
     btn.textContent = 'Push ' + selectedIds.length + ' selected lead' + (selectedIds.length === 1 ? '' : 's') + ' to GHL →';
     if (selCountEl) selCountEl.textContent = selectedIds.length + ' selected';
   } else {
-    const n = counts[lsState.pushFilter] || 0;
+    const n = pushCounts[lsState.pushFilter] || 0;
     btn.disabled = n === 0;
     btn.textContent = 'Push ' + n + ' lead' + (n === 1 ? '' : 's') + ' to GHL →';
     if (selCountEl) selCountEl.textContent = '';
