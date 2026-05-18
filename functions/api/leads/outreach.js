@@ -385,11 +385,24 @@ function splitBusinessName(name) {
   const trimmed = (name || '').trim();
   if (!trimmed) return { firstName: '' };
 
-  const personal = trimmed.match(/^([A-Z][a-z]+)\s+([A-Z][a-z]+)$/);
+  // Strip trailing credential / generational suffixes — comma- or space-separated,
+  // optional trailing period. Loop so chains like ", MD, PhD" peel off one at a
+  // time. Longer alternatives are listed first so III matches before II.
+  const SUFFIX_RE = /(?:\s+|,\s*)(?:PhD|DDS|Esq|III|MD|DC|DO|NP|PA|RN|Jr|Sr|II|IV)\.?\s*$/i;
+  let stripped = trimmed;
+  let next;
+  while ((next = stripped.replace(SUFFIX_RE, '').trim()) !== stripped) {
+    stripped = next;
+  }
+  // If suffix-stripping ate the entire string (e.g. input was just ", MD"),
+  // fall back to the original so we never return an empty firstName.
+  if (!stripped) stripped = trimmed;
+
+  const personal = stripped.match(/^([A-Z][a-z]+)\s+([A-Z][a-z]+)$/);
   if (personal) {
     return { firstName: personal[1], lastName: personal[2] };
   }
-  return { firstName: trimmed };
+  return { firstName: stripped };
 }
 
 /**
