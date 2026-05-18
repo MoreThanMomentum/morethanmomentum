@@ -31,6 +31,14 @@
  *   GHL_LOCATION_ID     — sub-account location id
  *                         (GHL → Settings, bottom of page)
  *
+ * ─── Optional environment variables (enable owner-name enrichment) ───
+ *   GOOGLE_PLACES_API_KEY — when set, enrichOwnerName() calls Places Text
+ *                           Search + Place Details to look for an owner reply
+ *                           on reviews (author_is_owner) before falling back
+ *                           to the business-name split. No key → source is
+ *                           skipped silently. Facebook enrichment also runs
+ *                           when lead.facebook_url is present (no key needed).
+ *
  * ─── D1 migration (run once in Cloudflare D1 console before deploying) ───
  *   ALTER TABLE leads_outreach ADD COLUMN ghl_contact_id TEXT;
  *
@@ -111,14 +119,14 @@ export async function onRequestPost(context) {
       const placeholders = explicitIds.map(() => '?').join(',');
       const r = await env.DB.prepare(
         `SELECT id, business_name, category, address, phone, email, website_url,
-                score, tier, score_reason, source_batch, contacted
+                facebook_url, score, tier, score_reason, source_batch, contacted
          FROM leads_outreach WHERE id IN (${placeholders})`
       ).bind(...explicitIds).all();
       leads = r.results || [];
     } else {
       const r = await env.DB.prepare(
         `SELECT id, business_name, category, address, phone, email, website_url,
-                score, tier, score_reason, source_batch, contacted
+                facebook_url, score, tier, score_reason, source_batch, contacted
          FROM leads_outreach
          WHERE tier = ? AND contacted = 0
          ORDER BY score DESC, id ASC
@@ -155,6 +163,16 @@ export async function onRequestPost(context) {
         });
         return;
       }
+
+      // Enrichment chain (all best-effort, errors swallowed):
+      //   1. discoverSocialUrls — fetch lead.website_url and harvest social
+      //      links + any "Owned by / Founded by" mention in the body text.
+      //   2. enrichOwnerName    — if discoverSocialUrls didn't already set
+      //      ownerFirstName, try Google Places (owner replies) and Facebook.
+      // Either step may populate lead.ownerFirstName / lead.ownerLastName,
+      // which buildContactPayload then prefers over splitBusinessName.
+      await discoverSocialUrls(lead);
+      await enrichOwnerName(lead, env);
 
       const payload = buildContactPayload(lead, env.GHL_LOCATION_ID || '<GHL_LOCATION_ID>');
 
@@ -253,7 +271,19 @@ export async function onRequestPost(context) {
 /* ────────────────────── payload builders ────────────────────── */
 
 function buildContactPayload(lead, locationId) {
-  const { firstName, companyName } = splitBusinessName(lead.business_name || '');
+  const business = (lead.business_name || '').trim();
+
+  // Enriched owner name (from enrichOwnerName) wins over the business-name split.
+  let firstName, lastName;
+  if (lead.ownerFirstName) {
+    firstName = lead.ownerFirstName;
+    lastName  = lead.ownerLastName;
+  } else {
+    const split = splitBusinessName(business);
+    firstName = split.firstName;
+    lastName  = split.lastName;
+  }
+
   const phone = normalizePhone(lead.phone);
   const email = lead.email ? String(lead.email).trim().toLowerCase() || null : null;
   const tags  = buildTags(lead);
@@ -264,10 +294,11 @@ function buildContactPayload(lead, locationId) {
   const payload = {
     locationId,
     firstName,
-    companyName: companyName || lead.business_name || '',
+    companyName: business,
     tags,
     customFields: [],
   };
+  if (lastName) payload.lastName = lastName;
   if (phone) payload.phone = phone;
   if (email) payload.email = email;
   if (lead.address) payload.address1 = String(lead.address).trim();
@@ -301,28 +332,21 @@ function buildCustomFields(lead) {
 }
 
 /**
- * GHL works best with a firstName populated. For B2B leads we usually only
- * have a business name, so this is a best-effort split: if the business name
- * matches a common "FirstName LastName <suffix>" pattern (e.g. "Bob Smith
- * Plumbing"), pull the first token as firstName. Otherwise fall back to
- * "Team" and stuff the whole thing into companyName.
+ * Strict split: only treat the business_name as a person's name when it is
+ * *exactly* two capitalized single words with nothing after them
+ * (e.g. "John Doe"). Anything with a trailing descriptor — "John Doe HVAC",
+ * "East West Electric" — is treated as a company name, and the entire trimmed
+ * string is used as firstName so GHL has something useful to display.
  */
 function splitBusinessName(name) {
   const trimmed = (name || '').trim();
-  if (!trimmed) return { firstName: 'Team', companyName: '' };
+  if (!trimmed) return { firstName: '' };
 
-  // Common owner-name pattern: starts with two capitalized words followed by
-  // a business descriptor. e.g. "John Doe HVAC" / "Mary Smith Plumbing Co".
-  const m = trimmed.match(/^([A-Z][a-z]+)\s+([A-Z][a-z]+)\s+(.+)$/);
-  if (m) {
-    return { firstName: m[1], companyName: trimmed };
+  const personal = trimmed.match(/^([A-Z][a-z]+)\s+([A-Z][a-z]+)$/);
+  if (personal) {
+    return { firstName: personal[1], lastName: personal[2] };
   }
-  // Possessive pattern: "Smith's HVAC", "Bob's Plumbing"
-  const poss = trimmed.match(/^([A-Z][a-z]+)['’]s\b/);
-  if (poss) {
-    return { firstName: poss[1], companyName: trimmed };
-  }
-  return { firstName: 'Team', companyName: trimmed };
+  return { firstName: trimmed };
 }
 
 /**
@@ -341,6 +365,285 @@ function normalizePhone(raw) {
   if (digits.length === 10) return '+1' + digits;
   if (digits.length === 11 && digits.startsWith('1')) return '+' + digits;
   return null;
+}
+
+/* ────────────────────── owner-name enrichment ────────────────────── */
+
+/**
+ * Best-effort: try to find the real owner's first/last name and attach them to
+ * the lead as `ownerFirstName` / `ownerLastName`. Sources are tried in order
+ * and the first confident hit wins. Never throws — any network or parse error
+ * just causes that source to be skipped.
+ *
+ *   1. Google Places — Text Search → Place Details. Looks for owner replies on
+ *      reviews (author_is_owner === true on the reply), then falls back to
+ *      scanning editorial_summary for an "owned by / founded by" pattern.
+ *      Requires env.GOOGLE_PLACES_API_KEY.
+ *   2. Facebook business page — if lead.facebook_url is set, fetches the page
+ *      HTML and looks for "Founded by", "Owner:", or page transparency labels.
+ */
+async function enrichOwnerName(lead, env) {
+  // discoverSocialUrls runs first and may have already extracted the owner
+  // name from the business's own website (no login wall, most reliable signal).
+  // If so, don't overwrite it with a Places/Facebook guess.
+  if (lead.ownerFirstName) return lead;
+
+  if (env.GOOGLE_PLACES_API_KEY) {
+    try {
+      const found = await fetchOwnerFromGooglePlaces(lead, env);
+      if (found?.firstName) {
+        lead.ownerFirstName = found.firstName;
+        if (found.lastName) lead.ownerLastName = found.lastName;
+        return lead;
+      }
+    } catch { /* fall through to next source */ }
+  }
+
+  if (lead.facebook_url) {
+    try {
+      const found = await fetchOwnerFromFacebook(lead.facebook_url);
+      if (found?.firstName) {
+        lead.ownerFirstName = found.firstName;
+        if (found.lastName) lead.ownerLastName = found.lastName;
+        return lead;
+      }
+    } catch { /* fall through */ }
+  }
+
+  return lead;
+}
+
+/**
+ * Best-effort: fetch the business's own website and harvest two things:
+ *   (a) Outbound links to Facebook / Instagram / LinkedIn — these are nearly
+ *       always present in the site header or footer and don't require auth,
+ *       which is why we discover socials from the business site rather than
+ *       hitting the platforms directly (FB serves a login wall).
+ *   (b) An owner mention in the body text ("Owned by Jane Smith", "Founded by
+ *       …"). About / Team pages frequently include this in plain prose.
+ *
+ * Mutates the lead in place: sets lead.facebook_url, lead.instagram_url,
+ * lead.linkedin_url, lead.ownerFirstName, lead.ownerLastName when found.
+ * Never throws — fetch errors, timeouts, and parse failures all return the
+ * lead unchanged.
+ */
+async function discoverSocialUrls(lead) {
+  if (!lead.website_url) return lead;
+
+  const html = await fetchHtmlWithTimeout(String(lead.website_url).trim(), 5000);
+  if (!html) return lead;
+
+  // Pull every href value out of the HTML — cheap regex is fine for this.
+  const hrefs = [];
+  for (const m of html.matchAll(/href\s*=\s*["']([^"']+)["']/gi)) {
+    hrefs.push(m[1]);
+  }
+
+  for (const raw of hrefs) {
+    const cleaned = cleanSocialUrl(raw);
+    if (!cleaned) continue;
+
+    if (!lead.facebook_url
+        && /^https?:\/\/(?:[a-z0-9-]+\.)?facebook\.com\//i.test(cleaned)
+        && !isFacebookNoise(cleaned)) {
+      lead.facebook_url = cleaned;
+    } else if (!lead.instagram_url
+        && /^https?:\/\/(?:[a-z0-9-]+\.)?instagram\.com\//i.test(cleaned)
+        && !isInstagramNoise(cleaned)) {
+      lead.instagram_url = cleaned;
+    } else if (!lead.linkedin_url
+        && /^https?:\/\/(?:[a-z0-9-]+\.)?linkedin\.com\/(?:in|company)\//i.test(cleaned)) {
+      lead.linkedin_url = cleaned;
+    }
+
+    if (lead.facebook_url && lead.instagram_url && lead.linkedin_url) break;
+  }
+
+  // While we have the HTML, scan the body text for an owner mention. If a
+  // confident name is found, attach it directly — enrichOwnerName will see
+  // ownerFirstName is set and bail out, so the website signal wins over the
+  // Places/Facebook fallbacks.
+  const text = stripHtmlToText(html);
+  if (text) {
+    const parsed = extractOwnerFromText(text);
+    if (parsed?.firstName) {
+      lead.ownerFirstName = parsed.firstName;
+      if (parsed.lastName) lead.ownerLastName = parsed.lastName;
+    }
+  }
+
+  return lead;
+}
+
+function cleanSocialUrl(raw) {
+  try {
+    const u = new URL(raw);
+    if (u.protocol !== 'http:' && u.protocol !== 'https:') return null;
+    return u.origin + u.pathname.replace(/\/+$/, '');
+  } catch {
+    return null;
+  }
+}
+
+function isFacebookNoise(url) {
+  // Share buttons, pixels, plugin iframes, dialog URLs — none of these point
+  // at a real business page.
+  return /\/(?:sharer|share|tr|plugins|dialog|share_dialog|profile\.php)\b/i.test(url);
+}
+
+function isInstagramNoise(url) {
+  return /\/(?:p|reel|reels|stories|explore|accounts)\b/i.test(url);
+}
+
+/**
+ * Shared HTML fetch with a hard timeout. Returns the response body on 2xx,
+ * or null for any error / non-2xx / abort. Never throws.
+ */
+async function fetchHtmlWithTimeout(url, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; MTMOutreachBot/1.0)',
+        'Accept': 'text/html,application/xhtml+xml',
+        'Accept-Language': 'en-US,en;q=0.9',
+      },
+      redirect: 'follow',
+      signal: controller.signal,
+    });
+    if (!res.ok) return null;
+    return await res.text().catch(() => null);
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function stripHtmlToText(html) {
+  if (!html) return '';
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function fetchOwnerFromGooglePlaces(lead, env) {
+  const business = (lead.business_name || '').trim();
+  if (!business) return null;
+
+  const city = extractCityFromAddress(lead.address || '');
+  const query = city ? `${business} ${city}` : business;
+
+  const searchUrl = 'https://maps.googleapis.com/maps/api/place/textsearch/json'
+    + `?query=${encodeURIComponent(query)}`
+    + `&key=${encodeURIComponent(env.GOOGLE_PLACES_API_KEY)}`;
+  const searchRes = await fetch(searchUrl);
+  if (!searchRes.ok) return null;
+  const searchJson = await searchRes.json().catch(() => null);
+  const placeId = searchJson?.results?.[0]?.place_id;
+  if (!placeId) return null;
+
+  const detailsUrl = 'https://maps.googleapis.com/maps/api/place/details/json'
+    + `?place_id=${encodeURIComponent(placeId)}`
+    + '&fields=reviews,editorial_summary,website'
+    + `&key=${encodeURIComponent(env.GOOGLE_PLACES_API_KEY)}`;
+  const detailsRes = await fetch(detailsUrl);
+  if (!detailsRes.ok) return null;
+  const detailsJson = await detailsRes.json().catch(() => null);
+  const result = detailsJson?.result;
+  if (!result) return null;
+
+  // Primary signal: owner reply on a review.
+  const reviews = Array.isArray(result.reviews) ? result.reviews : [];
+  for (const r of reviews) {
+    const reply = r?.reply || r?.owner_response || r?.author_reply;
+    if (reply && reply.author_is_owner === true && reply.author_name) {
+      const parsed = parsePersonName(reply.author_name);
+      if (parsed) return parsed;
+    }
+  }
+
+  // Secondary signal: editorial summary occasionally credits the owner.
+  const editorial = result.editorial_summary?.overview || '';
+  if (editorial) {
+    const parsed = extractOwnerFromText(editorial);
+    if (parsed) return parsed;
+  }
+
+  return null;
+}
+
+async function fetchOwnerFromFacebook(url) {
+  // m.facebook.com returns a much lighter HTML doc with fewer login redirects
+  // than the SPA-heavy www.facebook.com.
+  const mobileUrl = String(url).replace(
+    /^(https?:\/\/)(?:www\.|web\.)?facebook\.com\//i,
+    '$1m.facebook.com/'
+  );
+
+  const html = await fetchHtmlWithTimeout(mobileUrl, 5000);
+  if (!html) return null;
+
+  const text = stripHtmlToText(html);
+  if (!text) return null;
+
+  // Login-wall detection — m.facebook.com still serves a login page for some
+  // pages/regions. Walls are short and pepper "log in" / "create account"
+  // throughout; real About content has neither in any volume.
+  const loginHits =
+      (text.match(/\blog in\b/gi)        || []).length
+    + (text.match(/\bcreate account\b/gi) || []).length;
+  const wordCount = text.split(/\s+/).filter(Boolean).length;
+  if (loginHits >= 2 && wordCount < 500) return null;
+
+  return extractOwnerFromText(text);
+}
+
+function extractOwnerFromText(text) {
+  if (!text) return null;
+  // Patterns we expect on FB About / page transparency / editorial summaries.
+  const patterns = [
+    /\bFounded by\s+([A-Z][a-z]+)(?:\s+([A-Z][a-z'’\-]+))?/,
+    /\bOwned by\s+([A-Z][a-z]+)(?:\s+([A-Z][a-z'’\-]+))?/i,
+    /\bOwner[:\s]+([A-Z][a-z]+)(?:\s+([A-Z][a-z'’\-]+))?/i,
+    /\bFounder[:\s]+([A-Z][a-z]+)(?:\s+([A-Z][a-z'’\-]+))?/i,
+    /\bProprietor[:\s]+([A-Z][a-z]+)(?:\s+([A-Z][a-z'’\-]+))?/i,
+    /\bPage managers?\s*[:\-]?\s*([A-Z][a-z]+)(?:\s+([A-Z][a-z'’\-]+))?/i,
+    /\bPage admin\s*[:\-]?\s*([A-Z][a-z]+)(?:\s+([A-Z][a-z'’\-]+))?/i,
+  ];
+  for (const re of patterns) {
+    const m = text.match(re);
+    if (m && m[1]) {
+      return { firstName: m[1], lastName: m[2] || undefined };
+    }
+  }
+  return null;
+}
+
+function parsePersonName(raw) {
+  const cleaned = String(raw || '').trim().replace(/\s+/g, ' ');
+  if (!cleaned) return null;
+  const parts = cleaned.split(' ');
+  // Skip handle-style names ("ABC HVAC Owner Reply") and single-token names.
+  if (parts.length < 2 || parts.length > 4) return null;
+  // Each part should look like a name token (starts capital, mostly letters).
+  if (!parts.every(p => /^[A-Z][A-Za-z'’\-\.]{0,30}$/.test(p))) return null;
+  return { firstName: parts[0], lastName: parts.slice(1).join(' ') };
+}
+
+function extractCityFromAddress(address) {
+  // US-style "123 Main St, Phoenix, AZ 85001" — city is third-from-last when
+  // we have street/city/state-zip; falls back to the first chunk for "City, ST".
+  const parts = String(address).split(',').map(s => s.trim()).filter(Boolean);
+  if (parts.length >= 3) return parts[parts.length - 3];
+  if (parts.length === 2) return parts[0];
+  return '';
 }
 
 /* ────────────────────── GHL calls ────────────────────── */
